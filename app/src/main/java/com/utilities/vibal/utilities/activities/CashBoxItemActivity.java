@@ -1,6 +1,5 @@
 package com.utilities.vibal.utilities.activities;
 
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -9,7 +8,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import androidx.appcompat.widget.ShareActionProvider;
 import android.widget.TextView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -19,6 +17,7 @@ import com.google.android.material.textfield.TextInputLayout;
 import com.utilities.vibal.utilities.R;
 import com.utilities.vibal.utilities.adapters.CashBoxItemRecyclerAdapter;
 import com.utilities.vibal.utilities.adapters.CashBoxManagerRecyclerAdapter;
+import com.utilities.vibal.utilities.adapters.CashBoxSwipeController;
 import com.utilities.vibal.utilities.io.IOCashBoxManager;
 import com.utilities.vibal.utilities.models.CashBox;
 import com.utilities.vibal.utilities.models.CashBoxManager;
@@ -30,9 +29,11 @@ import java.util.List;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.ShareActionProvider;
 import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.view.MenuItemCompat;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import butterknife.BindView;
@@ -66,7 +67,7 @@ public class CashBoxItemActivity extends AppCompatActivity {
         //Get data
         Intent intent = getIntent();
         int cashBoxIndex = intent.getIntExtra(CashBoxManagerRecyclerAdapter.STRING_EXTRA, 0);
-        CashBoxManager cashBoxManager = (CashBoxManager) intent.getSerializableExtra(CashBoxManagerRecyclerAdapter.CASHBOX_MANAGER_EXTRA);
+        cashBoxManager = (CashBoxManager) intent.getSerializableExtra(CashBoxManagerRecyclerAdapter.CASHBOX_MANAGER_EXTRA);
 //        cashBoxManager = CashBoxManager.loadData(this);
         cashBox = cashBoxManager.get(cashBoxIndex);
 
@@ -80,7 +81,9 @@ public class CashBoxItemActivity extends AppCompatActivity {
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         rvCashBoxItem.setHasFixedSize(true);
         rvCashBoxItem.setLayoutManager(linearLayoutManager);
-        rvCashBoxItem.setAdapter(new CashBoxItemRecyclerAdapter(cashBox, this));
+        CashBoxItemRecyclerAdapter adapter = new CashBoxItemRecyclerAdapter(cashBox, this);
+        rvCashBoxItem.setAdapter(adapter);
+        (new ItemTouchHelper(new CashBoxSwipeController(adapter))).attachToRecyclerView(rvCashBoxItem);
 
         //Set cash to the actual value
         updateCash();
@@ -107,11 +110,15 @@ public class CashBoxItemActivity extends AppCompatActivity {
         IOCashBoxManager.renameCashBoxManagerTemp(this);
     }
 
-    private Context getContext() {
-        return this;
+    public RecyclerView getRecyclerView() {
+        return rvCashBoxItem;
     }
 
-    private void saveCashBoxManager() {
+//    private Context getContext() {
+//        return this;
+//    }
+
+    public void saveCashBoxManager() {
         try {
             IOCashBoxManager.saveCashBoxManagerTemp(cashBoxManager,this);
         } catch (IOException e) {

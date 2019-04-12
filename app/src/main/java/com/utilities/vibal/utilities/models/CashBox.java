@@ -163,10 +163,9 @@ public class CashBox implements Serializable {
      * @param index Index to be modified
      * @return Total cash after the modification
      */
-    public double modify(int index,double amount,String cause,Calendar date){
+    public CashBox.Entry modify(int index,double amount,String cause,Calendar date){
         cash += amount - entries.get(index).getAmount();
-        entries.set(index,new Entry(amount,cause,date));
-        return cash;
+        return entries.set(index,new Entry(amount,cause,date));
     }
 
     public int sizeEntries(){

@@ -1,7 +1,6 @@
 package com.utilities.vibal.utilities.adapters;
 
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -34,7 +33,7 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
 
     private CashBoxManager cashBoxManager;
     private CashBoxManagerActivity cashBoxManagerActivity;
-    private RecyclerView recyclerView;
+//    private RecyclerView recyclerView;
     private int selectedIndex;
 
     public CashBoxManagerRecyclerAdapter(CashBoxManager cashBoxManager, CashBoxManagerActivity cashBoxManagerActivity) {
@@ -43,11 +42,11 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
         selectedIndex = -1;
     }
 
-    @Override
-    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
-        this.recyclerView = recyclerView;
-        super.onAttachedToRecyclerView(recyclerView);
-    }
+//    @Override
+//    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
+//        this.recyclerView = recyclerView;
+//        super.onAttachedToRecyclerView(recyclerView);
+//    }
 
     private CashBoxManagerActivity getCashBoxManagerActivity() {
         return cashBoxManagerActivity;
@@ -157,7 +156,7 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
         void deleteCashBox(int deletedIndex) {
             CashBox deletedCashBox = cashBoxManager.remove(deletedIndex);
             notifyItemRemoved(deletedIndex);
-            Snackbar.make(recyclerView,getCashBoxManagerActivity().getString(R.string.snackbarEntriesDeleted,1),Snackbar.LENGTH_LONG)
+            Snackbar.make(getCashBoxManagerActivity().getRecyclerView(),getCashBoxManagerActivity().getString(R.string.snackbarEntriesDeleted,1),Snackbar.LENGTH_LONG)
                     .setAction(R.string.undo, (View v1) -> {
                         cashBoxManager.add(deletedIndex,deletedCashBox);
                         notifyItemInserted(deletedIndex);

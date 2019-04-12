@@ -11,12 +11,10 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.utilities.vibal.utilities.R;
 import com.utilities.vibal.utilities.adapters.CashBoxManagerRecyclerAdapter;
-import com.utilities.vibal.utilities.adapters.RecyclerItemTouchHelper;
 import com.utilities.vibal.utilities.io.IOCashBoxManager;
 import com.utilities.vibal.utilities.models.CashBox;
 import com.utilities.vibal.utilities.models.CashBoxManager;
@@ -31,7 +29,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
-import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import butterknife.BindView;
@@ -67,8 +64,8 @@ public class CashBoxManagerActivity extends AppCompatActivity {
         rvCashBoxManager.setHasFixedSize(true);
         rvCashBoxManager.setLayoutManager(new LinearLayoutManager(this));
         rvCashBoxManager.setAdapter(new CashBoxManagerRecyclerAdapter(cashBoxManager, this));
-        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new RecyclerItemTouchHelper());
-        itemTouchHelper.attachToRecyclerView(rvCashBoxManager);
+//        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new CashBoxSwipeController());
+//        itemTouchHelper.attachToRecyclerView(rvCashBoxManager);
 
 
         //Set up fab
@@ -104,6 +101,10 @@ public class CashBoxManagerActivity extends AppCompatActivity {
 //        if (!Util.renameFile(CashBoxManager.FILENAME_TEMP, CashBoxManager.FILENAME, getContext()))
 //            Log.d(TAG, "onStop: fallo al renameTo");
 //        Log.d(TAG, "onStop: existe temp:" + originalFile.exists() + "\t" + Arrays.toString(newFile.getParentFile().list()));
+    }
+
+    public RecyclerView getRecyclerView() {
+        return rvCashBoxManager;
     }
 
     @Override
