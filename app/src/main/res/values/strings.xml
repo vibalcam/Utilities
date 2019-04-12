@@ -1,0 +1,50 @@
+<resources>
+    <string name="app_name">Utilities</string>
+    <string name="main_title">List of tools</string>
+    <string name="main_randomChooser">Random Chooser</string>
+    <string name="main_cashBoxManager">Cash Box Manager</string>
+    <string name="settings">Settings</string>
+    <string name="action_help">Help</string>
+    <string name="action_about">About this app</string>
+    <string name="add">Add</string>
+    <string name="roll">Roll The Dice</string>
+    <string name="shuffle">Shuffle List</string>
+    <string name="randomChooser_title">Contestants</string>
+    <string name="action_reset">Delete All</string>
+    <string name="button_gotIt">Got it!</string>
+    <string name="amountMoney">%.2f €</string>
+    <string name="snackbarEntriesDeleted">%d deleted</string>
+    <string name="undo">Undo</string>
+    <string name="confirmDeleteAllDialog">Confirm Delete All</string>
+    <string name="confirmDeleteDialogConfirm">Delete</string>
+    <string name="cancelDialog">Cancel</string>
+    <string name="createCashBoxDialog">Create</string>
+    <string name="enterNameDialog">Enter the name (max 20)</string>
+    <string name="cashBox_changeNameButton">Change Name</string>
+    <string name="cashBox_cloneButton">Clone</string>
+    <string name="nameInUse">Name already in use</string>
+    <string name="randomChooser_helpTitle">"Random Chooser Help"</string>
+    <string name="cashBoxManager_helpTitle">"Cash Box Manager Help"</string>
+    <string name="enterInitCashDialog">Initial Cash</string>
+    <string name="popupCBMDelete">Delete</string>
+    <string name="popupCBMDuplicate">Duplicate</string>
+    <string name="popupCBMChangeName">Change Name</string>
+    <string name="title_activity_cash_box_item">Cash Box Item</string>
+    <string name="popupCBMShare">Share</string>
+    <string name="newEntry">New Entry</string>
+    <string name="addEntryDialog">Add Entry</string>
+    <string name="enterAmountDialog">Amount</string>
+    <string name="enterInfoDialog">Information (can be blank)</string>
+    <string name="item_totalCash">Total Cash</string>
+    <string name="outOfRange">Out of range</string>
+
+    <string name="cashBoxManager_help">
+
+    </string>
+    <string name="randomChooser_help">
+        Roll The Dice: returns a randomly chosen item from the list.\n
+        Shuffle List: shuffles the list.\n
+        To delete an entry, slide the item to the left.\n
+        To delete all entries, click the trashcan symbol at the top of the app.
+    </string>
+</resources>

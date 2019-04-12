@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <dimen name="titleText">30sp</dimen>
+  <dimen name="main_marginHorizontal">10dp</dimen>
+  <dimen name="main_marginVertical">8dp</dimen>
+  <dimen name="fab_margin">16dp</dimen>
+  <dimen name="inputTextMargin">2dp</dimen>
+  <dimen name="rvMarginItemCB">2dp</dimen>
+  <dimen name="rvMarginCB">3dp</dimen>
+  <dimen name="itemCB_marginRVBottom">15dp</dimen>
+    <dimen name="rvMarginRC">2dp</dimen>
+</resources>

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mainLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white"
+    tools:context=".activities.MainActivity">
+
+
+  <TextView
+      android:id="@+id/titleText"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:gravity="center"
+      android:text="@string/main_title"
+      android:textAppearance="?android:attr/textAppearanceLarge"
+      android:textColor="@android:color/black"
+      android:textSize="@dimen/titleText"
+      android:textStyle="bold"
+      android:layout_marginTop="@dimen/main_marginVertical"
+      android:layout_marginBottom="@dimen/main_marginVertical"
+      app:layout_constraintBottom_toTopOf="@+id/randomChooser"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent"
+      app:layout_constraintVertical_bias="0.0"/>
+
+  <Button
+      android:id="@+id/randomChooser"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:text="@string/main_randomChooser"
+      android:layout_marginEnd="@dimen/main_marginHorizontal"
+      android:layout_marginStart="@dimen/main_marginHorizontal"
+      app:layout_constraintBottom_toTopOf="@+id/cashBoxManager"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintHorizontal_bias="1.0"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@+id/titleText" />
+
+  <Button
+      android:id="@+id/cashBoxManager"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:text="@string/main_cashBoxManager"
+      app:layout_constraintBottom_toTopOf="@+id/imageView"
+      app:layout_constraintEnd_toEndOf="@+id/randomChooser"
+      app:layout_constraintHorizontal_bias="0.0"
+      app:layout_constraintStart_toStartOf="@+id/randomChooser"
+      app:layout_constraintTop_toBottomOf="@+id/randomChooser" />
+
+  <ImageView
+      android:id="@+id/imageView"
+      android:layout_width="0dp"
+      android:layout_height="0dp"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintTop_toBottomOf="@+id/cashBoxManager"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:srcCompat="@drawable/logo"
+      tools:ignore="ContentDescription" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
