@@ -1,17 +1,26 @@
 package com.utilities.vibal.utilities.adapters;
 
+import android.content.DialogInterface;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import com.utilities.vibal.utilities.R;
 import com.utilities.vibal.utilities.activities.CashBoxItemActivity;
 import com.utilities.vibal.utilities.interfaces.CashBoxAdapterSwipable;
 import com.utilities.vibal.utilities.models.CashBox;
+import com.utilities.vibal.utilities.util.Util;
+
+import java.util.Calendar;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -23,6 +32,8 @@ public class CashBoxItemRecyclerAdapter extends RecyclerView.Adapter<CashBoxItem
     private CashBox cashBox;
     private CashBoxItemActivity activity;
     private java.text.DateFormat dateFormat;
+
+    private static final String TAG = "PruebaItemActivity";
 
     public CashBoxItemRecyclerAdapter(CashBox cashBox, CashBoxItemActivity activity) {
         this.cashBox = cashBox;
@@ -68,31 +79,76 @@ public class CashBoxItemRecyclerAdapter extends RecyclerView.Adapter<CashBoxItem
 
     @Override
     public void onItemDelete(int position) {
+        CashBoxItemActivity activity = getCashBoxItemActivity();
         CashBox.Entry deletedEntry = cashBox.remove(position);
         notifyItemRemoved(position);
-        Snackbar.make(getCashBoxItemActivity().getRecyclerView(),getCashBoxItemActivity().getString(R.string.snackbarEntriesDeleted,1),Snackbar.LENGTH_LONG)
+        activity.updateCash();
+        Snackbar.make(activity.getRecyclerView(),getCashBoxItemActivity().getString(R.string.snackbarEntriesDeleted,1),Snackbar.LENGTH_LONG)
                 .setAction(R.string.undo, (View v) -> {
                     cashBox.add(position,deletedEntry);
                     notifyItemInserted(position);
-                    getCashBoxItemActivity().saveCashBoxManager();
+                    activity.updateCash();
+                    activity.saveCashBoxManager();
                 })
                 .show();
-        getCashBoxItemActivity().saveCashBoxManager();
+        activity.saveCashBoxManager();
     }
 
     @Override
     public void onItemModify(int position) {
-//        int modifiedIndex = viewHolder.getAdapterPosition();
-//        CashBox.Entry modifiedEntry = cashBox.modify();
-//        notifyItemRemoved(modifiedIndex);
-//        Snackbar.make(getCashBoxItemActivity().getRecyclerView(),getCashBoxItemActivity().getString(R.string.snackbarEntriesDeleted,1),Snackbar.LENGTH_LONG)
-//                .setAction(R.string.undo, (View v) -> {
-//                    cashBox.add(modifiedIndex,modifiedEntry);
-//                    notifyItemInserted(modifiedIndex);
-//                    getCashBoxItemActivity().saveCashBoxManager();
-//                })
-//                .show();
-//        getCashBoxItemActivity().saveCashBoxManager();
+        Log.d(TAG, "onItemModify: ");
+        CashBoxItemActivity activity = getCashBoxItemActivity();
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        AlertDialog dialog = builder.setTitle(R.string.modifyEntry)
+                .setView(R.layout.entry_cash_box_item_input)
+                .setNegativeButton(R.string.cancelDialog, null)
+                .setPositiveButton(R.string.confirm, null)
+                .create();
+        dialog.setCanceledOnTouchOutside(false);
+
+        dialog.setOnShowListener((DialogInterface dialog1) -> {
+            Button positive = ((AlertDialog) dialog1).getButton(DialogInterface.BUTTON_POSITIVE);
+            TextInputEditText inputInfo = ((AlertDialog) dialog1).findViewById(R.id.inputTextInfo);
+            TextInputEditText inputAmount = ((AlertDialog) dialog1).findViewById(R.id.inputTextAmount);
+            TextInputLayout layoutAmount = ((AlertDialog) dialog1).findViewById(R.id.inputLayoutAmount);
+
+            CashBox.Entry entry = cashBox.getEntry(position);
+            inputInfo.setText(entry.getCause());
+            inputAmount.setText(String.format("%f",entry.getAmount()));
+
+            Util.showKeyboard(activity, inputAmount);
+            positive.setOnClickListener((View v) -> {
+                try {
+                    Log.d(TAG, "showAddDialog: cause" + (inputInfo.getText() == null) + (inputInfo.getText().toString().isEmpty()));
+                    String input = inputAmount.getText().toString();
+                    if(input.trim().isEmpty()) {
+                        layoutAmount.setError("You must enter an amount");
+                        inputAmount.setText("");
+                    } else {
+                        double amount = Double.parseDouble(inputAmount.getText().toString());
+                        CashBox.Entry modifiedEntry = cashBox.modify(position, amount, inputInfo.getText().toString(), Calendar.getInstance());
+                        activity.updateCash();
+                        notifyItemChanged(position);
+                        dialog1.dismiss();
+                        Snackbar.make(activity.getRecyclerView(),R.string.snackbarEntryModified,Snackbar.LENGTH_LONG)
+                            .setAction(R.string.undo, (View v1) -> {
+                                cashBox.modify(position, modifiedEntry);
+                                notifyItemChanged(position);
+                                activity.saveCashBoxManager();
+                            })
+                            .show();
+                        activity.saveCashBoxManager();
+                    }
+                } catch (NumberFormatException e) {
+                    layoutAmount.setError("Not a valid number");
+                    inputAmount.setText("");
+                }
+            });
+        });
+        dialog.show();
+
+        notifyDataSetChanged();   // since the item is deleted from swipping we have to show it back again
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

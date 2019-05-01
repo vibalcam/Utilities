@@ -67,7 +67,6 @@ public class CashBoxManagerActivity extends AppCompatActivity {
 //        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new CashBoxSwipeController());
 //        itemTouchHelper.attachToRecyclerView(rvCashBoxManager);
 
-
         //Set up fab
         FloatingActionButton fab = findViewById(R.id.fabCBManager);
         fab.setOnClickListener((View view) -> showAddDialog());

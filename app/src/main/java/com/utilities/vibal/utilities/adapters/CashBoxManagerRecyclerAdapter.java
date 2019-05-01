@@ -76,7 +76,7 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
     }
 
     void changePosition(int oldPos, int newPos) {
-        cashBoxManager.changePosition(oldPos,newPos);
+        cashBoxManager.swap(oldPos,newPos);
         notifyDataSetChanged();
     }
 

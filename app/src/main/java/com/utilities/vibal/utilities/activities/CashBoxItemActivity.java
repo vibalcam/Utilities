@@ -9,6 +9,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
@@ -167,27 +168,37 @@ public class CashBoxItemActivity extends AppCompatActivity {
     }
 
     private void deleteAll() {
-        List<CashBox.Entry> entryList = cashBox.clear();
-        int size = entryList.size();
-        rvCashBoxItem.getAdapter().notifyItemRangeRemoved(0,size);
-        Snackbar.make(itemCBCoordinatorLayout, getString(R.string.snackbarEntriesDeleted, size), Snackbar.LENGTH_LONG)
-                .setAction(R.string.undo,v -> {
-                    cashBox.addAll(entryList);
-                    rvCashBoxItem.getAdapter().notifyItemRangeInserted(0,size);
-                    updateCash();
-//                    cashBoxManager.saveDataTemp(this);
-                    saveCashBoxManager();
-                })
-                .show();
-        updateCash();
-//        cashBoxManager.saveDataTemp(this);
-        saveCashBoxManager();
+        if (!cashBox.isEmpty()) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle(R.string.confirmDeleteAllDialog)
+                    .setMessage("Are you sure you want to delete all entries? This action CANNOT be undone")
+                    .setNegativeButton(R.string.cancelDialog, null)
+                    .setPositiveButton(R.string.confirmDeleteDialogConfirm, (DialogInterface dialog, int which) -> {
+                        List<CashBox.Entry> entryList = cashBox.clear();
+                        int size = entryList.size();
+                        rvCashBoxItem.getAdapter().notifyItemRangeRemoved(0, size);
+                        Snackbar.make(itemCBCoordinatorLayout, getString(R.string.snackbarEntriesDeleted, size), Snackbar.LENGTH_LONG)
+                                .setAction(R.string.undo, v -> {
+                                    cashBox.addAll(entryList);
+                                    rvCashBoxItem.getAdapter().notifyItemRangeInserted(0, size);
+                                    updateCash();
+                                    //                    cashBoxManager.saveDataTemp(this);
+                                    saveCashBoxManager();
+                                })
+                                .show();
+                        updateCash();
+                        //        cashBoxManager.saveDataTemp(this);
+                        saveCashBoxManager();
+                    }).show();
+        } else
+            Toast.makeText(this, "No entries to delete", Toast.LENGTH_SHORT)
+                    .show();
     }
 
     private void showAddDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         AlertDialog dialog = builder.setTitle(R.string.newEntry)
-                .setView(R.layout.new_entry_cash_box_item_input)
+                .setView(R.layout.entry_cash_box_item_input)
                 .setNegativeButton(R.string.cancelDialog, null)
                 .setPositiveButton(R.string.addEntryDialog, null)
                 .create();
@@ -203,14 +214,21 @@ public class CashBoxItemActivity extends AppCompatActivity {
             positive.setOnClickListener((View v) -> {
                 try {
                     Log.d(TAG, "showAddDialog: cause" + (inputInfo.getText() == null) + (inputInfo.getText().toString().isEmpty()));
-                    double amount = Double.parseDouble(inputAmount.getText().toString());
-                    cashBox.add(amount, inputInfo.getText().toString(), Calendar.getInstance());
-//                    rvCashBoxItem.getAdapter().notifyItemInserted(cashBox.sizeEntries() - 1);
-                    rvCashBoxItem.getAdapter().notifyItemInserted(0);
-                    updateCash();
-                    dialog1.dismiss();
-//                    cashBoxManager.saveDataTemp(this);
-                    saveCashBoxManager();
+                    String input = inputAmount.getText().toString();
+                    if(input.trim().isEmpty()) {
+                        layoutAmount.setError("You must enter an amount");
+                        inputAmount.setText("");
+                    } else {
+                        double amount = Double.parseDouble(inputAmount.getText().toString());
+                        cashBox.add(amount, inputInfo.getText().toString(), Calendar.getInstance());
+                        //                    rvCashBoxItem.getAdapter().notifyItemInserted(cashBox.sizeEntries() - 1);
+                        rvCashBoxItem.getAdapter().notifyItemInserted(0);
+                        updateCash();
+                        dialog1.dismiss();
+                        rvCashBoxItem.scrollToPosition(0);
+                        //                    cashBoxManager.saveDataTemp(this);
+                        saveCashBoxManager();
+                    }
                 } catch (NumberFormatException e) {
                     layoutAmount.setError("Not a valid number");
                     inputAmount.setText("");
@@ -220,7 +238,7 @@ public class CashBoxItemActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    private void updateCash() {
+    public void updateCash() {
         double cash = cashBox.getCash();
         if (Math.abs(cash) > MAX_SHOW_CASH)
             itemCash.setText(R.string.outOfRange);

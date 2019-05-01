@@ -9,6 +9,8 @@ import java.util.List;
 import androidx.annotation.NonNull;
 
 public class CashBox implements Serializable {
+    private static final long serialVersionUID = 2L;
+
     public static final int MAX_LENGTH_NAME = 20;
     public static String PLACE_HOLDER_AMOUNT = "%.2f €";
 
@@ -31,6 +33,8 @@ public class CashBox implements Serializable {
     }
 
     public class Entry implements Serializable {
+        private static final long serialVersionUID = 3L;
+
         private String cause;
         private Calendar date;
         private double amount;
@@ -53,6 +57,14 @@ public class CashBox implements Serializable {
             return amount;
         }
 
+        private void setDate(Calendar date) {
+            this.date = date;
+        }
+
+        private void setAmount(double amount) {
+            this.amount = amount;
+        }
+
         private void setCause(String cause) {
             this.cause = cause.trim();
         }
@@ -73,6 +85,10 @@ public class CashBox implements Serializable {
 
     public double getCash() {
         return cash;
+    }
+
+    public CashBox.Entry getEntry(int index) {
+        return entries.get(index);
     }
 
     public String getInfo(int position) {
@@ -103,7 +119,7 @@ public class CashBox implements Serializable {
     }
 
     /**
-     * Adds a new entry to the CashBox
+     * Adds a new entry to the CashBox. It adds it to the top of the list.
      * @param amount Amount to be added
      * @param cause Explanation of the addition (can be empty)
      * @param date Date in which it was added
@@ -150,7 +166,7 @@ public class CashBox implements Serializable {
     public List<Entry> clear(){
         cash=0;
         List<Entry> entriesRemoved = entries;
-        entries.clear();
+        entries = new ArrayList<Entry>();
 
         return entriesRemoved;
     }
@@ -164,12 +180,22 @@ public class CashBox implements Serializable {
      * @return Total cash after the modification
      */
     public CashBox.Entry modify(int index,double amount,String cause,Calendar date){
-        cash += amount - entries.get(index).getAmount();
-        return entries.set(index,new Entry(amount,cause,date));
+//        cash += amount - entries.get(index).getAmount();
+//        return entries.set(index,new Entry(amount,cause,date));
+        return modify(index, new Entry(amount,cause,date));
+    }
+
+    public CashBox.Entry modify(int index, CashBox.Entry modifiedEntry) {
+        cash += modifiedEntry.getAmount() - entries.get(index).getAmount();
+        return entries.set(index, modifiedEntry);
     }
 
     public int sizeEntries(){
         return entries.size();
+    }
+
+    public boolean isEmpty() {
+        return entries.isEmpty();
     }
 
     @Override

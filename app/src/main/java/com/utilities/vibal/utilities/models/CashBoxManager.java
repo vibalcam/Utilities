@@ -1,21 +1,12 @@
 package com.utilities.vibal.utilities.models;
 
-import android.content.Context;
-import android.util.Log;
-
-import com.utilities.vibal.utilities.activities.CashBoxManagerActivity;
-
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import androidx.annotation.NonNull;
-
 public class CashBoxManager implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private static final String TAG = "PruebaCashBoxItem";
     public static final String FILENAME ="cashBoxManager";
     public static final String FILENAME_TEMP ="cashBoxManagerTemp";
@@ -87,7 +78,7 @@ public class CashBoxManager implements Serializable {
         return false;
     }
 
-    public void changePosition(int oldPos, int newPos) {
+    public void swap(int oldPos, int newPos) {
         CashBox cashBox = cashBoxes.remove(oldPos);
         cashBoxes.add(newPos,cashBox);
     }

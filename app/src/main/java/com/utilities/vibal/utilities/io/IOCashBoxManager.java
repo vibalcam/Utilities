@@ -62,7 +62,7 @@ public class IOCashBoxManager {
 //            return (CashBoxManager) objectInputStream.readObject();
             cashBoxManager = objectInputStream.readObject();
         } catch (IOException | ClassNotFoundException e) {
-            Log.d(TAG, "loadData: error al leer archivo, crea nuevo CashBoxManager");
+            Log.e(TAG, "loadData: error al leer archivo, crea nuevo CashBoxManager",e);
             return new CashBoxManager();
         }
         if(cashBoxManager instanceof CashBoxManager)
