@@ -1,5 +1,7 @@
 package com.utilities.vibal.utilities.adapters;
 
+import android.util.Log;
+
 import com.utilities.vibal.utilities.interfaces.CashBoxAdapterSwipable;
 
 import androidx.annotation.NonNull;
@@ -13,6 +15,8 @@ import static androidx.recyclerview.widget.ItemTouchHelper.UP;
 
 public class CashBoxSwipeController extends ItemTouchHelper.Callback {
     private CashBoxAdapterSwipable adapter;
+    private int fromIndex = -1;
+    private int toIndex = -1;
 
     public CashBoxSwipeController(CashBoxAdapterSwipable adapter) {
         this.adapter = adapter;
@@ -34,8 +38,13 @@ public class CashBoxSwipeController extends ItemTouchHelper.Callback {
     }
 
     @Override
-    public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
-        adapter.onItemMove(viewHolder.getAdapterPosition(),target.getAdapterPosition());
+    public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder source, @NonNull RecyclerView.ViewHolder target) {
+        // Remember FIRST fromPosition
+        if(fromIndex==-1)   // fromIndex hasn't been set -> beginning of the move
+            fromIndex = source.getAdapterPosition();
+        toIndex = target.getAdapterPosition();
+
+        adapter.onItemMove(source.getAdapterPosition(),target.getAdapterPosition());
         return true;
     }
 
@@ -47,21 +56,16 @@ public class CashBoxSwipeController extends ItemTouchHelper.Callback {
             adapter.onItemModify(viewHolder.getAdapterPosition());
     }
 
-    //    public CashBoxSwipeController() {
-//        super(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT);
-//    }
-//
-//    @Override
-//    public boolean onItemMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
-//        return false;
-//    }
-//
-//    @Override
-//    public void onItemDelete(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-//        if(viewHolder instanceof CashBoxManagerRecyclerAdapter.ViewHolder)
-//            if(direction==ItemTouchHelper.RIGHT)
-//                ((CashBoxManagerRecyclerAdapter.ViewHolder) viewHolder).deleteCashBox(viewHolder.getAdapterPosition());
-////            else
-////                ((CashBoxManagerRecyclerAdapter.ViewHolder) viewHolder).modifyCashBox(viewHolder.getAdapterPosition());
-//    }
+    @Override
+    public void clearView(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
+        super.clearView(recyclerView, viewHolder);
+        Log.d("Prueba", "clearView: " + fromIndex + ", " + toIndex);
+        if(fromIndex!=-1 && toIndex!=-1) {  // if there has been a move motion
+            adapter.onItemDrop(fromIndex,toIndex);
+            Log.d("Prueba", "clearView: mueve");
+        }
+        fromIndex = -1;
+        toIndex = -1;
+        Log.d("Prueba", "clearView: " + fromIndex + ", " + toIndex);
+    }
 }

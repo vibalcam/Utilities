@@ -78,9 +78,13 @@ public class CashBoxManager implements Serializable {
         return false;
     }
 
-    public void swap(int oldPos, int newPos) {
-        CashBox cashBox = cashBoxes.remove(oldPos);
-        cashBoxes.add(newPos,cashBox);
+    public void move(int oldPos, int newPos) throws IndexOutOfBoundsException {
+        if(oldPos<0 || newPos>=cashBoxes.size())
+            throw new IndexOutOfBoundsException("Trying to move from " + oldPos + " to " + newPos);
+        else if(oldPos!=newPos) {   // if both are the same position, no need to move
+            CashBox cashBox = cashBoxes.remove(oldPos);
+            cashBoxes.add(newPos, cashBox);
+        }
     }
 
     public boolean duplicate(int index, String newName) throws IllegalArgumentException {
@@ -88,32 +92,4 @@ public class CashBoxManager implements Serializable {
         cashBox.setName(newName);
         return this.add(index+1,cashBox);
     }
-
-//    public static CashBoxManager loadData(@NonNull Context context){
-//        String fileName;
-//        Log.d(TAG, "loadData: temp ult mod: "+ context.getFileStreamPath(FILENAME_TEMP).lastModified() + " ult mod original: " + context.getFileStreamPath(FILENAME).lastModified());
-//        if(context.getFileStreamPath(FILENAME_TEMP).lastModified()>context.getFileStreamPath(FILENAME).lastModified()) {
-//            Log.d(TAG, "loadData: coge el temp");
-//            fileName = FILENAME_TEMP;
-//        }
-//        else
-//            fileName = FILENAME;
-//
-//        try(ObjectInputStream objectInputStream = new ObjectInputStream(context.openFileInput(fileName))){
-//            return (CashBoxManager) objectInputStream.readObject();
-//        } catch (IOException | ClassNotFoundException e) {
-//            Log.d(TAG, "loadData: error al leer archivo, crea nuevo CashBoxManager");
-//            return new CashBoxManager();
-//        }
-//    }
-
-//    public void saveDataTemp(Context context) {
-//        try(ObjectOutputStream objectOutputStream = new ObjectOutputStream(context.openFileOutput(FILENAME_TEMP,Context.MODE_PRIVATE))){
-//            objectOutputStream.writeObject(this);
-//            Log.i(TAG, "saveData: funciona");
-//        } catch (IOException e) {
-//            Log.i(TAG, "saveData: no");
-//            e.printStackTrace();
-//        }
-//    }
 }

@@ -18,7 +18,7 @@ public class CashBox implements Serializable {
     private double cash; //sum of amounts
     private List<Entry> entries;
 
-    public CashBox(String name) {
+    public CashBox(String name) throws IllegalArgumentException {
         this(name,0,new ArrayList<Entry>());
     }
 
@@ -26,7 +26,7 @@ public class CashBox implements Serializable {
      * You must ensure that cash is the sum of all the amounts.
      * Should not be used directly.
      */
-    private CashBox(String name, double cash, List<Entry> entries) {
+    private CashBox(String name, double cash, List<Entry> entries) throws IllegalArgumentException {
         setName(name);
         this.cash = cash;
         this.entries = entries;

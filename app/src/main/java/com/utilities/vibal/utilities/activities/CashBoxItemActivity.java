@@ -79,9 +79,8 @@ public class CashBoxItemActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         //Set up RecyclerView
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         rvCashBoxItem.setHasFixedSize(true);
-        rvCashBoxItem.setLayoutManager(linearLayoutManager);
+        rvCashBoxItem.setLayoutManager(new LinearLayoutManager(this));
         CashBoxItemRecyclerAdapter adapter = new CashBoxItemRecyclerAdapter(cashBox, this);
         rvCashBoxItem.setAdapter(adapter);
         (new ItemTouchHelper(new CashBoxSwipeController(adapter))).attachToRecyclerView(rvCashBoxItem);
@@ -94,21 +93,26 @@ public class CashBoxItemActivity extends AppCompatActivity {
         fab.setOnClickListener((View view) -> showAddDialog());
     }
 
+    // Cuando se ponga el widget
 //    @Override
-//    protected void onPause() {
-//        super.onPause();
-//        cashBoxManager.saveDataTemp(this);
+//    protected void onRestart() {
+//        super.onRestart();
 //    }
 
     @Override
     protected void onStop() {
         super.onStop();
-//        //Rename the temporary file to the actual store file
-//        Util.renameFile(CashBoxManager.FILENAME_TEMP,CashBoxManager.FILENAME,this);
-        // Save data
-        saveCashBoxManager();
+
+//        // Save data
+//        saveCashBoxManager();
         // Rename the temporary file to the actual store file
         IOCashBoxManager.renameCashBoxManagerTemp(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.d(TAG, "onDestroy: ");
     }
 
     public RecyclerView getRecyclerView() {
@@ -128,6 +132,23 @@ public class CashBoxItemActivity extends AppCompatActivity {
         }
     }
 
+    public void updateCash() {
+        double cash = cashBox.getCash();
+        if (Math.abs(cash) > MAX_SHOW_CASH)
+            itemCash.setText(R.string.outOfRange);
+        else
+            itemCash.setText(getString(R.string.amountMoney, cash));
+    }
+
+    /**
+     * Notifies of a change in a CashBox.
+     * It updates the cash total and saves the CashBoxManger.
+     */
+    public void notifyCashBoxChanged() {
+        updateCash();
+        saveCashBoxManager();
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_toolbar_cash_box_item, menu);
@@ -138,10 +159,26 @@ public class CashBoxItemActivity extends AppCompatActivity {
         return true;
     }
 
+    private void returnResult() {
+        Intent intent = new Intent();
+        intent.putExtra(CashBoxManagerRecyclerAdapter.CASHBOX_MANAGER_EXTRA,cashBoxManager);
+        setResult(RESULT_OK,intent);
+        finish();
+    }
+
+    @Override
+    public void onBackPressed() {
+        returnResult();
+        super.onBackPressed();
+    }
+
     //Have to complete it
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case android.R.id.home: // called when clicked the home button
+                returnResult();
+                return true;
             case R.id.action_deleteAll:
                 deleteAll();
                 return true;
@@ -177,18 +214,20 @@ public class CashBoxItemActivity extends AppCompatActivity {
                         List<CashBox.Entry> entryList = cashBox.clear();
                         int size = entryList.size();
                         rvCashBoxItem.getAdapter().notifyItemRangeRemoved(0, size);
+//                        updateCash();
                         Snackbar.make(itemCBCoordinatorLayout, getString(R.string.snackbarEntriesDeleted, size), Snackbar.LENGTH_LONG)
                                 .setAction(R.string.undo, v -> {
                                     cashBox.addAll(entryList);
                                     rvCashBoxItem.getAdapter().notifyItemRangeInserted(0, size);
-                                    updateCash();
+                                    notifyCashBoxChanged();
+//                                    updateCash();
+//                                    saveCashBoxManager();
                                     //                    cashBoxManager.saveDataTemp(this);
-                                    saveCashBoxManager();
                                 })
                                 .show();
-                        updateCash();
                         //        cashBoxManager.saveDataTemp(this);
-                        saveCashBoxManager();
+//                        saveCashBoxManager();
+                        notifyCashBoxChanged();
                     }).show();
         } else
             Toast.makeText(this, "No entries to delete", Toast.LENGTH_SHORT)
@@ -223,11 +262,12 @@ public class CashBoxItemActivity extends AppCompatActivity {
                         cashBox.add(amount, inputInfo.getText().toString(), Calendar.getInstance());
                         //                    rvCashBoxItem.getAdapter().notifyItemInserted(cashBox.sizeEntries() - 1);
                         rvCashBoxItem.getAdapter().notifyItemInserted(0);
-                        updateCash();
+//                        updateCash();
                         dialog1.dismiss();
                         rvCashBoxItem.scrollToPosition(0);
                         //                    cashBoxManager.saveDataTemp(this);
-                        saveCashBoxManager();
+//                        saveCashBoxManager();
+                        notifyCashBoxChanged();
                     }
                 } catch (NumberFormatException e) {
                     layoutAmount.setError("Not a valid number");
@@ -236,13 +276,5 @@ public class CashBoxItemActivity extends AppCompatActivity {
             });
         });
         dialog.show();
-    }
-
-    public void updateCash() {
-        double cash = cashBox.getCash();
-        if (Math.abs(cash) > MAX_SHOW_CASH)
-            itemCash.setText(R.string.outOfRange);
-        else
-            itemCash.setText(getString(R.string.amountMoney, cash));
     }
 }

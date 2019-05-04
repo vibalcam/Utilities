@@ -2,6 +2,7 @@ package com.utilities.vibal.utilities.activities;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -15,20 +16,21 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.utilities.vibal.utilities.R;
 import com.utilities.vibal.utilities.adapters.CashBoxManagerRecyclerAdapter;
+import com.utilities.vibal.utilities.adapters.CashBoxSwipeController;
 import com.utilities.vibal.utilities.io.IOCashBoxManager;
 import com.utilities.vibal.utilities.models.CashBox;
 import com.utilities.vibal.utilities.models.CashBoxManager;
 import com.utilities.vibal.utilities.util.Util;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Calendar;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import butterknife.BindView;
@@ -63,9 +65,9 @@ public class CashBoxManagerActivity extends AppCompatActivity {
         //Set up RecyclerView
         rvCashBoxManager.setHasFixedSize(true);
         rvCashBoxManager.setLayoutManager(new LinearLayoutManager(this));
-        rvCashBoxManager.setAdapter(new CashBoxManagerRecyclerAdapter(cashBoxManager, this));
-//        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new CashBoxSwipeController());
-//        itemTouchHelper.attachToRecyclerView(rvCashBoxManager);
+        CashBoxManagerRecyclerAdapter adapter = new CashBoxManagerRecyclerAdapter(cashBoxManager, this);
+        rvCashBoxManager.setAdapter(adapter);
+        (new ItemTouchHelper(new CashBoxSwipeController(adapter))).attachToRecyclerView(rvCashBoxManager);
 
         //Set up fab
         FloatingActionButton fab = findViewById(R.id.fabCBManager);
@@ -74,32 +76,49 @@ public class CashBoxManagerActivity extends AppCompatActivity {
         Log.d(TAG, "onCreate: ");
     }
 
+    // Cuando se ponga el widget
 //    @Override
-//    protected void onPause() {
-//        super.onPause();
-//        cashBoxManager.saveDataTemp(getContext());
-//        Log.d(TAG, "onPause: terminado onPause");
+//    protected void onRestart() {
+//        super.onRestart();
+//        // Reload the data
+////        cashBoxManager = IOCashBoxManager.loadCashBoxManager(getContext());
+//        Log.d(TAG, "onRestart: ");
 //    }
 
     @Override
     protected void onStop() {
         super.onStop();
-        Log.d(TAG, "onStop: ");
-        // Save data
-        saveCashBoxManager();
-        // Rename the temporary file to the actual store file
-        File originalFile = getFileStreamPath(CashBoxManager.FILENAME_TEMP);
-        File newFile = new File(originalFile.getParent(), CashBoxManager.FILENAME);
-        Log.d(TAG, "onStop: existe temp:" + originalFile.exists() + "\t" + Arrays.toString(newFile.getParentFile().list()));
-        if (!IOCashBoxManager.renameCashBoxManagerTemp(getContext()))
-            Log.d(TAG, "onStop: fallo al renameTo");
-        Log.d(TAG, "onStop: existe temp:" + originalFile.exists() + "\t" + Arrays.toString(newFile.getParentFile().list()));
 
+        Log.d(TAG, "onStop: ");
+//        // Save data
+//        saveCashBoxManager();
+        // Rename the temporary file to the actual store file
 //        File originalFile = getFileStreamPath(CashBoxManager.FILENAME_TEMP);
 //        File newFile = new File(originalFile.getParent(), CashBoxManager.FILENAME);
-//        if (!Util.renameFile(CashBoxManager.FILENAME_TEMP, CashBoxManager.FILENAME, getContext()))
+//        Log.d(TAG, "onStop: existe temp:" + originalFile.exists() + "\t" + Arrays.toString(newFile.getParentFile().list()));
+//        if (!IOCashBoxManager.renameCashBoxManagerTemp(getContext()))
 //            Log.d(TAG, "onStop: fallo al renameTo");
 //        Log.d(TAG, "onStop: existe temp:" + originalFile.exists() + "\t" + Arrays.toString(newFile.getParentFile().list()));
+
+        IOCashBoxManager.renameCashBoxManagerTemp(getContext());
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.d(TAG, "onDestroy: ");
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        Log.d(TAG, "onActivityResult: " + cashBoxManager.toString());
+        if(requestCode==CashBoxManagerRecyclerAdapter.REQUEST_CODE_ITEM && resultCode==RESULT_OK)
+            cashBoxManager = (CashBoxManager) data.getSerializableExtra(CashBoxManagerRecyclerAdapter.CASHBOX_MANAGER_EXTRA);
+        Log.d(TAG, "onActivityResult: " + cashBoxManager.toString());
+        ((CashBoxManagerRecyclerAdapter) rvCashBoxManager.getAdapter()).updateCashBoxManager(cashBoxManager);
+//        rvCashBoxManager.getAdapter().notifyDataSetChanged();
+
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     public RecyclerView getRecyclerView() {

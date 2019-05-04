@@ -17,7 +17,7 @@ import com.utilities.vibal.utilities.interfaces.CashBoxAdapterSwipable;
 import com.utilities.vibal.utilities.models.CashBox;
 import com.utilities.vibal.utilities.util.Util;
 
-import java.util.Calendar;
+import java.util.Locale;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -74,24 +74,35 @@ public class CashBoxItemRecyclerAdapter extends RecyclerView.Adapter<CashBoxItem
         return SWIPE_ENABLED;
     }
 
+    /**
+     * No implementation, since moving is not allowed
+     */
     @Override
     public void onItemMove(int fromPosition, int toPosition) {}
+
+    /**
+     * No implementation, since moving is not allowed
+     */
+    @Override
+    public void onItemDrop(int fromPosition, int toPosition) {}
 
     @Override
     public void onItemDelete(int position) {
         CashBoxItemActivity activity = getCashBoxItemActivity();
         CashBox.Entry deletedEntry = cashBox.remove(position);
         notifyItemRemoved(position);
-        activity.updateCash();
+//        activity.updateCash();
         Snackbar.make(activity.getRecyclerView(),getCashBoxItemActivity().getString(R.string.snackbarEntriesDeleted,1),Snackbar.LENGTH_LONG)
                 .setAction(R.string.undo, (View v) -> {
                     cashBox.add(position,deletedEntry);
                     notifyItemInserted(position);
-                    activity.updateCash();
-                    activity.saveCashBoxManager();
+//                    activity.updateCash();
+//                    activity.saveCashBoxManager();
+                    activity.notifyCashBoxChanged();
                 })
                 .show();
-        activity.saveCashBoxManager();
+//        activity.saveCashBoxManager();
+        activity.notifyCashBoxChanged();
     }
 
     @Override
@@ -115,7 +126,7 @@ public class CashBoxItemRecyclerAdapter extends RecyclerView.Adapter<CashBoxItem
 
             CashBox.Entry entry = cashBox.getEntry(position);
             inputInfo.setText(entry.getCause());
-            inputAmount.setText(String.format("%f",entry.getAmount()));
+            inputAmount.setText(String.format(Locale.getDefault(),"%.2f",entry.getAmount()));
 
             Util.showKeyboard(activity, inputAmount);
             positive.setOnClickListener((View v) -> {
@@ -127,18 +138,21 @@ public class CashBoxItemRecyclerAdapter extends RecyclerView.Adapter<CashBoxItem
                         inputAmount.setText("");
                     } else {
                         double amount = Double.parseDouble(inputAmount.getText().toString());
-                        CashBox.Entry modifiedEntry = cashBox.modify(position, amount, inputInfo.getText().toString(), Calendar.getInstance());
-                        activity.updateCash();
+                        CashBox.Entry modifiedEntry = cashBox.modify(position, amount, inputInfo.getText().toString(), cashBox.getDate(position));
+//                        activity.updateCash();
                         notifyItemChanged(position);
                         dialog1.dismiss();
                         Snackbar.make(activity.getRecyclerView(),R.string.snackbarEntryModified,Snackbar.LENGTH_LONG)
                             .setAction(R.string.undo, (View v1) -> {
                                 cashBox.modify(position, modifiedEntry);
+//                                activity.updateCash();
                                 notifyItemChanged(position);
-                                activity.saveCashBoxManager();
+//                                activity.saveCashBoxManager();
+                                activity.notifyCashBoxChanged();
                             })
                             .show();
-                        activity.saveCashBoxManager();
+//                        activity.saveCashBoxManager();
+                        activity.notifyCashBoxChanged();
                     }
                 } catch (NumberFormatException e) {
                     layoutAmount.setError("Not a valid number");
@@ -163,19 +177,5 @@ public class CashBoxItemRecyclerAdapter extends RecyclerView.Adapter<CashBoxItem
             super(view);
             ButterKnife.bind(this,view);
         }
-
-//        void deleteCashBoxEntry() {
-//            int deletedIndex = getAdapterPosition();
-//            CashBox.Entry deletedEntry = cashBox.remove(deletedIndex);
-//            notifyItemRemoved(deletedIndex);
-//            Snackbar.make(getCashBoxItemActivity().getRecyclerView(),getCashBoxItemActivity().getString(R.string.snackbarEntriesDeleted,1),Snackbar.LENGTH_LONG)
-//                    .setAction(R.string.undo, (View v) -> {
-//                        cashBox.add(deletedIndex,deletedEntry);
-//                        notifyItemInserted(deletedIndex);
-//                        getCashBoxItemActivity().saveCashBoxManager();
-//                    })
-//                    .show();
-//            getCashBoxItemActivity().saveCashBoxManager();
-//        }
     }
 }

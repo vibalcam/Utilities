@@ -36,11 +36,14 @@ public class IOCashBoxManager {
      */
     public static boolean renameFile(String originalFileName, String newFileName, @NonNull Context context){
         File originalFile = context.getFileStreamPath(originalFileName);
-        File newFile = new File(originalFile.getParent(), newFileName);
-        if(newFile.exists())
-            context.deleteFile(newFile.getName());
+        if(originalFile.exists()) {
+            File newFile = new File(originalFile.getParent(), newFileName);
+            if (newFile.exists())
+                context.deleteFile(newFile.getName());
 
-        return originalFile.renameTo(newFile);
+            return originalFile.renameTo(newFile);
+        } else
+            return false;
     }
 
     public static boolean renameCashBoxManagerTemp(Context context) {
