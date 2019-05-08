@@ -6,6 +6,10 @@
     android:orientation="horizontal"
     android:layout_width="match_parent"
     android:layout_height="?listPreferredItemHeightSmall"
+    android:paddingStart="@dimen/main_marginHorizontal"
+    android:paddingTop="@dimen/main_marginVertical"
+    android:paddingBottom="@dimen/main_marginVertical"
+    android:paddingEnd="@dimen/main_marginHorizontal"
     android:background="@color/colorRVBackgroundCashBox">
     <TextView
         android:id="@+id/rvName"

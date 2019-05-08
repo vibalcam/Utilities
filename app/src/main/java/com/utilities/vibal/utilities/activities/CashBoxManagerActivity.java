@@ -194,7 +194,6 @@ public class CashBoxManagerActivity extends AppCompatActivity {
 
                 Util.showKeyboard(getContext(), inputTextName);
                 inputTextName.setMaxLines(CashBox.MAX_LENGTH_NAME);
-                inputTextInitCash.setText("0");
                 positive.setOnClickListener(v -> {
                     try {
                         CashBox cashBox = new CashBox(inputTextName.getText().toString());

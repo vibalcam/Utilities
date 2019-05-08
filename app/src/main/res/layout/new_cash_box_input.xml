@@ -44,6 +44,6 @@
         android:textColor="@android:color/black"
         android:hint="@string/enterInitCashDialog"
         android:inputType="numberSigned"
-        android:digits="0123456789.-"/>
+        android:digits="0123456789.-,"/>
   </com.google.android.material.textfield.TextInputLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

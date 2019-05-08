@@ -30,10 +30,6 @@
         android:id="@+id/rvCashBoxManager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginStart="@dimen/main_marginHorizontal"
-        android:layout_marginTop="@dimen/main_marginVertical"
-        android:layout_marginBottom="@dimen/main_marginVertical"
-        android:layout_marginEnd="@dimen/main_marginHorizontal"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
 
