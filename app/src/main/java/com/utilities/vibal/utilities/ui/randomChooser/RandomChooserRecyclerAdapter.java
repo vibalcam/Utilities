@@ -1,4 +1,4 @@
-package com.utilities.vibal.utilities.adapters;
+package com.utilities.vibal.utilities.ui.randomChooser;
 
 import android.view.LayoutInflater;
 import android.view.View;

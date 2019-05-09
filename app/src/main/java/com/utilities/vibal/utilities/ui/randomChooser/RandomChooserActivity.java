@@ -1,4 +1,4 @@
-package com.utilities.vibal.utilities.activities;
+package com.utilities.vibal.utilities.ui.randomChooser;
 
 import android.os.Bundle;
 import android.view.Menu;
@@ -9,7 +9,6 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.utilities.vibal.utilities.R;
-import com.utilities.vibal.utilities.adapters.RandomChooserRecyclerAdapter;
 import com.utilities.vibal.utilities.util.Util;
 
 import java.util.ArrayList;

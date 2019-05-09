@@ -1,4 +1,4 @@
-package com.utilities.vibal.utilities.activities;
+package com.utilities.vibal.utilities.ui.cashBoxManager;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -15,11 +15,10 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.utilities.vibal.utilities.R;
-import com.utilities.vibal.utilities.adapters.CashBoxManagerRecyclerAdapter;
-import com.utilities.vibal.utilities.adapters.CashBoxSwipeController;
 import com.utilities.vibal.utilities.io.IOCashBoxManager;
 import com.utilities.vibal.utilities.models.CashBox;
 import com.utilities.vibal.utilities.models.CashBoxManager;
+import com.utilities.vibal.utilities.ui.CashBoxSwipeController;
 import com.utilities.vibal.utilities.util.Util;
 
 import java.io.IOException;
@@ -29,7 +28,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -43,8 +41,6 @@ public class CashBoxManagerActivity extends AppCompatActivity {
     RecyclerView rvCashBoxManager;
     @BindView(R.id.toolbarCBManager)
     Toolbar toolbarCBManager;
-    @BindView(R.id.lyCBM)
-    CoordinatorLayout lyCBM;
 
     private CashBoxManager cashBoxManager;
 

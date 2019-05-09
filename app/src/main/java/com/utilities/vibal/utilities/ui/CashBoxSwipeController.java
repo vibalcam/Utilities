@@ -1,4 +1,4 @@
-package com.utilities.vibal.utilities.adapters;
+package com.utilities.vibal.utilities.ui;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -7,7 +7,6 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 
 import com.utilities.vibal.utilities.R;
-import com.utilities.vibal.utilities.interfaces.CashBoxAdapterSwipable;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.ItemTouchHelper;

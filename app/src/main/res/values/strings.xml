@@ -42,7 +42,10 @@
     <string name="outOfRange">Out of range</string>
 
     <string name="cashBoxManager_help">
-
+        List of added CashBoxes.\n
+        Swipe left to delete a CashBox.\n
+        Swipe right to modify a CashBox.\n
+        Select a CashBox by clicking it.\n
     </string>
     <string name="randomChooser_help">
         Roll The Dice: returns a randomly chosen item from the list.\n
@@ -50,4 +53,5 @@
         To delete an entry, slide the item to the left.\n
         To delete all entries, click the trashcan symbol at the top of the app.
     </string>
+    <string name="menu_reorder">Reorder</string>
 </resources>

@@ -1,4 +1,4 @@
-package com.utilities.vibal.utilities.adapters;
+package com.utilities.vibal.utilities.ui.cashBoxItem;
 
 import android.content.DialogInterface;
 import android.util.Log;
@@ -12,9 +12,8 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.utilities.vibal.utilities.R;
-import com.utilities.vibal.utilities.activities.CashBoxItemActivity;
-import com.utilities.vibal.utilities.interfaces.CashBoxAdapterSwipable;
 import com.utilities.vibal.utilities.models.CashBox;
+import com.utilities.vibal.utilities.ui.CashBoxAdapterSwipable;
 import com.utilities.vibal.utilities.util.Util;
 
 import java.util.Locale;

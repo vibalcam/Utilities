@@ -1,4 +1,4 @@
-package com.utilities.vibal.utilities.interfaces;
+package com.utilities.vibal.utilities.ui;
 
 public interface CashBoxAdapterSwipable {
     boolean isDragEnabled();

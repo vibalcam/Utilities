@@ -40,7 +40,7 @@
         android:layout_gravity="center_vertical|end"
         android:scaleType="center"
         android:visibility="visible"
-        android:src="@drawable/reorder_horizontal"
-        app:srcCompat="@drawable/reorder_horizontal"
+        android:src="@drawable/reorder_horizontal_light_gray_24dp"
+        app:srcCompat="@drawable/reorder_horizontal_light_gray_24dp"
         tools:ignore="ContentDescription" />
 </LinearLayout>

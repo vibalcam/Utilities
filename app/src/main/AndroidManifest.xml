@@ -10,33 +10,33 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".activities.CashBoxItemActivity"
+            android:name=".ui.cashBoxItem.CashBoxItemActivity"
             android:label="@string/title_activity_cash_box_item"
-            android:parentActivityName=".activities.CashBoxManagerActivity"
+            android:parentActivityName=".ui.cashBoxManager.CashBoxManagerActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.utilities.vibal.utilities.activities.CashBoxManagerActivity" />
+                android:value="com.utilities.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity" />
         </activity>
         <activity
-            android:name=".activities.CashBoxManagerActivity"
+            android:name=".ui.cashBoxManager.CashBoxManagerActivity"
             android:label="@string/main_cashBoxManager"
-            android:parentActivityName=".activities.MainActivity"
+            android:parentActivityName=".ui.MainActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.utilities.vibal.utilities.activities.MainActivity" />
+                android:value="com.utilities.vibal.utilities.ui.MainActivity" />
         </activity>
         <activity
-            android:name=".activities.RandomChooserActivity"
+            android:name=".ui.randomChooser.RandomChooserActivity"
             android:label="@string/main_randomChooser"
-            android:parentActivityName=".activities.MainActivity">
+            android:parentActivityName=".ui.MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.utilities.vibal.utilities.activities.MainActivity" />
+                android:value="com.utilities.vibal.utilities.ui.MainActivity" />
         </activity>
         <activity
-            android:name=".activities.MainActivity"
+            android:name=".ui.MainActivity"
             android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
