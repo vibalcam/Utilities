@@ -12,7 +12,6 @@
     <string name="randomChooser_title">Contestants</string>
     <string name="action_reset">Delete All</string>
     <string name="button_gotIt">Got it!</string>
-    <string name="amountMoney">%.2f €</string>
     <string name="snackbarEntriesDeleted">%d deleted</string>
     <string name="snackbarEntryModified">Entry modified</string>
     <string name="undo">Undo</string>
@@ -20,7 +19,7 @@
     <string name="confirmDeleteDialogConfirm">Delete</string>
     <string name="cancelDialog">Cancel</string>
     <string name="createCashBoxDialog">Create</string>
-    <string name="enterNameDialog">Enter the name (max 20)</string>
+    <string name="enterNameDialog">Name</string>
     <string name="cashBox_changeNameButton">Change Name</string>
     <string name="cashBox_cloneButton">Clone</string>
     <string name="nameInUse">Name already in use</string>
@@ -37,9 +36,10 @@
     <string name="addEntryDialog">Add Entry</string>
     <string name="confirm">Confirm</string>
     <string name="enterAmountDialog">Amount</string>
-    <string name="enterInfoDialog">Information (can be blank)</string>
+    <string name="enterInfoDialog">Info</string>
     <string name="item_totalCash">Total Cash</string>
     <string name="outOfRange">Out of range</string>
+    <string name="noInfoEntered">(No info)</string>
 
     <string name="cashBoxManager_help">
         List of added CashBoxes.\n
@@ -54,4 +54,6 @@
         To delete all entries, click the trashcan symbol at the top of the app.
     </string>
     <string name="menu_reorder">Reorder</string>
+    <string name="helperEnterNameDialog">Max. 20 characters</string>
+    <string name="contentDescriptionLogoMain">App\'s logo</string>
 </resources>

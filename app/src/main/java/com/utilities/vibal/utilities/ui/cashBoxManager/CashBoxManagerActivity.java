@@ -11,6 +11,14 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -24,13 +32,6 @@ import com.utilities.vibal.utilities.util.Util;
 import java.io.IOException;
 import java.util.Calendar;
 
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.recyclerview.widget.ItemTouchHelper;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
@@ -56,7 +57,6 @@ public class CashBoxManagerActivity extends AppCompatActivity {
 
         //Initialize data
         cashBoxManager = IOCashBoxManager.loadCashBoxManager(getContext());
-        CashBox.PLACE_HOLDER_AMOUNT = getString(R.string.amountMoney);
 
         //Set up RecyclerView
         rvCashBoxManager.setHasFixedSize(true);
@@ -183,17 +183,16 @@ public class CashBoxManagerActivity extends AppCompatActivity {
             @Override
             public void onShow(DialogInterface dialog) {
                 Button positive = ((AlertDialog) dialog).getButton(DialogInterface.BUTTON_POSITIVE);
-                TextInputEditText inputTextName = (TextInputEditText) ((AlertDialog) dialog).findViewById(R.id.inputTextName);
-                TextInputLayout inputLayoutName = (TextInputLayout) ((AlertDialog) dialog).findViewById(R.id.inputLayoutName);
-                TextInputEditText inputTextInitCash = (TextInputEditText) ((AlertDialog) dialog).findViewById(R.id.inputTextInitCash);
-                TextInputLayout inputLayoutInitCash = (TextInputLayout) ((AlertDialog) dialog).findViewById(R.id.inputLayoutInitCash);
+                TextInputEditText inputTextName = ((AlertDialog) dialog).findViewById(R.id.inputTextName);
+                TextInputLayout inputLayoutName = ((AlertDialog) dialog).findViewById(R.id.inputLayoutName);
+                TextInputEditText inputTextInitCash = ((AlertDialog) dialog).findViewById(R.id.inputTextInitCash);
+                TextInputLayout inputLayoutInitCash = ((AlertDialog) dialog).findViewById(R.id.inputLayoutInitCash);
 
                 Util.showKeyboard(getContext(), inputTextName);
-                inputTextName.setMaxLines(CashBox.MAX_LENGTH_NAME);
                 positive.setOnClickListener(v -> {
                     try {
                         CashBox cashBox = new CashBox(inputTextName.getText().toString());
-                        String strInitCash = inputTextInitCash.getText().toString();
+                        String strInitCash = inputTextInitCash.getText().toString().trim();
                         if (!strInitCash.isEmpty() && Double.parseDouble(strInitCash) != 0)
                             cashBox.add(Double.parseDouble(strInitCash), "Initial Amount", Calendar.getInstance());
                         if (cashBoxManager.add(cashBox)) {
@@ -201,14 +200,20 @@ public class CashBoxManagerActivity extends AppCompatActivity {
                             dialog.dismiss();
 //                            cashBoxManager.saveDataTemp(getContext());
                             saveCashBoxManager();
-                        } else
+                        } else {
                             inputLayoutName.setError(getContext().getString(R.string.nameInUse));
+                            inputTextName.selectAll();
+                            Util.showKeyboard(getContext(), inputTextName);
+                        }
                     } catch (NumberFormatException e) {
-                        inputLayoutInitCash.setError("Not a valid number");
-                        inputTextInitCash.setText("");
+                        inputLayoutInitCash.setError("Invalid amount");
+                        inputTextInitCash.selectAll();
+                        Util.showKeyboard(getContext(), inputTextInitCash);
                     } catch (IllegalArgumentException e) {
                         inputLayoutName.setError(e.getMessage());
                         inputTextName.setText(inputTextName.getText().toString().trim());
+                        inputTextName.selectAll();
+                        Util.showKeyboard(getContext(), inputTextName);
                     }
                 });
             }

@@ -26,6 +26,7 @@
         android:layout_height="wrap_content"
         android:textColor="@android:color/black"
         android:textAppearance="?android:attr/textAppearanceMedium"
+        android:layout_marginEnd="@dimen/marginRV_date_amount"
         app:layout_constraintTop_toBottomOf="@id/dividerTopItemCashBoxRV"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/rvItemAmount"
@@ -43,7 +44,7 @@
         app:layout_constraintBottom_toBottomOf="@id/rvItemDate"
         app:layout_constraintStart_toEndOf="@id/rvItemDate"
         app:layout_constraintEnd_toEndOf="parent"
-        android:text="@string/amountMoney"/>
+        tools:text="50,00 €"/>
 
     <TextView
         android:id="@+id/rvItemInfo"

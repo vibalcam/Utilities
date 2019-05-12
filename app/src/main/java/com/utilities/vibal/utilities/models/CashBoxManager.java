@@ -55,11 +55,12 @@ public class CashBoxManager implements Serializable {
      * @throws IllegalArgumentException if the name is empty or its length exceeds CashBox.MAX_LENGTH_NAME
      */
     public boolean changeName (int pos, String newName) throws IllegalArgumentException {
-        if(!cashBoxes.contains(new CashBox(newName))){
+        int index = cashBoxes.indexOf(new CashBox(newName));
+        if(index==-1){
             cashBoxes.get(pos).setName(newName);
             return true;
-        }
-        return false;
+        } else
+            return index == pos;
     }
 
     public CashBox remove(int pos){

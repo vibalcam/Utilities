@@ -8,6 +8,10 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -16,11 +20,9 @@ import com.utilities.vibal.utilities.models.CashBox;
 import com.utilities.vibal.utilities.ui.CashBoxAdapterSwipable;
 import com.utilities.vibal.utilities.util.Util;
 
+import java.text.DateFormat;
 import java.util.Locale;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
-import androidx.recyclerview.widget.RecyclerView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
@@ -30,14 +32,13 @@ public class CashBoxItemRecyclerAdapter extends RecyclerView.Adapter<CashBoxItem
 
     private CashBox cashBox;
     private CashBoxItemActivity activity;
-    private java.text.DateFormat dateFormat;
+    private DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
 
     private static final String TAG = "PruebaItemActivity";
 
     public CashBoxItemRecyclerAdapter(CashBox cashBox, CashBoxItemActivity activity) {
         this.cashBox = cashBox;
         this.activity = activity;
-        dateFormat = java.text.DateFormat.getDateInstance();
     }
 
     private CashBoxItemActivity getCashBoxItemActivity(){
@@ -53,8 +54,12 @@ public class CashBoxItemRecyclerAdapter extends RecyclerView.Adapter<CashBoxItem
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int index) {
-        viewHolder.rvItemAmount.setText(getCashBoxItemActivity().getString(R.string.amountMoney,cashBox.getAmount(index)));
-        viewHolder.rvItemInfo.setText(cashBox.getInfo(index));
+        viewHolder.rvItemAmount.setText(getCashBoxItemActivity().formatCurrency.format(cashBox.getAmount(index)));
+        String info = cashBox.getInfo(index);
+        if(info.isEmpty())
+            viewHolder.rvItemInfo.setText(R.string.noInfoEntered);
+        else
+            viewHolder.rvItemInfo.setText(info);
         viewHolder.rvItemDate.setText(dateFormat.format(cashBox.getDate(index).getTime()));
     }
 
@@ -127,6 +132,7 @@ public class CashBoxItemRecyclerAdapter extends RecyclerView.Adapter<CashBoxItem
             inputInfo.setText(entry.getCause());
             inputAmount.setText(String.format(Locale.getDefault(),"%.2f",entry.getAmount()));
 
+            inputAmount.selectAll();
             Util.showKeyboard(activity, inputAmount);
             positive.setOnClickListener((View v) -> {
                 try {
@@ -135,6 +141,7 @@ public class CashBoxItemRecyclerAdapter extends RecyclerView.Adapter<CashBoxItem
                     if(input.trim().isEmpty()) {
                         layoutAmount.setError("You must enter an amount");
                         inputAmount.setText("");
+                        Util.showKeyboard(activity, inputAmount);
                     } else {
                         double amount = Double.parseDouble(inputAmount.getText().toString());
                         CashBox.Entry modifiedEntry = cashBox.modify(position, amount, inputInfo.getText().toString(), cashBox.getDate(position));
@@ -155,7 +162,8 @@ public class CashBoxItemRecyclerAdapter extends RecyclerView.Adapter<CashBoxItem
                     }
                 } catch (NumberFormatException e) {
                     layoutAmount.setError("Not a valid number");
-                    inputAmount.setText("");
+                    inputAmount.selectAll();
+                    Util.showKeyboard(activity, inputAmount);
                 }
             });
         });

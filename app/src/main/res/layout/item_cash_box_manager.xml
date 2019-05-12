@@ -5,7 +5,8 @@
     android:id="@+id/rvItemLayout"
     android:orientation="horizontal"
     android:layout_width="match_parent"
-    android:layout_height="?listPreferredItemHeightSmall"
+    android:minHeight="?listPreferredItemHeightSmall"
+    android:layout_height="wrap_content"
     android:paddingStart="@dimen/main_marginHorizontal"
     android:paddingTop="@dimen/main_marginVertical"
     android:paddingBottom="@dimen/main_marginVertical"
@@ -16,6 +17,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="1"
+        android:layout_marginEnd="@dimen/marginRV_name_cash"
         android:gravity="center_vertical"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:textSize="20sp"
@@ -31,7 +33,7 @@
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:textSize="20sp"
         android:textColor="@android:color/black"
-        android:text="@string/amountMoney"/>
+        tools:text="50,00 €"/>
 
     <ImageView
         android:id="@+id/imageView"

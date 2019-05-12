@@ -11,6 +11,16 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.ShareActionProvider;
+import androidx.appcompat.widget.Toolbar;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.view.MenuItemCompat;
+import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
@@ -24,18 +34,10 @@ import com.utilities.vibal.utilities.ui.cashBoxManager.CashBoxManagerRecyclerAda
 import com.utilities.vibal.utilities.util.Util;
 
 import java.io.IOException;
+import java.text.NumberFormat;
 import java.util.Calendar;
 import java.util.List;
 
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.ShareActionProvider;
-import androidx.appcompat.widget.Toolbar;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
-import androidx.core.view.MenuItemCompat;
-import androidx.recyclerview.widget.ItemTouchHelper;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
@@ -56,6 +58,8 @@ public class CashBoxItemActivity extends AppCompatActivity {
 
     private static final String TAG = "PruebaItemActivity";
     private static final double MAX_SHOW_CASH = 99999999;
+
+    NumberFormat formatCurrency = NumberFormat.getCurrencyInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,11 +96,11 @@ public class CashBoxItemActivity extends AppCompatActivity {
         fab.setOnClickListener((View view) -> showAddDialog());
     }
 
-    // Cuando se ponga el widget
-//    @Override
-//    protected void onRestart() {
-//        super.onRestart();
-//    }
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        formatCurrency = NumberFormat.getCurrencyInstance();
+    }
 
     @Override
     protected void onStop() {
@@ -136,7 +140,7 @@ public class CashBoxItemActivity extends AppCompatActivity {
         if (Math.abs(cash) > MAX_SHOW_CASH)
             itemCash.setText(R.string.outOfRange);
         else
-            itemCash.setText(getString(R.string.amountMoney, cash));
+            itemCash.setText(formatCurrency.format(cash));
     }
 
     /**
@@ -252,13 +256,13 @@ public class CashBoxItemActivity extends AppCompatActivity {
             positive.setOnClickListener((View v) -> {
                 try {
                     Log.d(TAG, "showAddDialog: cause" + (inputInfo.getText() == null) + (inputInfo.getText().toString().isEmpty()));
-                    String input = inputAmount.getText().toString();
-                    if(input.trim().isEmpty()) {
-                        layoutAmount.setError("You must enter an amount");
-                        inputAmount.setText("");
+                    String input = inputAmount.getText().toString().trim();
+                    if(input.isEmpty()) {
+                        layoutAmount.setError("*Required");
+                        Util.showKeyboard(this, inputAmount);
                     } else {
                         double amount = Double.parseDouble(inputAmount.getText().toString());
-                        cashBox.add(amount, inputInfo.getText().toString(), Calendar.getInstance());
+                        cashBox.add(amount, inputInfo.getText().toString().trim(), Calendar.getInstance());
                         //                    rvCashBoxItem.getAdapter().notifyItemInserted(cashBox.sizeEntries() - 1);
                         rvCashBoxItem.getAdapter().notifyItemInserted(0);
 //                        updateCash();
@@ -270,7 +274,8 @@ public class CashBoxItemActivity extends AppCompatActivity {
                     }
                 } catch (NumberFormatException e) {
                     layoutAmount.setError("Not a valid number");
-                    inputAmount.setText("");
+                    inputAmount.selectAll();
+                    Util.showKeyboard(this, inputAmount);
                 }
             });
         });

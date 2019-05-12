@@ -4,38 +4,47 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="@dimen/inputTextMargin"
+    android:paddingTop="@dimen/inputTextMargin"
+    android:paddingBottom="@dimen/inputTextMargin"
+    android:paddingStart="@dimen/paddingDialog"
+    android:paddingEnd="@dimen/paddingDialog"
     android:baselineAligned="false">
-  <com.google.android.material.textfield.TextInputLayout
-      android:id="@+id/inputLayoutInfo"
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:layout_weight="1" >
-    <com.google.android.material.textfield.TextInputEditText
-        android:id="@+id/inputTextInfo"
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/inputLayoutInfo"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:textColor="@android:color/black"
-        android:hint="@string/enterInfoDialog"
-        android:inputType="textMultiLine"
-        android:allowUndo="true"
-        android:maxLength="50"/>
-  </com.google.android.material.textfield.TextInputLayout>
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        style="@style/AppTheme.TextInputLayout"
+        android:layout_marginEnd="@dimen/inputTextMargin"
+        app:helperTextEnabled="true"
+        app:helperText="Can be blank"
+        app:endIconMode="clear_text"
+        android:hint="@string/enterInfoDialog" >
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/inputTextInfo"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:textColor="@android:color/black"
+            android:inputType="textMultiLine"
+            android:allowUndo="true" />
+    </com.google.android.material.textfield.TextInputLayout>
 
-  <com.google.android.material.textfield.TextInputLayout
-      android:id="@+id/inputLayoutAmount"
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:layout_weight="2"
-      android:layout_gravity="top"
-      app:errorEnabled="true" >
-    <com.google.android.material.textfield.TextInputEditText
-        android:id="@+id/inputTextAmount"
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/inputLayoutAmount"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:textColor="@android:color/black"
-        android:hint="@string/enterAmountDialog"
-        android:inputType="numberSigned"
-        android:digits="0123456789.-,"/>
-  </com.google.android.material.textfield.TextInputLayout>
+        android:layout_height="wrap_content"
+        android:layout_weight="2"
+        style="@style/AppTheme.TextInputLayout"
+        android:layout_gravity="top"
+        app:errorEnabled="true"
+        android:layout_marginStart="@dimen/inputTextMargin"
+        android:hint="@string/enterAmountDialog" >
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/inputTextAmount"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:textColor="@android:color/black"
+            android:inputType="numberSigned"
+            android:digits="0123456789.-,"/>
+    </com.google.android.material.textfield.TextInputLayout>
 </LinearLayout>

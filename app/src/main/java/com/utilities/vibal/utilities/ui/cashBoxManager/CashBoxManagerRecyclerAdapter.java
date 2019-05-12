@@ -1,6 +1,5 @@
 package com.utilities.vibal.utilities.ui.cashBoxManager;
 
-import android.app.AlertDialog;
 import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -10,6 +9,10 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
@@ -21,8 +24,8 @@ import com.utilities.vibal.utilities.ui.CashBoxAdapterSwipable;
 import com.utilities.vibal.utilities.ui.cashBoxItem.CashBoxItemActivity;
 import com.utilities.vibal.utilities.util.Util;
 
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
+import java.text.NumberFormat;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
@@ -35,6 +38,7 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
     private static final boolean DRAG_ENABLED = true;
     private static final String TAG = "PruebaManagerActivity";
 
+    private final NumberFormat currencyFormat = NumberFormat.getCurrencyInstance();
     private CashBoxManager cashBoxManager;
     private CashBoxManagerActivity cashBoxManagerActivity;
     private int selectedIndex;
@@ -60,7 +64,7 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int index) {
         CashBox cashBox = cashBoxManager.get(index);
         viewHolder.rvName.setText(cashBox.getName());
-        viewHolder.rvAmount.setText(getCashBoxManagerActivity().getString(R.string.amountMoney, cashBox.getCash()));
+        viewHolder.rvAmount.setText(currencyFormat.format(cashBox.getCash()));
         if (index == selectedIndex)
             viewHolder.rvItemLayout.setBackgroundColor(getCashBoxManagerActivity().getColor(R.color.colorRVSelectedCashBox));
         else
@@ -144,27 +148,33 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
             TextInputLayout layoutName = ((AlertDialog) dialog).findViewById(R.id.inputLayoutChangeName);
             String oldName = cashBoxManager.get(index).getName();
 
-            Util.showKeyboard(activity, inputName);
-            inputName.setMaxLines(CashBox.MAX_LENGTH_NAME);
+//            inputName.setMaxLines(CashBox.MAX_LENGTH_NAME);
             inputName.setText(oldName);
             layoutName.setCounterMaxLength(CashBox.MAX_LENGTH_NAME);
+            inputName.setSelectAllOnFocus(true);
+
+            // Show keyboard and select the whole text
+            inputName.selectAll();
+            Util.showKeyboard(activity, inputName);
 
             positive.setOnClickListener((View v1) -> {
                 String newName = inputName.getText().toString();
-                if (newName.equalsIgnoreCase(oldName)) //if input name is the same, keep it how it is
-                    dialog.dismiss();
-                else {
-                    try {
-                        if (cashBoxManager.changeName(index, newName)) {
-                            notifyItemChanged(index);
-                            dialog.dismiss();
+                try {
+                    if (cashBoxManager.changeName(index, newName)) {
+                        notifyItemChanged(index);
+                        dialog.dismiss();
 //                                cashBoxManager.saveDataTemp(getContext());
-                            activity.saveCashBoxManager();
-                        } else
-                            layoutName.setError(activity.getString(R.string.nameInUse));
-                    } catch (IllegalArgumentException e) {
-                        layoutName.setError(e.getMessage());
+                        activity.saveCashBoxManager();
+                    } else {
+                        layoutName.setError(activity.getString(R.string.nameInUse));
+                        inputName.selectAll();
+                        Util.showKeyboard(activity, inputName);
                     }
+                } catch (IllegalArgumentException e) {
+                    layoutName.setError(e.getMessage());
+                    inputName.setText(inputName.getText().toString().trim());
+                    inputName.selectAll();
+                    Util.showKeyboard(activity, inputName);
                 }
             });
         });

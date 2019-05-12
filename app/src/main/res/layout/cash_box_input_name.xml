@@ -1,22 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="@dimen/inputTextMargin"
+    android:paddingTop="@dimen/inputTextMargin"
+    android:paddingBottom="@dimen/inputTextMargin"
+    android:paddingStart="@dimen/paddingDialog"
+    android:paddingEnd="@dimen/paddingDialog"
     android:background="@color/colorRVBackgroundCashBox">
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/inputLayoutChangeName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:errorEnabled="true" >
+        style="@style/AppTheme.TextInputLayout"
+        app:errorEnabled="true"
+        app:helperTextEnabled="true"
+        app:helperText="@string/helperEnterNameDialog"
+        app:counterEnabled="true"
+        app:counterMaxLength="20"
+        android:hint="@string/enterNameDialog" >
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/inputTextChangeName"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:textColor="@android:color/black"
-            android:hint="@string/enterNameDialog"
-            android:inputType="textPersonName"
-            android:maxLength="20"/>
+            android:maxLength="20"
+            android:inputType="textPersonName"/>
     </com.google.android.material.textfield.TextInputLayout>
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+</LinearLayout>

@@ -5,45 +5,55 @@
     android:id="@+id/inputNewCashBox"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="@dimen/inputTextMargin">
-  <com.google.android.material.textfield.TextInputLayout
-      android:id="@+id/inputLayoutName"
-      android:layout_width="0dp"
-      android:layout_height="wrap_content"
-      app:errorEnabled="true"
-      app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintEnd_toStartOf="@id/inputLayoutInitCash"
-      app:layout_constraintTop_toTopOf="parent"
-      app:layout_constraintBottom_toBottomOf="parent"
-      app:layout_constraintHorizontal_weight="2"
-      android:layout_marginEnd="@dimen/inputTextMargin">
-    <com.google.android.material.textfield.TextInputEditText
-        android:id="@+id/inputTextName"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:textColor="@android:color/black"
+    android:paddingTop="@dimen/inputTextMargin"
+    android:paddingBottom="@dimen/inputTextMargin"
+    android:paddingStart="@dimen/paddingDialog"
+    android:paddingEnd="@dimen/paddingDialog">
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/inputLayoutName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        style="@style/AppTheme.TextInputLayout"
+        app:helperTextEnabled="true"
+        app:helperText="@string/helperEnterNameDialog"
+        app:errorEnabled="true"
+        app:counterEnabled="true"
+        app:counterMaxLength="20"
         android:hint="@string/enterNameDialog"
-        android:inputType="textPersonName"
-        android:maxLength="20"/>
-  </com.google.android.material.textfield.TextInputLayout>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/inputLayoutInitCash"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_weight="2"
+        android:layout_marginEnd="@dimen/inputTextMargin" >
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/inputTextName"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:textColor="@android:color/black"
+            android:maxLength="20"
+            android:inputType="textPersonName"/>
+    </com.google.android.material.textfield.TextInputLayout>
 
-  <com.google.android.material.textfield.TextInputLayout
-      android:id="@+id/inputLayoutInitCash"
-      android:layout_width="0dp"
-      android:layout_height="wrap_content"
-      app:errorEnabled="true"
-      app:layout_constraintStart_toEndOf="@id/inputLayoutName"
-      app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintTop_toTopOf="parent"
-      app:layout_constraintBottom_toBottomOf="parent"
-      app:layout_constraintHorizontal_weight="1">
-    <com.google.android.material.textfield.TextInputEditText
-        android:id="@+id/inputTextInitCash"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:textColor="@android:color/black"
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/inputLayoutInitCash"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        style="@style/AppTheme.TextInputLayout"
+        app:errorEnabled="true"
         android:hint="@string/enterInitCashDialog"
-        android:inputType="numberSigned"
-        android:digits="0123456789.-,"/>
-  </com.google.android.material.textfield.TextInputLayout>
+        app:layout_constraintStart_toEndOf="@id/inputLayoutName"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_weight="1"
+        android:layout_marginStart="@dimen/inputTextMargin" >
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/inputTextInitCash"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:textColor="@android:color/black"
+            android:inputType="numberSigned"
+            android:digits="0123456789.-,"/>
+    </com.google.android.material.textfield.TextInputLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

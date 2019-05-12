@@ -1,18 +1,18 @@
 package com.utilities.vibal.utilities.models;
 
+import androidx.annotation.NonNull;
+
 import java.io.Serializable;
 import java.text.DateFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-
-import androidx.annotation.NonNull;
 
 public class CashBox implements Serializable {
     private static final long serialVersionUID = 2L;
 
     public static final int MAX_LENGTH_NAME = 20;
-    public static String PLACE_HOLDER_AMOUNT = "%.2f €";
 
     private String name;
     private double cash; //sum of amounts
@@ -72,8 +72,9 @@ public class CashBox implements Serializable {
         @Override
         @NonNull
         public String toString() {
+            NumberFormat currencyFormat = NumberFormat.getCurrencyInstance();
             return DateFormat.getDateInstance().format(date.getTime()) + "\t\t" +
-                    String.format(PLACE_HOLDER_AMOUNT, amount) +
+                    currencyFormat.format(amount) +
                     "\n" +
                     cause;
         }
@@ -113,7 +114,7 @@ public class CashBox implements Serializable {
         if(name.isEmpty())
             throw new IllegalArgumentException("Name cannot be empty");
         else if(name.length()>MAX_LENGTH_NAME)
-            throw new IllegalArgumentException("Name's length cannot exceed CashBox.MAX_LENGHT_NAME");
+            throw new IllegalArgumentException("Name cannot exceed " + MAX_LENGTH_NAME + " characters");
         else
             this.name=name;
     }
