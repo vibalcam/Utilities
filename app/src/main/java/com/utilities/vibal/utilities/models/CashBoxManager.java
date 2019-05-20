@@ -8,8 +8,6 @@ public class CashBoxManager implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private static final String TAG = "PruebaCashBoxItem";
-    public static final String FILENAME ="cashBoxManager";
-    public static final String FILENAME_TEMP ="cashBoxManagerTemp";
     private final List<CashBox> cashBoxes;
 
     public CashBoxManager(){

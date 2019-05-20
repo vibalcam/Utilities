@@ -4,8 +4,7 @@
     <color name="colorPrimaryDark">#00574B</color>
     <color name="ic_launcher_background">#FFFFFF</color>
     <color name="colorAccent">#D81B60</color>
-    <color name="colorRVSelectedCashBox">#D1D1D1</color>
+    <color name="colorRVSelectedCashBox">#DCDCDC</color>
     <color name="colorRVBackgroundCashBox">#FFFFFF</color>
-    <color name="colorRVSeparator">#C4C4C4</color>
-    <color name="colorRVDivider">#7D7D7D</color>
+    <color name="colorDivider">#7D7D7D</color>
 </resources>

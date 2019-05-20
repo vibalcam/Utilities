@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_manager_duplicate"
+        android:title="@string/popupCBMDuplicate"
+        app:showAsAction="ifRoom"
+        android:icon="@drawable/ic_copy_white_24dp" />
+    <item
+        android:id="@+id/action_manager_share"
+        android:title="@string/popupCBMShare"
+        app:showAsAction="ifRoom"
+        app:actionProviderClass="androidx.appcompat.widget.ShareActionProvider" />
+</menu>

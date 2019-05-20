@@ -8,6 +8,11 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.utilities.vibal.utilities.R;
 import com.utilities.vibal.utilities.util.Util;
 
@@ -15,10 +20,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -44,15 +45,14 @@ public class RandomChooserActivity extends AppCompatActivity {
         contestants = new ArrayList<>();
 
         //Set-up RecyclerView
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         rvRandomChooser.setHasFixedSize(true);
-        rvRandomChooser.setLayoutManager(linearLayoutManager);
+        rvRandomChooser.setLayoutManager(new LinearLayoutManager(rvRandomChooser.getContext()));
         rvRandomChooser.setAdapter(new RandomChooserRecyclerAdapter(contestants));
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_toolbar, menu);
+        getMenuInflater().inflate(R.menu.menu_toolbar_random_chooser, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -75,17 +75,17 @@ public class RandomChooserActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.action_deleteAll:
+            case R.id.action_RC_deleteAll:
                 contestants.clear();
                 rvRandomChooser.getAdapter().notifyDataSetChanged();
                 Toast.makeText(this, "Deleted all entries", Toast.LENGTH_SHORT).show();
                 return true;
 
-            case R.id.action_help:
-                Util.showHelp(this,R.string.randomChooser_helpTitle,R.string.randomChooser_help).show();
+            case R.id.action_RC_help:
+                Util.getHelpDialog(this,R.string.randomChooser_helpTitle,R.string.randomChooser_help).show();
                 return true;
 
-            case R.id.action_settings:
+            case R.id.action_RC_settings:
                 return true;
 
             default:
@@ -102,7 +102,9 @@ public class RandomChooserActivity extends AppCompatActivity {
         return false;
     }
 
-    //Adds the text in inputText to the participants ArrayList
+    /**
+     * Adds the text in inputText to the participants ArrayList
+     */
     private void addParticipant() {
         String input = inputText.getText().toString();
         if (!input.isEmpty()) {
@@ -113,7 +115,9 @@ public class RandomChooserActivity extends AppCompatActivity {
             Toast.makeText(this, "You have to enter a name", Toast.LENGTH_SHORT).show();
     }
 
-    //Randomly chooses an element from the participants ArrayList and shows it in a AlertDialog
+    /**
+     * Randomly chooses an element from the participants ArrayList and shows it in a AlertDialog
+     */
     private void getWinner() {
         if (!contestants.isEmpty()) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);

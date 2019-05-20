@@ -2,16 +2,17 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/action_main_settings"
         android:icon="@drawable/settings_outline"
         app:showAsAction="ifRoom"
         android:title="@string/settings" />
     <item
-        android:id="@+id/action_help"
-        app:showAsAction="never"
+        android:id="@+id/action_main_help"
+        android:icon="@drawable/help"
+        app:showAsAction="ifRoom"
         android:title="@string/action_help" />
     <item
-        android:id="@+id/action_about"
+        android:id="@+id/action_main_about"
         app:showAsAction="never"
         android:title="@string/action_about" />
 </menu>

@@ -17,6 +17,7 @@ import androidx.appcompat.widget.ShareActionProvider;
 import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.view.MenuItemCompat;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -29,8 +30,8 @@ import com.utilities.vibal.utilities.R;
 import com.utilities.vibal.utilities.io.IOCashBoxManager;
 import com.utilities.vibal.utilities.models.CashBox;
 import com.utilities.vibal.utilities.models.CashBoxManager;
-import com.utilities.vibal.utilities.ui.CashBoxSwipeController;
 import com.utilities.vibal.utilities.ui.cashBoxManager.CashBoxManagerRecyclerAdapter;
+import com.utilities.vibal.utilities.ui.swipeController.CashBoxSwipeController;
 import com.utilities.vibal.utilities.util.Util;
 
 import java.io.IOException;
@@ -42,6 +43,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class CashBoxItemActivity extends AppCompatActivity {
+    private static final double MAX_SHOW_CASH = 99999999;
 
     @BindView(R.id.toolbarCBItem)
     Toolbar toolbarCBItem;
@@ -57,7 +59,6 @@ public class CashBoxItemActivity extends AppCompatActivity {
     private ShareActionProvider shareActionProvider;
 
     private static final String TAG = "PruebaItemActivity";
-    private static final double MAX_SHOW_CASH = 99999999;
 
     NumberFormat formatCurrency = NumberFormat.getCurrencyInstance();
 
@@ -78,15 +79,18 @@ public class CashBoxItemActivity extends AppCompatActivity {
         //Set Toolbar as ActionBar
         setSupportActionBar(toolbarCBItem);
         Log.d(TAG, "on create: titulo: " + cashBox.getName());
-        getSupportActionBar().setTitle(cashBox.getName().toUpperCase());
+        getSupportActionBar().setTitle(cashBox.getName());
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         //Set up RecyclerView
+//        rvCashBoxItem.setNestedScrollingEnabled(true);
         rvCashBoxItem.setHasFixedSize(true);
-        rvCashBoxItem.setLayoutManager(new LinearLayoutManager(this));
+        LinearLayoutManager layoutManager = new LinearLayoutManager(rvCashBoxItem.getContext());
+        rvCashBoxItem.setLayoutManager(layoutManager);
         CashBoxItemRecyclerAdapter adapter = new CashBoxItemRecyclerAdapter(cashBox, this);
         rvCashBoxItem.setAdapter(adapter);
         (new ItemTouchHelper(new CashBoxSwipeController(adapter))).attachToRecyclerView(rvCashBoxItem);
+        rvCashBoxItem.addItemDecoration(new DividerItemDecoration(rvCashBoxItem.getContext(),layoutManager.getOrientation()));
 
         //Set cash to the actual value
         updateCash();
@@ -149,15 +153,21 @@ public class CashBoxItemActivity extends AppCompatActivity {
      */
     public void notifyCashBoxChanged() {
         updateCash();
+        updateShareIntent();
         saveCashBoxManager();
+    }
+
+    private void updateShareIntent() {
+        if(shareActionProvider!=null)
+            shareActionProvider.setShareIntent(Util.getShareIntent(cashBox));
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_toolbar_cash_box_item, menu);
 
-        //Set up ShareActionProvider
-        shareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menu.findItem(R.id.action_share));
+        // Set up ShareActionProvider
+        shareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menu.findItem(R.id.action_item_share));
         updateShareIntent();
         return true;
     }
@@ -175,35 +185,19 @@ public class CashBoxItemActivity extends AppCompatActivity {
         super.onBackPressed();
     }
 
-    //Have to complete it
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home: // called when clicked the home button
                 returnResult();
                 return true;
-            case R.id.action_deleteAll:
+            case R.id.action_item_deleteAll:
                 deleteAll();
                 return true;
-            case R.id.action_share:
-                updateShareIntent();
-                return true;
-            case R.id.action_help:
-                //Util.showHelp(this, R.string.cashBoxItem_helpTitle, R.string.cashBoxItem_help).show();
-                return true;
-            case R.id.action_settings:
+            case R.id.action_item_settings:
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
-        }
-    }
-
-    private void updateShareIntent() {
-        if(shareActionProvider!=null) {
-            Intent shareIntent = new Intent(Intent.ACTION_SEND);
-            shareIntent.putExtra(Intent.EXTRA_TEXT, cashBox.toString())
-                    .setType("text/plain");
-            shareActionProvider.setShareIntent(shareIntent);
         }
     }
 
@@ -225,10 +219,8 @@ public class CashBoxItemActivity extends AppCompatActivity {
                                     notifyCashBoxChanged();
 //                                    updateCash();
 //                                    saveCashBoxManager();
-                                    //                    cashBoxManager.saveDataTemp(this);
                                 })
                                 .show();
-                        //        cashBoxManager.saveDataTemp(this);
 //                        saveCashBoxManager();
                         notifyCashBoxChanged();
                     }).show();
@@ -255,7 +247,6 @@ public class CashBoxItemActivity extends AppCompatActivity {
             Util.showKeyboard(this, inputAmount);
             positive.setOnClickListener((View v) -> {
                 try {
-                    Log.d(TAG, "showAddDialog: cause" + (inputInfo.getText() == null) + (inputInfo.getText().toString().isEmpty()));
                     String input = inputAmount.getText().toString().trim();
                     if(input.isEmpty()) {
                         layoutAmount.setError("*Required");

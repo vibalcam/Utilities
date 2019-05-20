@@ -36,13 +36,14 @@
         tools:text="50,00 €"/>
 
     <ImageView
-        android:id="@+id/imageView"
+        android:id="@+id/reorderImage"
         android:layout_width="?listPreferredItemHeightSmall"
         android:layout_height="match_parent"
         android:layout_gravity="center_vertical|end"
         android:scaleType="center"
-        android:visibility="visible"
-        android:src="@drawable/reorder_horizontal_light_gray_24dp"
-        app:srcCompat="@drawable/reorder_horizontal_light_gray_24dp"
+        android:visibility="gone"
+        android:src="@drawable/reorder_horizontal_gray_24dp"
+        app:srcCompat="@drawable/reorder_horizontal_gray_24dp"
+        tools:visibility="visible"
         tools:ignore="ContentDescription" />
 </LinearLayout>

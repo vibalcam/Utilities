@@ -12,7 +12,7 @@ import java.util.List;
 public class CashBox implements Serializable {
     private static final long serialVersionUID = 2L;
 
-    public static final int MAX_LENGTH_NAME = 20;
+    public static final int MAX_LENGTH_NAME = 15;
 
     private String name;
     private double cash; //sum of amounts
@@ -32,6 +32,7 @@ public class CashBox implements Serializable {
         this.entries = entries;
     }
 
+    // Immutable object in order for clone to be easier
     public class Entry implements Serializable {
         private static final long serialVersionUID = 3L;
 
@@ -57,14 +58,7 @@ public class CashBox implements Serializable {
             return amount;
         }
 
-        private void setDate(Calendar date) {
-            this.date = date;
-        }
-
-        private void setAmount(double amount) {
-            this.amount = amount;
-        }
-
+        // When modifying directly, watch out, since an entry can be in cloned cashBoxes
         private void setCause(String cause) {
             this.cause = cause.trim();
         }
@@ -127,7 +121,6 @@ public class CashBox implements Serializable {
      * @return Total cash after the addition
      */
     public double add(double amount,String cause,Calendar date) {
-//        return add(sizeEntries(),new Entry(amount,cause,date));
         return add(0,new Entry(amount,cause,date));
     }
 
@@ -146,8 +139,16 @@ public class CashBox implements Serializable {
         return cash;
     }
 
-    public void addAll(List<Entry> entries) {
+    public double addAll(List<Entry> entries) {
         this.entries.addAll(entries);
+        updateCash();
+        return cash;
+    }
+
+    private void updateCash() {
+        cash = 0;
+        for(Entry entry:entries)
+            cash+=entry.getAmount();
     }
 
     /**
@@ -157,7 +158,6 @@ public class CashBox implements Serializable {
      */
     public CashBox.Entry remove(int index) {
         cash -= entries.get(index).getAmount();
-
         return entries.remove(index);
     }
 
@@ -181,14 +181,13 @@ public class CashBox implements Serializable {
      * @return Total cash after the modification
      */
     public CashBox.Entry modify(int index,double amount,String cause,Calendar date){
-//        cash += amount - entries.get(index).getAmount();
-//        return entries.set(index,new Entry(amount,cause,date));
         return modify(index, new Entry(amount,cause,date));
     }
 
     public CashBox.Entry modify(int index, CashBox.Entry modifiedEntry) {
-        cash += modifiedEntry.getAmount() - entries.get(index).getAmount();
-        return entries.set(index, modifiedEntry);
+        CashBox.Entry entry = entries.set(index, modifiedEntry);
+        cash += modifiedEntry.getAmount() - entry.getAmount();
+        return entry;
     }
 
     public int sizeEntries(){
@@ -203,9 +202,6 @@ public class CashBox implements Serializable {
     public boolean equals(Object obj){
         if(obj instanceof CashBox)
             return ((CashBox) obj).getName().equalsIgnoreCase(this.getName());
-//            CashBox cashBox = (CashBox) obj;
-//            return name.equalsIgnoreCase(cashBox.getName());
-
         return false;
     }
 

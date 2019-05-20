@@ -1,17 +1,23 @@
 package com.utilities.vibal.utilities.ui.cashBoxManager;
 
 import android.content.Intent;
-import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.view.ActionMode;
+import androidx.appcompat.widget.ShareActionProvider;
+import androidx.core.view.MenuItemCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.snackbar.Snackbar;
@@ -20,33 +26,87 @@ import com.google.android.material.textfield.TextInputLayout;
 import com.utilities.vibal.utilities.R;
 import com.utilities.vibal.utilities.models.CashBox;
 import com.utilities.vibal.utilities.models.CashBoxManager;
-import com.utilities.vibal.utilities.ui.CashBoxAdapterSwipable;
 import com.utilities.vibal.utilities.ui.cashBoxItem.CashBoxItemActivity;
+import com.utilities.vibal.utilities.ui.swipeController.CashBoxAdapterSwipable;
+import com.utilities.vibal.utilities.ui.swipeController.OnStartDragListener;
 import com.utilities.vibal.utilities.util.Util;
 
 import java.text.NumberFormat;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnTouch;
 
 public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxManagerRecyclerAdapter.ViewHolder> implements CashBoxAdapterSwipable {
     public static final String STRING_EXTRA = "com.utilities.vibal.CashBoxIndex";
     public static final String CASHBOX_MANAGER_EXTRA = "com.utilities.vibal.CashBoxManager";
-    public static final int REQUEST_CODE_ITEM = 1;
+    static final int REQUEST_CODE_ITEM = 1;
 
     private static final boolean SWIPE_ENABLED = true;
-    private static final boolean DRAG_ENABLED = true;
     private static final String TAG = "PruebaManagerActivity";
 
+    private OnStartDragListener onStartDragListener;
+    ActionMode actionMode;
+    private ShareActionProvider shareActionProvider;
     private final NumberFormat currencyFormat = NumberFormat.getCurrencyInstance();
     private CashBoxManager cashBoxManager;
     private CashBoxManagerActivity cashBoxManagerActivity;
-    private int selectedIndex;
+    private ViewHolder selectedViewHolder = null;
 
-    public CashBoxManagerRecyclerAdapter(CashBoxManager cashBoxManager, CashBoxManagerActivity cashBoxManagerActivity) {
+    private ActionMode.Callback actionModeCallback = new ActionMode.Callback() {
+        @Override
+        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+            mode.getMenuInflater().inflate(R.menu.menu_contextual_toolbar_cash_box_manager, menu);
+
+            // Notify adapter to show images for dragging
+            notifyItemRangeChanged(0, CashBoxManagerRecyclerAdapter.this.getItemCount());
+
+            // Set up ShareActionProvider
+            shareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menu.findItem(R.id.action_manager_share));
+            shareActionProvider.setOnShareTargetSelectedListener((ShareActionProvider source, Intent intent) -> {
+                mode.finish();
+                return false;
+            });
+            if(selectedViewHolder!=null)
+                updateShareIntent(selectedViewHolder.getAdapterPosition());
+            return true;
+        }
+
+        @Override
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            return false;
+        }
+
+        @Override
+        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+            if (selectedViewHolder == null) {
+                Toast.makeText(getCashBoxManagerActivity(), "No item selected", Toast.LENGTH_SHORT).show();
+                return true;
+            } else if (item.getItemId() == R.id.action_manager_duplicate) {
+                showCloneDialog(selectedViewHolder.getAdapterPosition());
+                mode.finish();
+                return true;
+            } else
+                return false;
+        }
+
+        @Override
+        public void onDestroyActionMode(ActionMode mode) {
+            actionMode = null;
+            shareActionProvider = null;
+            setSelectedViewHolder(null);
+            // Notify adapter to hide images for dragging
+            notifyItemRangeChanged(0, CashBoxManagerRecyclerAdapter.this.getItemCount());
+        }
+    };
+
+    CashBoxManagerRecyclerAdapter(CashBoxManager cashBoxManager, CashBoxManagerActivity cashBoxManagerActivity) {
         this.cashBoxManager = cashBoxManager;
         this.cashBoxManagerActivity = cashBoxManagerActivity;
-        selectedIndex = -1;
+    }
+
+    void setOnStartDragListener(OnStartDragListener onStartDragListener) {
+        this.onStartDragListener = onStartDragListener;
     }
 
     private CashBoxManagerActivity getCashBoxManagerActivity() {
@@ -64,11 +124,21 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int index) {
         CashBox cashBox = cashBoxManager.get(index);
         viewHolder.rvName.setText(cashBox.getName());
-        viewHolder.rvAmount.setText(currencyFormat.format(cashBox.getCash()));
-        if (index == selectedIndex)
-            viewHolder.rvItemLayout.setBackgroundColor(getCashBoxManagerActivity().getColor(R.color.colorRVSelectedCashBox));
-        else
-            viewHolder.rvItemLayout.setBackgroundColor(getCashBoxManagerActivity().getColor(R.color.colorRVBackgroundCashBox));
+
+        // Enable or disable dragging
+        if(isDragEnabled()) {
+            viewHolder.reorderImage.setVisibility(View.VISIBLE);
+            viewHolder.rvAmount.setVisibility(View.GONE);
+        } else {
+            viewHolder.reorderImage.setVisibility(View.GONE);
+            viewHolder.rvAmount.setVisibility(View.VISIBLE);
+            viewHolder.rvAmount.setText(currencyFormat.format(cashBox.getCash()));
+        }
+
+        // Update selected ViewHolder
+        if(selectedViewHolder!=null && index==selectedViewHolder.getAdapterPosition()) {
+            setSelectedViewHolder(viewHolder);
+        }
     }
 
     @Override
@@ -76,14 +146,14 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
         return cashBoxManager.size();
     }
 
-    public void updateCashBoxManager(CashBoxManager cashBoxManager) {
+    void updateCashBoxManager(CashBoxManager cashBoxManager) {
         this.cashBoxManager = cashBoxManager;
         notifyDataSetChanged();
     }
 
     @Override
     public boolean isDragEnabled() {
-        return DRAG_ENABLED;
+        return actionMode != null;
     }
 
     @Override
@@ -93,26 +163,26 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
 
     @Override
     public void onItemMove(int fromPosition, int toPosition) {
-        Log.d(TAG, "onItemMove: ");
         notifyItemMoved(fromPosition, toPosition);
     }
 
     @Override
     public void onItemDrop(int fromPosition, int toPosition) {
-        Log.d(TAG, "onItemDrop: ");
         cashBoxManager.move(fromPosition, toPosition);
         getCashBoxManagerActivity().saveCashBoxManager();
     }
 
     @Override
     public void onItemDelete(int position) {
+        if(actionMode!=null)
+            actionMode.finish();
         CashBoxManagerActivity activity = getCashBoxManagerActivity();
         CashBox deletedCashBox = cashBoxManager.remove(position);
         notifyItemRemoved(position);
 
-        Snackbar.make(activity.getRecyclerView(),activity.getString(R.string.snackbarEntriesDeleted,1),Snackbar.LENGTH_LONG)
+        Snackbar.make(activity.coordinatorLayout, activity.getString(R.string.snackbarEntriesDeleted, 1), Snackbar.LENGTH_LONG)
                 .setAction(R.string.undo, (View v1) -> {
-                    cashBoxManager.add(position,deletedCashBox);
+                    cashBoxManager.add(position, deletedCashBox);
                     notifyItemInserted(position);
                     activity.saveCashBoxManager();
                 })
@@ -122,33 +192,17 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
 
     @Override
     public void onItemModify(int position) {
-        showChangeNameDialog(position);
-        notifyDataSetChanged();
-    }
-
-    private AlertDialog inputNameDialog(String title, int resPositiveButton) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getCashBoxManagerActivity());
-        AlertDialog dialog = builder.setTitle(title)
-                .setView(R.layout.cash_box_input_name)
-                .setNegativeButton(R.string.cancelDialog, null)
-                .setPositiveButton(resPositiveButton, null)
-                .create();
-        dialog.setCanceledOnTouchOutside(false);
-
-        return dialog;
-    }
-
-    private void showChangeNameDialog(int index) {
+        if(actionMode!=null)
+            actionMode.finish();
         CashBoxManagerActivity activity = getCashBoxManagerActivity();
-        AlertDialog dialogChangeName = inputNameDialog("Change Name", R.string.cashBox_changeNameButton);
 
+        AlertDialog dialogChangeName = inputNameDialog("Change Name", R.string.cashBox_changeNameButton);
         dialogChangeName.setOnShowListener(dialog -> {
             Button positive = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
             TextInputEditText inputName = ((AlertDialog) dialog).findViewById(R.id.inputTextChangeName);
             TextInputLayout layoutName = ((AlertDialog) dialog).findViewById(R.id.inputLayoutChangeName);
-            String oldName = cashBoxManager.get(index).getName();
+            String oldName = cashBoxManager.get(position).getName();
 
-//            inputName.setMaxLines(CashBox.MAX_LENGTH_NAME);
             inputName.setText(oldName);
             layoutName.setCounterMaxLength(CashBox.MAX_LENGTH_NAME);
             inputName.setSelectAllOnFocus(true);
@@ -160,8 +214,8 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
             positive.setOnClickListener((View v1) -> {
                 String newName = inputName.getText().toString();
                 try {
-                    if (cashBoxManager.changeName(index, newName)) {
-                        notifyItemChanged(index);
+                    if (cashBoxManager.changeName(position, newName)) {
+                        notifyItemChanged(position);
                         dialog.dismiss();
 //                                cashBoxManager.saveDataTemp(getContext());
                         activity.saveCashBoxManager();
@@ -179,6 +233,74 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
             });
         });
         dialogChangeName.show();
+
+        notifyDataSetChanged(); // since the item is deleted from swipping we have to show it back again
+    }
+
+    private AlertDialog inputNameDialog(String title, int resPositiveButton) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getCashBoxManagerActivity());
+        AlertDialog dialog = builder.setTitle(title)
+                .setView(R.layout.cash_box_input_name)
+                .setNegativeButton(R.string.cancelDialog, null)
+                .setPositiveButton(resPositiveButton, null)
+                .create();
+        dialog.setCanceledOnTouchOutside(false);
+
+        return dialog;
+    }
+
+    private void showCloneDialog(int index) {
+        AlertDialog dialogClone = inputNameDialog("Clone CashBox", R.string.cashBox_cloneButton);
+        dialogClone.setOnShowListener(dialog -> {
+            Button positive = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
+            TextInputEditText inputName = ((AlertDialog) dialog).findViewById(R.id.inputTextChangeName);
+            TextInputLayout layoutName = ((AlertDialog) dialog).findViewById(R.id.inputLayoutChangeName);
+
+            Util.showKeyboard(getCashBoxManagerActivity(), inputName);
+            inputName.setMaxLines(CashBox.MAX_LENGTH_NAME);
+            inputName.setText(cashBoxManager.get(index).getName());
+            layoutName.setCounterMaxLength(CashBox.MAX_LENGTH_NAME);
+
+            positive.setOnClickListener((View v1) -> {
+                try {
+                    if (cashBoxManager.duplicate(index, inputName.getText().toString())) {
+                        notifyItemInserted(index + 1);
+                        dialog.dismiss();
+                        Toast.makeText(getCashBoxManagerActivity(), "Entry cloned", Toast.LENGTH_SHORT).show();
+//                            cashBoxManager.saveDataTemp(getContext());
+                        getCashBoxManagerActivity().saveCashBoxManager();
+                    } else
+                        layoutName.setError(getCashBoxManagerActivity().getString(R.string.nameInUse));
+                } catch (IllegalArgumentException e) {
+                    layoutName.setError(e.getMessage());
+                }
+            });
+        });
+        dialogClone.show();
+    }
+
+    private void setSelectedViewHolder(ViewHolder viewHolder) {
+        if(selectedViewHolder!=null)
+            selectedViewHolder.itemView.setBackgroundResource(R.color.colorRVBackgroundCashBox);
+        if(viewHolder!=null) {
+            viewHolder.itemView.setBackgroundResource(R.color.colorRVSelectedCashBox);
+            updateShareIntent(viewHolder.getAdapterPosition());
+        }
+        selectedViewHolder = viewHolder;
+    }
+
+    private void updateShareIntent(int index) {
+        if (shareActionProvider != null)
+            shareActionProvider.setShareIntent(Util.getShareIntent(cashBoxManager.get(index)));
+    }
+
+    boolean showActionMode() {
+        if (actionMode != null)
+            return false;
+        else {
+            actionMode = getCashBoxManagerActivity().startSupportActionMode(actionModeCallback);
+            return true;
+        }
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
@@ -188,8 +310,10 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
         TextView rvAmount;
         @BindView(R.id.rvItemLayout)
         LinearLayout rvItemLayout;
+        @BindView(R.id.reorderImage)
+        ImageView reorderImage;
 
-        public ViewHolder(View view) {
+        ViewHolder(View view) {
             super(view);
             ButterKnife.bind(this, view);
 
@@ -197,93 +321,38 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
             view.setOnLongClickListener(this);
         }
 
-        private void selectItemHighlight(){
-            int temp = selectedIndex;
-            selectedIndex = getAdapterPosition();
-            notifyItemChanged(temp);
-            notifyItemChanged(selectedIndex);
+        @OnTouch(R.id.reorderImage)
+        public boolean onTouch(MotionEvent event) {
+            setSelectedViewHolder(this);
+            if(onStartDragListener!=null && event.getActionMasked()== MotionEvent.ACTION_DOWN) {
+                onStartDragListener.onStartDrag(this);
+                return true;
+            } else
+                return false;
         }
 
         @Override
         public void onClick(View v) {
             //Highlight selected element
-            selectItemHighlight();
+            setSelectedViewHolder(this);
 
+            if (actionMode == null) {
 //            CashBox cashBox = cashBoxManager.get(selectedIndex);
-            Intent intent = new Intent(getCashBoxManagerActivity(), CashBoxItemActivity.class);
-            intent.putExtra(STRING_EXTRA,selectedIndex);
-            intent.putExtra(CASHBOX_MANAGER_EXTRA,cashBoxManager);
+                Intent intent = new Intent(getCashBoxManagerActivity(), CashBoxItemActivity.class);
+                intent.putExtra(STRING_EXTRA, selectedViewHolder.getAdapterPosition());
+                intent.putExtra(CASHBOX_MANAGER_EXTRA, cashBoxManager);
 //            getCashBoxManagerActivity().startActivity(intent);
-            getCashBoxManagerActivity().startActivityForResult(intent,REQUEST_CODE_ITEM);
+                getCashBoxManagerActivity().startActivityForResult(intent, REQUEST_CODE_ITEM);
 
-            //Erase highlighting element
-            selectedIndex =-1;
+                //Erase highlighting element
+                setSelectedViewHolder(null);
+            }
         }
 
         @Override
         public boolean onLongClick(View v) {
-//            //Highlight selected element
-//            selectItemHighlight();
-//
-//            //Creating instance of PopupMenu
-//            PopupMenu popupMenu = new PopupMenu(getCashBoxManagerActivity(), v);
-//            //Inflating PopupMenu using xml file
-//            popupMenu.getMenuInflater().inflate(R.menu.menu_popup_cash_box_manager_options, popupMenu.getMenu());
-//            //Registering Popup with onMenuItemClickListener()
-//            popupMenu.setOnMenuItemClickListener((MenuItem item) -> {
-//                switch (item.getItemId()) {
-//                    case R.id.popupDelete:
-////                        deleteCashBox(selectedIndex);
-//                        onItemDelete(selectedIndex);
-//                        return true;
-//
-//                    case R.id.popupChangeName:
-//                        showChangeNameDialog(selectedIndex);
-//                        return true;
-//
-//                    case R.id.popupClone:
-//                        showCloneDialog(selectedIndex);
-//                        return true;
-//
-//                    case R.id.popupShare:
-//                        return true;
-//
-//                    default:
-//                        return false;
-//                }
-//            });
-//            popupMenu.show();
-            return true;
-        }
-
-        private void showCloneDialog(int index) {
-            AlertDialog dialogClone = inputNameDialog("Clone CashBox", R.string.cashBox_cloneButton);
-            dialogClone.setOnShowListener(dialog -> {
-                Button positive = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
-                TextInputEditText inputName = ((AlertDialog) dialog).findViewById(R.id.inputTextChangeName);
-                TextInputLayout layoutName = ((AlertDialog) dialog).findViewById(R.id.inputLayoutChangeName);
-
-                Util.showKeyboard(getCashBoxManagerActivity(), inputName);
-                inputName.setMaxLines(CashBox.MAX_LENGTH_NAME);
-                inputName.setText(cashBoxManager.get(index).getName());
-                layoutName.setCounterMaxLength(CashBox.MAX_LENGTH_NAME);
-
-                positive.setOnClickListener((View v1) -> {
-                    try {
-                        if (cashBoxManager.duplicate(index, inputName.getText().toString())) {
-                            notifyItemInserted(index + 1);
-                            dialog.dismiss();
-                            Toast.makeText(getCashBoxManagerActivity(), "Entry cloned", Toast.LENGTH_SHORT).show();
-//                            cashBoxManager.saveDataTemp(getContext());
-                            getCashBoxManagerActivity().saveCashBoxManager();
-                        } else
-                            layoutName.setError(getCashBoxManagerActivity().getString(R.string.nameInUse));
-                    } catch (IllegalArgumentException e) {
-                        layoutName.setError(e.getMessage());
-                    }
-                });
-            });
-            dialogClone.show();
+            setSelectedViewHolder(this);
+            return showActionMode();
         }
     }
 }

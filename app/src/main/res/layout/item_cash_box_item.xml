@@ -7,18 +7,8 @@
     android:layout_height="wrap_content"
     android:paddingStart="@dimen/main_marginHorizontal"
     android:paddingEnd="@dimen/main_marginHorizontal"
+    android:paddingBottom="@dimen/rvMarginItemCB"
     android:background="@android:color/white">
-
-    <View
-        android:id="@+id/dividerTopItemCashBoxRV"
-        android:layout_width="0dp"
-        android:layout_height="0.5dp"
-        android:background="@color/colorRVSeparator"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/rvItemDate"
-        app:layout_constraintStart_toStartOf="@id/rvItemInfo"
-        app:layout_constraintEnd_toEndOf="@id/rvItemInfo"
-        android:layout_marginBottom="2dp"/>
 
     <TextView
         android:id="@+id/rvItemDate"
@@ -27,7 +17,7 @@
         android:textColor="@android:color/black"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:layout_marginEnd="@dimen/marginRV_date_amount"
-        app:layout_constraintTop_toBottomOf="@id/dividerTopItemCashBoxRV"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/rvItemAmount"
         app:layout_constraintBottom_toTopOf="@id/rvItemInfo"
@@ -54,20 +44,9 @@
         android:textColor="@android:color/black"
         android:textAppearance="?android:attr/textAppearanceSmall"
         app:layout_constraintTop_toBottomOf="@id/rvItemDate"
-        app:layout_constraintBottom_toTopOf="@id/dividerBottomItemCashBoxRV"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="@id/rvItemDate"
         app:layout_constraintEnd_toEndOf="@id/rvItemAmount"
         tools:text="Esto es una prueba de la info"/>
-
-    <View
-        android:id="@+id/dividerBottomItemCashBoxRV"
-        android:layout_width="0dp"
-        android:layout_height="0.5dp"
-        android:background="@color/colorRVSeparator"
-        app:layout_constraintTop_toBottomOf="@id/rvItemInfo"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="@id/dividerTopItemCashBoxRV"
-        app:layout_constraintEnd_toEndOf="@id/dividerTopItemCashBoxRV"
-        android:layout_marginTop="2dp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

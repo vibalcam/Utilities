@@ -17,7 +17,7 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.utilities.vibal.utilities.R;
 import com.utilities.vibal.utilities.models.CashBox;
-import com.utilities.vibal.utilities.ui.CashBoxAdapterSwipable;
+import com.utilities.vibal.utilities.ui.swipeController.CashBoxAdapterSwipable;
 import com.utilities.vibal.utilities.util.Util;
 
 import java.text.DateFormat;
@@ -77,18 +77,6 @@ public class CashBoxItemRecyclerAdapter extends RecyclerView.Adapter<CashBoxItem
     public boolean isSwipeEnabled() {
         return SWIPE_ENABLED;
     }
-
-    /**
-     * No implementation, since moving is not allowed
-     */
-    @Override
-    public void onItemMove(int fromPosition, int toPosition) {}
-
-    /**
-     * No implementation, since moving is not allowed
-     */
-    @Override
-    public void onItemDrop(int fromPosition, int toPosition) {}
 
     @Override
     public void onItemDelete(int position) {

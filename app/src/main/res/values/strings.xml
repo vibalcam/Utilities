@@ -25,6 +25,7 @@
     <string name="nameInUse">Name already in use</string>
     <string name="randomChooser_helpTitle">"Random Chooser Help"</string>
     <string name="cashBoxManager_helpTitle">"Cash Box Manager Help"</string>
+    <string name="helpTitle">Help</string>
     <string name="enterInitCashDialog">Initial Cash</string>
     <string name="popupCBMDelete">Delete</string>
     <string name="popupCBMDuplicate">Duplicate</string>
@@ -41,19 +42,26 @@
     <string name="outOfRange">Out of range</string>
     <string name="noInfoEntered">(No info)</string>
 
-    <string name="cashBoxManager_help">
-        List of added CashBoxes.\n
-        Swipe left to delete a CashBox.\n
-        Swipe right to modify a CashBox.\n
-        Select a CashBox by clicking it.\n
+
+    <string name="aboutApp">Utilities v2.0
+        \n\nvibal 20/05/2019
     </string>
-    <string name="randomChooser_help">
-        Roll The Dice: returns a randomly chosen item from the list.\n
-        Shuffle List: shuffles the list.\n
-        To delete an entry, slide the item to the left.\n
-        To delete all entries, click the trashcan symbol at the top of the app.
+    <string name="appHelpTitle">Available Utilities</string>
+    <string name="appHelpMessage"><b>Random Chooser:</b> perfect for when you need to get a randomly ordered list or flip a coin.
+        \n<b>Debt Manager:</b> it will help you remember when a friend borrowed money from you, just in case he "accidentally" forgets.
     </string>
-    <string name="menu_reorder">Reorder</string>
-    <string name="helperEnterNameDialog">Max. 20 characters</string>
+    <string name="cashBoxManager_help">List of added CashBoxes.
+        \nSwipe left to delete a CashBox.
+        \nSwipe right to modify a CashBox.
+        \nSelect a CashBox by clicking it.
+        \nLong press a CashBox to enter edit mode.
+    </string>
+    <string name="randomChooser_help">Roll The Dice: returns a randomly chosen item from the list.
+        \nShuffle List: shuffles the list.
+        \nTo delete an entry, slide the item to the left.
+        \nTo delete all entries, click the trashcan symbol at the top of the app.
+    </string>
+    <string name="menu_contextualToolbar">Edit Mode</string>
+    <string name="helperEnterNameDialog">Max. 15 characters</string>
     <string name="contentDescriptionLogoMain">App\'s logo</string>
 </resources>
