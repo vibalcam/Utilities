@@ -4,7 +4,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -33,6 +32,7 @@ import com.utilities.vibal.utilities.models.CashBox;
 import com.utilities.vibal.utilities.models.CashBoxManager;
 import com.utilities.vibal.utilities.ui.cashBoxManager.CashBoxManagerRecyclerAdapter;
 import com.utilities.vibal.utilities.ui.swipeController.CashBoxSwipeController;
+import com.utilities.vibal.utilities.util.LogUtil;
 import com.utilities.vibal.utilities.util.Util;
 
 import java.io.IOException;
@@ -45,7 +45,7 @@ import butterknife.ButterKnife;
 
 public class CashBoxItemActivity extends AppCompatActivity {
     private static final double MAX_SHOW_CASH = 99999999;
-
+    private static final String TAG = "PruebaItemActivity";
     @BindView(R.id.toolbarCBItem)
     Toolbar toolbarCBItem;
     @BindView(R.id.rvCashBoxItem)
@@ -54,19 +54,15 @@ public class CashBoxItemActivity extends AppCompatActivity {
     TextView itemCash;
     @BindView(R.id.itemCBCoordinatorLayout)
     CoordinatorLayout itemCBCoordinatorLayout;
-
+    NumberFormat formatCurrency = NumberFormat.getCurrencyInstance();
     private CashBoxManager cashBoxManager;
     private CashBox cashBox;
     private ShareActionProvider shareActionProvider;
 
-    private static final String TAG = "PruebaItemActivity";
-
-    NumberFormat formatCurrency = NumberFormat.getCurrencyInstance();
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d(TAG, "on create:");
+        LogUtil.debug(TAG, "on create:");
         setContentView(R.layout.activity_cash_box_item);
         ButterKnife.bind(this);
 
@@ -78,7 +74,7 @@ public class CashBoxItemActivity extends AppCompatActivity {
 
         //Set Toolbar as ActionBar
         setSupportActionBar(toolbarCBItem);
-        Log.d(TAG, "on create: titulo: " + cashBox.getName());
+        LogUtil.debug(TAG, "on create: titulo: " + cashBox.getName());
         getSupportActionBar().setTitle(cashBox.getName());
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
@@ -90,7 +86,7 @@ public class CashBoxItemActivity extends AppCompatActivity {
         CashBoxItemRecyclerAdapter adapter = new CashBoxItemRecyclerAdapter(cashBox, this);
         rvCashBoxItem.setAdapter(adapter);
         (new ItemTouchHelper(new CashBoxSwipeController(adapter))).attachToRecyclerView(rvCashBoxItem);
-        rvCashBoxItem.addItemDecoration(new DividerItemDecoration(rvCashBoxItem.getContext(),layoutManager.getOrientation()));
+        rvCashBoxItem.addItemDecoration(new DividerItemDecoration(rvCashBoxItem.getContext(), layoutManager.getOrientation()));
 
         //Set cash to the actual value
         updateCash();
@@ -119,7 +115,7 @@ public class CashBoxItemActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Log.d(TAG, "onDestroy: ");
+        LogUtil.debug(TAG, "onDestroy: ");
     }
 
     public RecyclerView getRecyclerView() {
@@ -128,9 +124,9 @@ public class CashBoxItemActivity extends AppCompatActivity {
 
     public void saveCashBoxManager() {
         try {
-            IOCashBoxManager.saveCashBoxManagerTemp(cashBoxManager,this);
+            IOCashBoxManager.saveCashBoxManagerTemp(cashBoxManager, this);
         } catch (IOException e) {
-            Log.e(TAG, "onStop: error save", e);
+            LogUtil.error(TAG, "onStop: error save", e);
             e.printStackTrace();
         }
     }
@@ -154,7 +150,7 @@ public class CashBoxItemActivity extends AppCompatActivity {
     }
 
     private void updateShareIntent() {
-        if(shareActionProvider!=null)
+        if (shareActionProvider != null)
             shareActionProvider.setShareIntent(Util.getShareIntent(cashBox));
     }
 
@@ -171,7 +167,7 @@ public class CashBoxItemActivity extends AppCompatActivity {
     private void returnResult() {
         Intent intent = new Intent();
         intent.putExtra(CashBoxManagerRecyclerAdapter.CASHBOX_MANAGER_EXTRA, (Parcelable) cashBoxManager);
-        setResult(RESULT_OK,intent);
+        setResult(RESULT_OK, intent);
         finish();
     }
 
@@ -244,7 +240,7 @@ public class CashBoxItemActivity extends AppCompatActivity {
             positive.setOnClickListener((View v) -> {
                 try {
                     String input = inputAmount.getText().toString().trim();
-                    if(input.isEmpty()) {
+                    if (input.isEmpty()) {
                         layoutAmount.setError(CashBoxItemActivity.this.getString(R.string.required));
                         Util.showKeyboard(CashBoxItemActivity.this, inputAmount);
                     } else {

@@ -6,8 +6,7 @@
   <dimen name="fab_margin">16dp</dimen>
   <dimen name="inputTextMargin">4dp</dimen>
   <dimen name="rvMarginItemCB">4dp</dimen>
-  <dimen name="itemCB_marginRVBottom">15dp</dimen>
-  <dimen name="rvMarginRC">2dp</dimen>
+    <dimen name="rvMarginRC">2dp</dimen>
   <dimen name="paddingDialog">8dp</dimen>
   <dimen name="marginRV_name_cash">5dp</dimen>
   <dimen name="marginRV_date_amount">5dp</dimen>

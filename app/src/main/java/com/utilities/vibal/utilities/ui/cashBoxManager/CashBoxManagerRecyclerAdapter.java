@@ -48,13 +48,11 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
 
     private final CashBoxManagerActivity cashBoxManagerActivity;
     private final NumberFormat currencyFormat = NumberFormat.getCurrencyInstance();
-
+    ActionMode actionMode;
     private OnStartDragListener onStartDragListener;
     private ShareActionProvider shareActionProvider;
     private CashBoxManager cashBoxManager;
     private ViewHolder selectedViewHolder = null;
-    ActionMode actionMode;
-
     private ActionMode.Callback actionModeCallback = new ActionMode.Callback() {
         @Override
         public boolean onCreateActionMode(ActionMode mode, Menu menu) {
@@ -69,7 +67,7 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
                 mode.finish();
                 return false;
             });
-            if(selectedViewHolder!=null)
+            if (selectedViewHolder != null)
                 updateShareIntent(selectedViewHolder.getAdapterPosition());
             return true;
         }
@@ -124,7 +122,7 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
         viewHolder.rvName.setText(cashBox.getName());
 
         // Enable or disable dragging
-        if(isDragEnabled()) {
+        if (isDragEnabled()) {
             viewHolder.reorderImage.setVisibility(View.VISIBLE);
             viewHolder.rvAmount.setVisibility(View.GONE);
         } else {
@@ -134,7 +132,7 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
         }
 
         // Update selected ViewHolder
-        if(selectedViewHolder!=null && index==selectedViewHolder.getAdapterPosition()) {
+        if (selectedViewHolder != null && index == selectedViewHolder.getAdapterPosition()) {
             setSelectedViewHolder(viewHolder);
         }
     }
@@ -172,7 +170,7 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
 
     @Override
     public void onItemDelete(int position) {
-        if(actionMode!=null)
+        if (actionMode != null)
             actionMode.finish();
         CashBox deletedCashBox = cashBoxManager.remove(position);
         notifyItemRemoved(position);
@@ -189,7 +187,7 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
 
     @Override
     public void onItemModify(int position) {
-        if(actionMode!=null)
+        if (actionMode != null)
             actionMode.finish();
 
         AlertDialog dialogChangeName = inputNameDialog("Change Name", R.string.cashBox_changeNameButton);
@@ -280,9 +278,9 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
     }
 
     private void setSelectedViewHolder(ViewHolder viewHolder) {
-        if(selectedViewHolder!=null)
+        if (selectedViewHolder != null)
             selectedViewHolder.itemView.setBackgroundResource(R.color.colorRVBackgroundCashBox);
-        if(viewHolder!=null) {
+        if (viewHolder != null) {
             viewHolder.itemView.setBackgroundResource(R.color.colorRVSelectedCashBox);
             updateShareIntent(viewHolder.getAdapterPosition());
         }
@@ -324,7 +322,7 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
         @OnTouch(R.id.reorderImage)
         public boolean onTouch(MotionEvent event) {
             setSelectedViewHolder(this);
-            if(onStartDragListener!=null && event.getActionMasked()== MotionEvent.ACTION_DOWN) {
+            if (onStartDragListener != null && event.getActionMasked() == MotionEvent.ACTION_DOWN) {
                 onStartDragListener.onStartDrag(this);
                 return true;
             } else

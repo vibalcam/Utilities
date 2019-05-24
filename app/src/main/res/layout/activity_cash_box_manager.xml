@@ -10,7 +10,6 @@
     tools:context=".ui.cashBoxManager.CashBoxManagerActivity">
 
     <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/appBarLayoutCBItem"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:theme="@style/AppTheme.AppBarOverlay">

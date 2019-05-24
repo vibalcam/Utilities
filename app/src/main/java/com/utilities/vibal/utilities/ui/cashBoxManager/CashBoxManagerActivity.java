@@ -3,7 +3,6 @@ package com.utilities.vibal.utilities.ui.cashBoxManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
@@ -26,6 +25,7 @@ import com.utilities.vibal.utilities.io.IOCashBoxManager;
 import com.utilities.vibal.utilities.models.CashBox;
 import com.utilities.vibal.utilities.models.CashBoxManager;
 import com.utilities.vibal.utilities.ui.swipeController.CashBoxSwipeController;
+import com.utilities.vibal.utilities.util.LogUtil;
 import com.utilities.vibal.utilities.util.Util;
 
 import java.io.IOException;
@@ -73,7 +73,7 @@ public class CashBoxManagerActivity extends AppCompatActivity {
         FloatingActionButton fab = findViewById(R.id.fabCBManager);
         fab.setOnClickListener(view -> showAddDialog());
 
-        Log.d(TAG, "onCreate: ");
+        LogUtil.debug(TAG, "onCreate: ");
     }
 
     // Cuando se ponga el widget
@@ -82,29 +82,29 @@ public class CashBoxManagerActivity extends AppCompatActivity {
 //        super.onRestart();
 //        // Reload the data
 ////        cashBoxManager = IOCashBoxManager.loadCashBoxManager(this);
-//        Log.d(TAG, "onRestart: ");
+//        LogUtil.debug(TAG, "onRestart: ");
 //    }
 
     @Override
     protected void onStop() {
         super.onStop();
-        Log.d(TAG, "onStop: ");
+        LogUtil.debug(TAG, "onStop: ");
         IOCashBoxManager.renameCashBoxManagerTemp(this);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Log.d(TAG, "onDestroy: ");
+        LogUtil.debug(TAG, "onDestroy: ");
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        Log.d(TAG, "onActivityResult: " + cashBoxManager.toString());
-        if (data!=null && requestCode == CashBoxManagerRecyclerAdapter.REQUEST_CODE_ITEM && resultCode == RESULT_OK)
+        LogUtil.debug(TAG, "onActivityResult: " + cashBoxManager.toString());
+        if (data != null && requestCode == CashBoxManagerRecyclerAdapter.REQUEST_CODE_ITEM && resultCode == RESULT_OK)
             cashBoxManager = data.getParcelableExtra(CashBoxManagerRecyclerAdapter.CASHBOX_MANAGER_EXTRA);
 //            cashBoxManager = (CashBoxManager) data.getSerializableExtra(CashBoxManagerRecyclerAdapter.CASHBOX_MANAGER_EXTRA);
-        Log.d(TAG, "onActivityResult: " + cashBoxManager.toString());
+        LogUtil.debug(TAG, "onActivityResult: " + cashBoxManager.toString());
         adapter.updateCashBoxManager(cashBoxManager);
 //        adapter.notifyDataSetChanged();
 
@@ -139,7 +139,7 @@ public class CashBoxManagerActivity extends AppCompatActivity {
         try {
             IOCashBoxManager.saveCashBoxManagerTemp(cashBoxManager, this);
         } catch (IOException e) {
-            Log.e(TAG, "onStop: error save", e);
+            LogUtil.error(TAG, "onStop: error save", e);
             e.printStackTrace();
         }
     }
@@ -162,7 +162,7 @@ public class CashBoxManagerActivity extends AppCompatActivity {
     }
 
     private void showAddDialog() {
-        if(adapter.actionMode!=null)
+        if (adapter.actionMode != null)
             adapter.actionMode.finish();
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);

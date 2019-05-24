@@ -25,11 +25,8 @@
     <string name="nameInUse">Name already in use</string>
     <string name="randomChooser_helpTitle">"Random Chooser Help"</string>
     <string name="cashBoxManager_helpTitle">"Cash Box Manager Help"</string>
-    <string name="helpTitle">Help</string>
     <string name="enterInitCashDialog">Initial Cash</string>
-    <string name="popupCBMDelete">Delete</string>
     <string name="popupCBMDuplicate">Duplicate</string>
-    <string name="popupCBMChangeName">Change Name</string>
     <string name="title_activity_cash_box_item">Cash Box Item</string>
     <string name="popupCBMShare">Share</string>
     <string name="newEntry">New Entry</string>

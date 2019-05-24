@@ -1,7 +1,6 @@
 package com.utilities.vibal.utilities.ui.cashBoxItem;
 
 import android.content.DialogInterface;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +17,7 @@ import com.google.android.material.textfield.TextInputLayout;
 import com.utilities.vibal.utilities.R;
 import com.utilities.vibal.utilities.models.CashBox;
 import com.utilities.vibal.utilities.ui.swipeController.CashBoxAdapterSwipable;
+import com.utilities.vibal.utilities.util.LogUtil;
 import com.utilities.vibal.utilities.util.Util;
 
 import java.text.DateFormat;
@@ -29,12 +29,10 @@ import butterknife.ButterKnife;
 public class CashBoxItemRecyclerAdapter extends RecyclerView.Adapter<CashBoxItemRecyclerAdapter.ViewHolder> implements CashBoxAdapterSwipable {
     private static final boolean DRAG_ENABLED = false;
     private static final boolean SWIPE_ENABLED = true;
-
+    private static final String TAG = "PruebaItemActivity";
     private final CashBoxItemActivity cashBoxItemActivity;
     private CashBox cashBox;
     private DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
-
-    private static final String TAG = "PruebaItemActivity";
 
     CashBoxItemRecyclerAdapter(CashBox cashBox, CashBoxItemActivity activity) {
         this.cashBox = cashBox;
@@ -52,7 +50,7 @@ public class CashBoxItemRecyclerAdapter extends RecyclerView.Adapter<CashBoxItem
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int index) {
         viewHolder.rvItemAmount.setText(cashBoxItemActivity.formatCurrency.format(cashBox.getAmount(index)));
         String info = cashBox.getInfo(index);
-        if(info.isEmpty())
+        if (info.isEmpty())
             viewHolder.rvItemInfo.setText(R.string.noInfoEntered);
         else
             viewHolder.rvItemInfo.setText(info);
@@ -79,9 +77,9 @@ public class CashBoxItemRecyclerAdapter extends RecyclerView.Adapter<CashBoxItem
         CashBox.Entry deletedEntry = cashBox.remove(position);
         notifyItemRemoved(position);
 //        cashBoxItemActivity.updateCash();
-        Snackbar.make(cashBoxItemActivity.getRecyclerView(),cashBoxItemActivity.getString(R.string.snackbarEntriesDeleted,1),Snackbar.LENGTH_LONG)
+        Snackbar.make(cashBoxItemActivity.getRecyclerView(), cashBoxItemActivity.getString(R.string.snackbarEntriesDeleted, 1), Snackbar.LENGTH_LONG)
                 .setAction(R.string.undo, (View v) -> {
-                    cashBox.add(position,deletedEntry);
+                    cashBox.add(position, deletedEntry);
                     notifyItemInserted(position);
 //                    cashBoxItemActivity.updateCash();
 //                    cashBoxItemActivity.saveCashBoxManager();
@@ -94,7 +92,7 @@ public class CashBoxItemRecyclerAdapter extends RecyclerView.Adapter<CashBoxItem
 
     @Override
     public void onItemModify(int position) {
-        Log.d(TAG, "onItemModify: ");
+        LogUtil.debug(TAG, "onItemModify: ");
 
         AlertDialog.Builder builder = new AlertDialog.Builder(cashBoxItemActivity);
         AlertDialog dialog = builder.setTitle(R.string.modifyEntry)
@@ -112,15 +110,15 @@ public class CashBoxItemRecyclerAdapter extends RecyclerView.Adapter<CashBoxItem
 
             CashBox.Entry entry = cashBox.getEntry(position);
             inputInfo.setText(entry.getCause());
-            inputAmount.setText(String.format(Locale.getDefault(),"%.2f",entry.getAmount()));
+            inputAmount.setText(String.format(Locale.getDefault(), "%.2f", entry.getAmount()));
 
             inputAmount.selectAll();
             Util.showKeyboard(cashBoxItemActivity, inputAmount);
             positive.setOnClickListener((View v) -> {
                 try {
-                    Log.d(TAG, "showAddDialog: cause" + (inputInfo.getText() == null) + (inputInfo.getText().toString().isEmpty()));
+                    LogUtil.debug(TAG, "showAddDialog: cause" + (inputInfo.getText() == null) + (inputInfo.getText().toString().isEmpty()));
                     String input = inputAmount.getText().toString();
-                    if(input.trim().isEmpty()) {
+                    if (input.trim().isEmpty()) {
                         layoutAmount.setError(cashBoxItemActivity.getString(R.string.required));
                         inputAmount.setText("");
                         Util.showKeyboard(cashBoxItemActivity, inputAmount);
@@ -130,15 +128,15 @@ public class CashBoxItemRecyclerAdapter extends RecyclerView.Adapter<CashBoxItem
 //                        cashBoxItemActivity.updateCash();
                         notifyItemChanged(position);
                         dialog1.dismiss();
-                        Snackbar.make(cashBoxItemActivity.getRecyclerView(),R.string.snackbarEntryModified,Snackbar.LENGTH_LONG)
-                            .setAction(R.string.undo, (View v1) -> {
-                                cashBox.modify(position, modifiedEntry);
+                        Snackbar.make(cashBoxItemActivity.getRecyclerView(), R.string.snackbarEntryModified, Snackbar.LENGTH_LONG)
+                                .setAction(R.string.undo, (View v1) -> {
+                                    cashBox.modify(position, modifiedEntry);
 //                                cashBoxItemActivity.updateCash();
-                                notifyItemChanged(position);
+                                    notifyItemChanged(position);
 //                                cashBoxItemActivity.saveCashBoxManager();
-                                cashBoxItemActivity.notifyCashBoxChanged();
-                            })
-                            .show();
+                                    cashBoxItemActivity.notifyCashBoxChanged();
+                                })
+                                .show();
 //                        cashBoxItemActivity.saveCashBoxManager();
                         cashBoxItemActivity.notifyCashBoxChanged();
                     }
@@ -164,7 +162,7 @@ public class CashBoxItemRecyclerAdapter extends RecyclerView.Adapter<CashBoxItem
 
         ViewHolder(@NonNull View view) {
             super(view);
-            ButterKnife.bind(this,view);
+            ButterKnife.bind(this, view);
         }
     }
 }

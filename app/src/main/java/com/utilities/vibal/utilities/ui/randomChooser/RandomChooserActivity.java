@@ -29,7 +29,7 @@ public class RandomChooserActivity extends AppCompatActivity {
     @BindView(R.id.rvRandomChooser)
     RecyclerView rvRandomChooser;
     @BindView(R.id.inputText)
-     EditText inputText;
+    EditText inputText;
 
     private List<String> contestants;
 
@@ -82,7 +82,7 @@ public class RandomChooserActivity extends AppCompatActivity {
                 return true;
 
             case R.id.action_RC_help:
-                Util.getHelpDialog(this,R.string.randomChooser_helpTitle,R.string.randomChooser_help).show();
+                Util.getHelpDialog(this, R.string.randomChooser_helpTitle, R.string.randomChooser_help).show();
                 return true;
 
             case R.id.action_RC_settings:
@@ -110,7 +110,7 @@ public class RandomChooserActivity extends AppCompatActivity {
         if (!input.isEmpty()) {
             contestants.add(input);
             inputText.setText("");
-            rvRandomChooser.getAdapter().notifyItemInserted(contestants.size()-1);
+            rvRandomChooser.getAdapter().notifyItemInserted(contestants.size() - 1);
         } else
             Toast.makeText(this, "You have to enter a name", Toast.LENGTH_SHORT).show();
     }

@@ -25,7 +25,7 @@ public class CashBoxManager implements Serializable, Parcelable {
     private static final String TAG = "PruebaCashBoxItem";
     private final List<CashBox> cashBoxes;
 
-    public CashBoxManager(){
+    public CashBoxManager() {
         cashBoxes = new ArrayList<>();
     }
 
@@ -33,32 +33,33 @@ public class CashBoxManager implements Serializable, Parcelable {
         cashBoxes = parcel.createTypedArrayList(CashBox.CREATOR);
     }
 
-    public CashBox get(int pos){
+    public CashBox get(int pos) {
         return cashBoxes.get(pos);
     }
 
-    public int size(){
+    public int size() {
         return cashBoxes.size();
     }
 
-    public boolean isEmpty(){
+    public boolean isEmpty() {
         return cashBoxes.isEmpty();
     }
 
     /**
      * Adds a cashBox
+     *
      * @param cashBox cashBox to be added
-     * @return 	true if this list doesn't contain the specified element
+     * @return true if this list doesn't contain the specified element
      */
-    public boolean add(CashBox cashBox){
-        if(!cashBoxes.contains(cashBox))
+    public boolean add(CashBox cashBox) {
+        if (!cashBoxes.contains(cashBox))
             return cashBoxes.add(cashBox);
         return false;
     }
 
-    public boolean add(int index,CashBox cashBox){
-        if(!cashBoxes.contains(cashBox)) {
-            cashBoxes.add(index,cashBox);
+    public boolean add(int index, CashBox cashBox) {
+        if (!cashBoxes.contains(cashBox)) {
+            cashBoxes.add(index, cashBox);
             return true;
         }
         return false;
@@ -66,40 +67,41 @@ public class CashBoxManager implements Serializable, Parcelable {
 
     /**
      * Changes the name of an element
-     * @param pos the position of the CashBox to be renamed
+     *
+     * @param pos     the position of the CashBox to be renamed
      * @param newName the new name of the CashBox
      * @return true if this list doesn't contain another CashBox with the same name
      * @throws IllegalArgumentException if the name is empty or its length exceeds CashBox.MAX_LENGTH_NAME
      */
-    public boolean changeName (int pos, String newName) throws IllegalArgumentException {
+    public boolean changeName(int pos, String newName) throws IllegalArgumentException {
         int index = cashBoxes.indexOf(new CashBox(newName));
-        if(index==-1){
+        if (index == -1) {
             cashBoxes.get(pos).setName(newName);
             return true;
         } else
             return index == pos;
     }
 
-    public CashBox remove(int pos){
+    public CashBox remove(int pos) {
         return cashBoxes.remove(pos);
     }
 
-    public void clear(){
+    public void clear() {
         cashBoxes.clear();
     }
 
-    public boolean set(int pos, CashBox cashBox){
-        if(!cashBoxes.contains(cashBox)) {
-            cashBoxes.set(pos,cashBox);
+    public boolean set(int pos, CashBox cashBox) {
+        if (!cashBoxes.contains(cashBox)) {
+            cashBoxes.set(pos, cashBox);
             return true;
         }
         return false;
     }
 
     public void move(int oldPos, int newPos) throws IndexOutOfBoundsException {
-        if(oldPos<0 || newPos>=cashBoxes.size())
+        if (oldPos < 0 || newPos >= cashBoxes.size())
             throw new IndexOutOfBoundsException("Trying to move from " + oldPos + " to " + newPos);
-        else if(oldPos!=newPos) {   // if both are the same position, no need to move
+        else if (oldPos != newPos) {   // if both are the same position, no need to move
             CashBox cashBox = cashBoxes.remove(oldPos);
             cashBoxes.add(newPos, cashBox);
         }
@@ -108,7 +110,7 @@ public class CashBoxManager implements Serializable, Parcelable {
     public boolean duplicate(int index, String newName) throws IllegalArgumentException {
         CashBox cashBox = (CashBox) cashBoxes.get(index).clone();
         cashBox.setName(newName);
-        return this.add(index+1,cashBox);
+        return this.add(index + 1, cashBox);
     }
 
     @Override
