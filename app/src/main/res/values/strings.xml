@@ -41,9 +41,11 @@
     <string name="item_totalCash">Total Cash</string>
     <string name="outOfRange">Out of range</string>
     <string name="noInfoEntered">(No info)</string>
+    <string name="required">*Required</string>
+    <string name="errorMessageAmount"> </string>
 
 
-    <string name="aboutApp">Utilities v2.0
+    <string name="aboutApp">Utilities v%s
         \n\nvibal 20/05/2019
     </string>
     <string name="appHelpTitle">Available Utilities</string>

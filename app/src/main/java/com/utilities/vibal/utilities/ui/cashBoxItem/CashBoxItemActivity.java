@@ -3,6 +3,7 @@ package com.utilities.vibal.utilities.ui.cashBoxItem;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -72,8 +73,7 @@ public class CashBoxItemActivity extends AppCompatActivity {
         //Get data
         Intent intent = getIntent();
         int cashBoxIndex = intent.getIntExtra(CashBoxManagerRecyclerAdapter.STRING_EXTRA, 0);
-        cashBoxManager = (CashBoxManager) intent.getSerializableExtra(CashBoxManagerRecyclerAdapter.CASHBOX_MANAGER_EXTRA);
-//        cashBoxManager = CashBoxManager.loadData(this);
+        cashBoxManager = intent.getParcelableExtra(CashBoxManagerRecyclerAdapter.CASHBOX_MANAGER_EXTRA);
         cashBox = cashBoxManager.get(cashBoxIndex);
 
         //Set Toolbar as ActionBar
@@ -126,10 +126,6 @@ public class CashBoxItemActivity extends AppCompatActivity {
         return rvCashBoxItem;
     }
 
-//    private Context getContext() {
-//        return this;
-//    }
-
     public void saveCashBoxManager() {
         try {
             IOCashBoxManager.saveCashBoxManagerTemp(cashBoxManager,this);
@@ -174,7 +170,7 @@ public class CashBoxItemActivity extends AppCompatActivity {
 
     private void returnResult() {
         Intent intent = new Intent();
-        intent.putExtra(CashBoxManagerRecyclerAdapter.CASHBOX_MANAGER_EXTRA,cashBoxManager);
+        intent.putExtra(CashBoxManagerRecyclerAdapter.CASHBOX_MANAGER_EXTRA, (Parcelable) cashBoxManager);
         setResult(RESULT_OK,intent);
         finish();
     }
@@ -249,10 +245,10 @@ public class CashBoxItemActivity extends AppCompatActivity {
                 try {
                     String input = inputAmount.getText().toString().trim();
                     if(input.isEmpty()) {
-                        layoutAmount.setError("*Required");
-                        Util.showKeyboard(this, inputAmount);
+                        layoutAmount.setError(CashBoxItemActivity.this.getString(R.string.required));
+                        Util.showKeyboard(CashBoxItemActivity.this, inputAmount);
                     } else {
-                        double amount = Double.parseDouble(inputAmount.getText().toString());
+                        double amount = Util.parseDouble(inputAmount.getText().toString());
                         cashBox.add(amount, inputInfo.getText().toString().trim(), Calendar.getInstance());
                         //                    rvCashBoxItem.getAdapter().notifyItemInserted(cashBox.sizeEntries() - 1);
                         rvCashBoxItem.getAdapter().notifyItemInserted(0);
@@ -264,7 +260,7 @@ public class CashBoxItemActivity extends AppCompatActivity {
                         notifyCashBoxChanged();
                     }
                 } catch (NumberFormatException e) {
-                    layoutAmount.setError("Not a valid number");
+                    layoutAmount.setError(CashBoxItemActivity.this.getString(R.string.errorMessageAmount));
                     inputAmount.selectAll();
                     Util.showKeyboard(this, inputAmount);
                 }

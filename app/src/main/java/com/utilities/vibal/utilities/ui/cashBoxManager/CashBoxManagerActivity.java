@@ -1,6 +1,5 @@
 package com.utilities.vibal.utilities.ui.cashBoxManager;
 
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -59,7 +58,7 @@ public class CashBoxManagerActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         //Initialize data
-        cashBoxManager = IOCashBoxManager.loadCashBoxManager(getContext());
+        cashBoxManager = IOCashBoxManager.loadCashBoxManager(this);
 
         //Set up RecyclerView
         rvCashBoxManager.setHasFixedSize(true);
@@ -82,7 +81,7 @@ public class CashBoxManagerActivity extends AppCompatActivity {
 //    protected void onRestart() {
 //        super.onRestart();
 //        // Reload the data
-////        cashBoxManager = IOCashBoxManager.loadCashBoxManager(getContext());
+////        cashBoxManager = IOCashBoxManager.loadCashBoxManager(this);
 //        Log.d(TAG, "onRestart: ");
 //    }
 
@@ -90,7 +89,7 @@ public class CashBoxManagerActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         Log.d(TAG, "onStop: ");
-        IOCashBoxManager.renameCashBoxManagerTemp(getContext());
+        IOCashBoxManager.renameCashBoxManagerTemp(this);
     }
 
     @Override
@@ -102,8 +101,9 @@ public class CashBoxManagerActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         Log.d(TAG, "onActivityResult: " + cashBoxManager.toString());
-        if (requestCode == CashBoxManagerRecyclerAdapter.REQUEST_CODE_ITEM && resultCode == RESULT_OK)
-            cashBoxManager = (CashBoxManager) data.getSerializableExtra(CashBoxManagerRecyclerAdapter.CASHBOX_MANAGER_EXTRA);
+        if (data!=null && requestCode == CashBoxManagerRecyclerAdapter.REQUEST_CODE_ITEM && resultCode == RESULT_OK)
+            cashBoxManager = data.getParcelableExtra(CashBoxManagerRecyclerAdapter.CASHBOX_MANAGER_EXTRA);
+//            cashBoxManager = (CashBoxManager) data.getSerializableExtra(CashBoxManagerRecyclerAdapter.CASHBOX_MANAGER_EXTRA);
         Log.d(TAG, "onActivityResult: " + cashBoxManager.toString());
         adapter.updateCashBoxManager(cashBoxManager);
 //        adapter.notifyDataSetChanged();
@@ -137,7 +137,7 @@ public class CashBoxManagerActivity extends AppCompatActivity {
 
     void saveCashBoxManager() {
         try {
-            IOCashBoxManager.saveCashBoxManagerTemp(cashBoxManager, getContext());
+            IOCashBoxManager.saveCashBoxManagerTemp(cashBoxManager, this);
         } catch (IOException e) {
             Log.e(TAG, "onStop: error save", e);
             e.printStackTrace();
@@ -173,48 +173,42 @@ public class CashBoxManagerActivity extends AppCompatActivity {
                 .create();
         dialog.setCanceledOnTouchOutside(false);
 
-        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
-            @Override
-            public void onShow(DialogInterface dialog) {
-                Button positive = ((AlertDialog) dialog).getButton(DialogInterface.BUTTON_POSITIVE);
-                TextInputEditText inputTextName = ((AlertDialog) dialog).findViewById(R.id.inputTextName);
-                TextInputLayout inputLayoutName = ((AlertDialog) dialog).findViewById(R.id.inputLayoutName);
-                TextInputEditText inputTextInitCash = ((AlertDialog) dialog).findViewById(R.id.inputTextInitCash);
-                TextInputLayout inputLayoutInitCash = ((AlertDialog) dialog).findViewById(R.id.inputLayoutInitCash);
+        dialog.setOnShowListener(dialog1 -> {
+            Button positive = ((AlertDialog) dialog1).getButton(DialogInterface.BUTTON_POSITIVE);
+            TextInputEditText inputTextName = ((AlertDialog) dialog1).findViewById(R.id.inputTextName);
+            TextInputLayout inputLayoutName = ((AlertDialog) dialog1).findViewById(R.id.inputLayoutName);
+            TextInputEditText inputTextInitCash = ((AlertDialog) dialog1).findViewById(R.id.inputTextInitCash);
+            TextInputLayout inputLayoutInitCash = ((AlertDialog) dialog1).findViewById(R.id.inputLayoutInitCash);
 
-                Util.showKeyboard(getContext(), inputTextName);
-                positive.setOnClickListener(v -> {
-                    try {
-                        CashBox cashBox = new CashBox(inputTextName.getText().toString());
-                        String strInitCash = inputTextInitCash.getText().toString().trim();
-                        if (!strInitCash.isEmpty() && Double.parseDouble(strInitCash) != 0)
-                            cashBox.add(Double.parseDouble(strInitCash), "Initial Amount", Calendar.getInstance());
-                        if (cashBoxManager.add(cashBox)) {
-                            adapter.notifyItemInserted(cashBoxManager.size() - 1);
-                            dialog.dismiss();
-                            saveCashBoxManager();
-                        } else {
-                            inputLayoutName.setError(getContext().getString(R.string.nameInUse));
-                            inputTextName.selectAll();
-                            Util.showKeyboard(getContext(), inputTextName);
-                        }
-                    } catch (NumberFormatException e) {
-                        inputLayoutInitCash.setError("Invalid amount");
-                        inputTextInitCash.selectAll();
-                        Util.showKeyboard(getContext(), inputTextInitCash);
-                    } catch (IllegalArgumentException e) {
-                        inputLayoutName.setError(e.getMessage());
-                        inputTextName.setText(inputTextName.getText().toString().trim());
+            Util.showKeyboard(CashBoxManagerActivity.this, inputTextName);
+            positive.setOnClickListener(v -> {
+                inputLayoutInitCash.setError(null);
+                inputLayoutName.setError(null);
+                try {
+                    CashBox cashBox = new CashBox(inputTextName.getText().toString());
+                    String strInitCash = inputTextInitCash.getText().toString().trim();
+                    if (!strInitCash.isEmpty() && Util.parseDouble(strInitCash) != 0)
+                        cashBox.add(Util.parseDouble(strInitCash), "Initial Amount", Calendar.getInstance());
+                    if (cashBoxManager.add(cashBox)) {
+                        adapter.notifyItemInserted(cashBoxManager.size() - 1);
+                        dialog1.dismiss();
+                        saveCashBoxManager();
+                    } else {
+                        inputLayoutName.setError(CashBoxManagerActivity.this.getString(R.string.nameInUse));
                         inputTextName.selectAll();
-                        Util.showKeyboard(getContext(), inputTextName);
+                        Util.showKeyboard(CashBoxManagerActivity.this, inputTextName);
                     }
-                });
-            }
+                } catch (NumberFormatException e) {
+                    inputLayoutInitCash.setError(CashBoxManagerActivity.this.getString(R.string.errorMessageAmount));
+                    inputTextInitCash.selectAll();
+                    Util.showKeyboard(CashBoxManagerActivity.this, inputTextInitCash);
+                } catch (IllegalArgumentException e) {
+                    inputLayoutName.setError(e.getMessage());
+                    inputTextName.selectAll();
+                    Util.showKeyboard(CashBoxManagerActivity.this, inputTextName);
+                }
+            });
         });
         dialog.show();
-    }
-
-    private Context getContext() {
-        return this;
     }
 }

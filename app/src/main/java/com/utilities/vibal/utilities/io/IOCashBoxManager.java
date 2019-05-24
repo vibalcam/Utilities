@@ -3,6 +3,8 @@ package com.utilities.vibal.utilities.io;
 import android.content.Context;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import com.utilities.vibal.utilities.models.CashBoxManager;
 
 import java.io.File;
@@ -10,19 +12,17 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import androidx.annotation.NonNull;
-
 public class IOCashBoxManager {
     private static final String TAG = "PruebaIO";
-    public static final String FILENAME ="cashBoxManager";
-    public static final String FILENAME_TEMP ="cashBoxManagerTemp";
+    private static final String FILENAME ="cashBoxManager";
+    private static final String FILENAME_TEMP ="cashBoxManagerTemp";
 
     public static void saveCashBoxManagerTemp(CashBoxManager manager, Context context) throws IOException {
         try(ObjectOutputStream objectOutputStream = new ObjectOutputStream(context.openFileOutput(FILENAME_TEMP,Context.MODE_PRIVATE))){
             objectOutputStream.writeObject(manager);
             Log.i(TAG, "saveData: funciona");
         } catch (IOException e) {
-            Log.i(TAG, "saveData: no");
+            Log.e(TAG, "saveCashBoxManagerTemp: ", e);
             throw e;
         }
     }

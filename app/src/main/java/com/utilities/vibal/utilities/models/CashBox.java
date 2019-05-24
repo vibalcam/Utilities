@@ -1,5 +1,8 @@
 package com.utilities.vibal.utilities.models;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import androidx.annotation.NonNull;
 
 import java.io.Serializable;
@@ -9,10 +12,21 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-public class CashBox implements Serializable {
-    private static final long serialVersionUID = 2L;
-
+public class CashBox implements Serializable,Parcelable {
     public static final int MAX_LENGTH_NAME = 15;
+    public static final Parcelable.Creator<CashBox> CREATOR = new Parcelable.Creator<CashBox>() {
+        @Override
+        public CashBox createFromParcel(Parcel source) {
+            return new CashBox(source);
+        }
+
+        @Override
+        public CashBox[] newArray(int size) {
+            return new CashBox[size];
+        }
+    };
+
+    private static final long serialVersionUID = 2L;
 
     private String name;
     private double cash; //sum of amounts
@@ -32,8 +46,37 @@ public class CashBox implements Serializable {
         this.entries = entries;
     }
 
+    public CashBox(Parcel parcel) {
+        name = parcel.readString();
+        cash = parcel.readDouble();
+        entries = parcel.createTypedArrayList(Entry.CREATOR);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(name);
+        dest.writeDouble(cash);
+        dest.writeTypedList(entries);
+    }
+
     // Immutable object in order for clone to be easier
-    public class Entry implements Serializable {
+    public static class Entry implements Serializable, Parcelable {
+        public static final Parcelable.Creator<Entry> CREATOR = new Parcelable.Creator<Entry>() {
+            @Override
+            public Entry createFromParcel(Parcel source) {
+                return new Entry(source);
+            }
+
+            @Override
+            public Entry[] newArray(int size) {
+                return new Entry[size];
+            }
+        };
         private static final long serialVersionUID = 3L;
 
         private String cause;
@@ -44,6 +87,13 @@ public class CashBox implements Serializable {
             setCause(cause);
             this.date = date;
             this.amount = amount;
+        }
+
+        private Entry(Parcel parcel) {
+            cause = parcel.readString();
+            date = Calendar.getInstance();
+            date.setTimeInMillis(parcel.readLong());
+            amount = parcel.readDouble();
         }
 
         public String getCause() {
@@ -71,6 +121,18 @@ public class CashBox implements Serializable {
                     currencyFormat.format(amount) +
                     "\n" +
                     cause;
+        }
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            dest.writeString(cause);
+            dest.writeLong(date.getTimeInMillis());
+            dest.writeDouble(amount);
         }
     }
 
@@ -207,7 +269,7 @@ public class CashBox implements Serializable {
 
     @Override
     @SuppressWarnings("CloneDoesntCallSuperClone")
-    public Object clone(){
+    public Object clone() {
         return new CashBox(name,cash,new ArrayList<Entry>(entries));
     }
 

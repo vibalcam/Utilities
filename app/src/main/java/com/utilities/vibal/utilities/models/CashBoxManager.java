@@ -1,10 +1,25 @@
 package com.utilities.vibal.utilities.models;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CashBoxManager implements Serializable {
+public class CashBoxManager implements Serializable, Parcelable {
+    public static final Parcelable.Creator<CashBoxManager> CREATOR = new Parcelable.Creator<CashBoxManager>() {
+        @Override
+        public CashBoxManager createFromParcel(Parcel source) {
+            return new CashBoxManager(source);
+        }
+
+        @Override
+        public CashBoxManager[] newArray(int size) {
+            return new CashBoxManager[size];
+        }
+    };
+
     private static final long serialVersionUID = 1L;
 
     private static final String TAG = "PruebaCashBoxItem";
@@ -12,6 +27,10 @@ public class CashBoxManager implements Serializable {
 
     public CashBoxManager(){
         cashBoxes = new ArrayList<>();
+    }
+
+    public CashBoxManager(Parcel parcel) {
+        cashBoxes = parcel.createTypedArrayList(CashBox.CREATOR);
     }
 
     public CashBox get(int pos){
@@ -90,5 +109,15 @@ public class CashBoxManager implements Serializable {
         CashBox cashBox = (CashBox) cashBoxes.get(index).clone();
         cashBox.setName(newName);
         return this.add(index+1,cashBox);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeTypedList(cashBoxes);
     }
 }

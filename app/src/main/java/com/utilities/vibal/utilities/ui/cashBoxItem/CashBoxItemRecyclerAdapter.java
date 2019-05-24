@@ -30,19 +30,15 @@ public class CashBoxItemRecyclerAdapter extends RecyclerView.Adapter<CashBoxItem
     private static final boolean DRAG_ENABLED = false;
     private static final boolean SWIPE_ENABLED = true;
 
+    private final CashBoxItemActivity cashBoxItemActivity;
     private CashBox cashBox;
-    private CashBoxItemActivity activity;
     private DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
 
     private static final String TAG = "PruebaItemActivity";
 
-    public CashBoxItemRecyclerAdapter(CashBox cashBox, CashBoxItemActivity activity) {
+    CashBoxItemRecyclerAdapter(CashBox cashBox, CashBoxItemActivity activity) {
         this.cashBox = cashBox;
-        this.activity = activity;
-    }
-
-    private CashBoxItemActivity getCashBoxItemActivity(){
-        return activity;
+        this.cashBoxItemActivity = activity;
     }
 
     @NonNull
@@ -54,7 +50,7 @@ public class CashBoxItemRecyclerAdapter extends RecyclerView.Adapter<CashBoxItem
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int index) {
-        viewHolder.rvItemAmount.setText(getCashBoxItemActivity().formatCurrency.format(cashBox.getAmount(index)));
+        viewHolder.rvItemAmount.setText(cashBoxItemActivity.formatCurrency.format(cashBox.getAmount(index)));
         String info = cashBox.getInfo(index);
         if(info.isEmpty())
             viewHolder.rvItemInfo.setText(R.string.noInfoEntered);
@@ -80,29 +76,27 @@ public class CashBoxItemRecyclerAdapter extends RecyclerView.Adapter<CashBoxItem
 
     @Override
     public void onItemDelete(int position) {
-        CashBoxItemActivity activity = getCashBoxItemActivity();
         CashBox.Entry deletedEntry = cashBox.remove(position);
         notifyItemRemoved(position);
-//        activity.updateCash();
-        Snackbar.make(activity.getRecyclerView(),getCashBoxItemActivity().getString(R.string.snackbarEntriesDeleted,1),Snackbar.LENGTH_LONG)
+//        cashBoxItemActivity.updateCash();
+        Snackbar.make(cashBoxItemActivity.getRecyclerView(),cashBoxItemActivity.getString(R.string.snackbarEntriesDeleted,1),Snackbar.LENGTH_LONG)
                 .setAction(R.string.undo, (View v) -> {
                     cashBox.add(position,deletedEntry);
                     notifyItemInserted(position);
-//                    activity.updateCash();
-//                    activity.saveCashBoxManager();
-                    activity.notifyCashBoxChanged();
+//                    cashBoxItemActivity.updateCash();
+//                    cashBoxItemActivity.saveCashBoxManager();
+                    cashBoxItemActivity.notifyCashBoxChanged();
                 })
                 .show();
-//        activity.saveCashBoxManager();
-        activity.notifyCashBoxChanged();
+//        cashBoxItemActivity.saveCashBoxManager();
+        cashBoxItemActivity.notifyCashBoxChanged();
     }
 
     @Override
     public void onItemModify(int position) {
         Log.d(TAG, "onItemModify: ");
-        CashBoxItemActivity activity = getCashBoxItemActivity();
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        AlertDialog.Builder builder = new AlertDialog.Builder(cashBoxItemActivity);
         AlertDialog dialog = builder.setTitle(R.string.modifyEntry)
                 .setView(R.layout.entry_cash_box_item_input)
                 .setNegativeButton(R.string.cancelDialog, null)
@@ -121,37 +115,37 @@ public class CashBoxItemRecyclerAdapter extends RecyclerView.Adapter<CashBoxItem
             inputAmount.setText(String.format(Locale.getDefault(),"%.2f",entry.getAmount()));
 
             inputAmount.selectAll();
-            Util.showKeyboard(activity, inputAmount);
+            Util.showKeyboard(cashBoxItemActivity, inputAmount);
             positive.setOnClickListener((View v) -> {
                 try {
                     Log.d(TAG, "showAddDialog: cause" + (inputInfo.getText() == null) + (inputInfo.getText().toString().isEmpty()));
                     String input = inputAmount.getText().toString();
                     if(input.trim().isEmpty()) {
-                        layoutAmount.setError("You must enter an amount");
+                        layoutAmount.setError(cashBoxItemActivity.getString(R.string.required));
                         inputAmount.setText("");
-                        Util.showKeyboard(activity, inputAmount);
+                        Util.showKeyboard(cashBoxItemActivity, inputAmount);
                     } else {
-                        double amount = Double.parseDouble(inputAmount.getText().toString());
+                        double amount = Util.parseDouble(inputAmount.getText().toString());
                         CashBox.Entry modifiedEntry = cashBox.modify(position, amount, inputInfo.getText().toString(), cashBox.getDate(position));
-//                        activity.updateCash();
+//                        cashBoxItemActivity.updateCash();
                         notifyItemChanged(position);
                         dialog1.dismiss();
-                        Snackbar.make(activity.getRecyclerView(),R.string.snackbarEntryModified,Snackbar.LENGTH_LONG)
+                        Snackbar.make(cashBoxItemActivity.getRecyclerView(),R.string.snackbarEntryModified,Snackbar.LENGTH_LONG)
                             .setAction(R.string.undo, (View v1) -> {
                                 cashBox.modify(position, modifiedEntry);
-//                                activity.updateCash();
+//                                cashBoxItemActivity.updateCash();
                                 notifyItemChanged(position);
-//                                activity.saveCashBoxManager();
-                                activity.notifyCashBoxChanged();
+//                                cashBoxItemActivity.saveCashBoxManager();
+                                cashBoxItemActivity.notifyCashBoxChanged();
                             })
                             .show();
-//                        activity.saveCashBoxManager();
-                        activity.notifyCashBoxChanged();
+//                        cashBoxItemActivity.saveCashBoxManager();
+                        cashBoxItemActivity.notifyCashBoxChanged();
                     }
                 } catch (NumberFormatException e) {
-                    layoutAmount.setError("Not a valid number");
+                    layoutAmount.setError(cashBoxItemActivity.getString(R.string.errorMessageAmount));
                     inputAmount.selectAll();
-                    Util.showKeyboard(activity, inputAmount);
+                    Util.showKeyboard(cashBoxItemActivity, inputAmount);
                 }
             });
         });
@@ -168,7 +162,7 @@ public class CashBoxItemRecyclerAdapter extends RecyclerView.Adapter<CashBoxItem
         @BindView(R.id.rvItemInfo)
         TextView rvItemInfo;
 
-        public ViewHolder(@NonNull View view) {
+        ViewHolder(@NonNull View view) {
             super(view);
             ButterKnife.bind(this,view);
         }
