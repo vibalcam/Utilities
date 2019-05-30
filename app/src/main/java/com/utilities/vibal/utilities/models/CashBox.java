@@ -134,14 +134,15 @@ public class CashBox implements Serializable, Parcelable {
 
     public double addAll(List<Entry> entries) {
         this.entries.addAll(entries);
-        updateCash();
+        cash = updateCash();
         return cash;
     }
 
-    private void updateCash() {
-        cash = 0;
+    private int updateCash() {
+        int sum = 0;
         for (Entry entry : entries)
-            cash += entry.getAmount();
+            sum += entry.getAmount();
+        return sum;
     }
 
     /**
@@ -209,15 +210,18 @@ public class CashBox implements Serializable, Parcelable {
     @Override
     @NonNull
     public String toString() {
+        NumberFormat currencyFormat = NumberFormat.getCurrencyInstance();
+        DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
         StringBuilder builder = new StringBuilder();
+
         builder.append("*")
                 .append(name)
                 .append("*");
-        for (Entry k : entries)
-            builder.append("\n")
-                    .append(k.toString());
+        for (Entry entry : entries)
+            builder.append("\n\n")
+                    .append(entry.toString(currencyFormat,dateFormat));
         builder.append("\n*TotalCash: ")
-                .append(cash)
+                .append(currencyFormat.format(cash))
                 .append("*");
         return builder.toString();
     }
@@ -270,8 +274,13 @@ public class CashBox implements Serializable, Parcelable {
         @Override
         @NonNull
         public String toString() {
-            NumberFormat currencyFormat = NumberFormat.getCurrencyInstance();
-            return DateFormat.getDateInstance().format(date.getTime()) + "\t\t" +
+            return toString(NumberFormat.getCurrencyInstance(),DateFormat.getDateInstance(DateFormat.SHORT));
+        }
+
+        @NonNull
+        private String toString(NumberFormat currencyFormat, DateFormat dateFormat) {
+            return dateFormat.format(date.getTime()) +
+                    "\t\t" +
                     currencyFormat.format(amount) +
                     "\n" +
                     cause;

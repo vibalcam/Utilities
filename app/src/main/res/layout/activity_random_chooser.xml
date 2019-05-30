@@ -4,14 +4,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/white"
+    android:layout_marginStart="@dimen/main_marginHorizontal"
+    android:layout_marginEnd="@dimen/main_marginHorizontal"
+    android:layout_marginTop="@dimen/main_marginVertical"
+    android:layout_marginBottom="@dimen/main_marginVertical"
     tools:context=".ui.randomChooser.RandomChooserActivity">
 
     <TextView
         android:id="@+id/titleText"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:layout_marginTop="@dimen/main_marginVertical"
         android:gravity="center"
         android:text="@string/randomChooser_title"
         android:textAppearance="?android:attr/textAppearanceLarge"
@@ -19,7 +21,6 @@
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/rvRandomChooser"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_chainStyle="spread_inside" />
@@ -28,10 +29,8 @@
         android:id="@+id/rvRandomChooser"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="@dimen/main_marginHorizontal"
         android:layout_marginTop="@dimen/main_marginVertical"
         android:layout_marginBottom="@dimen/main_marginVertical"
-        android:layout_marginEnd="@dimen/main_marginHorizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
@@ -43,8 +42,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="@string/add"
-        tools:layout_editor_absoluteX="261dp"
-        tools:layout_editor_absoluteY="591dp"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
         app:layout_constraintStart_toEndOf="@id/inputText"
         app:layout_constraintEnd_toEndOf="@+id/rvRandomChooser"
         app:layout_constraintBottom_toTopOf="@id/buttonRoll"
@@ -61,7 +59,6 @@
         android:imeOptions="actionGo"
         app:layout_constraintBottom_toBottomOf="@+id/buttonAdd"
         app:layout_constraintEnd_toStartOf="@+id/buttonAdd"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="@+id/rvRandomChooser"
         app:layout_constraintTop_toTopOf="@+id/buttonAdd"
         app:layout_constraintHorizontal_weight="2"
@@ -71,24 +68,21 @@
         android:id="@+id/buttonShuffle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/main_marginVertical"
         android:text="@string/shuffle"
+        android:layout_marginEnd="@dimen/main_marginHorizontal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/buttonRoll"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="@+id/inputText"
-        app:layout_constraintTop_toBottomOf="@id/inputText"
-        app:layout_constraintHorizontal_weight="1"/>
+        app:layout_constraintTop_toBottomOf="@id/inputText" />
 
     <Button
         android:id="@+id/buttonRoll"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="@string/roll"
+        android:layout_marginStart="@dimen/main_marginHorizontal"
         app:layout_constraintBottom_toBottomOf="@+id/buttonShuffle"
         app:layout_constraintEnd_toEndOf="@+id/buttonAdd"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/buttonShuffle"
-        app:layout_constraintTop_toTopOf="@+id/buttonShuffle"
-        app:layout_constraintHorizontal_weight="1"/>
+        app:layout_constraintTop_toTopOf="@+id/buttonShuffle" />
 </androidx.constraintlayout.widget.ConstraintLayout>

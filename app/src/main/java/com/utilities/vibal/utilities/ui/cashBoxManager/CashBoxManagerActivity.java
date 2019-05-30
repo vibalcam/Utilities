@@ -9,21 +9,22 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.utilities.vibal.utilities.R;
 import com.utilities.vibal.utilities.io.IOCashBoxManager;
 import com.utilities.vibal.utilities.models.CashBox;
 import com.utilities.vibal.utilities.models.CashBoxManager;
+import com.utilities.vibal.utilities.ui.settings.SettingsActivity;
 import com.utilities.vibal.utilities.ui.swipeController.CashBoxSwipeController;
 import com.utilities.vibal.utilities.util.LogUtil;
 import com.utilities.vibal.utilities.util.Util;
@@ -33,14 +34,11 @@ import java.util.Calendar;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 public class CashBoxManagerActivity extends AppCompatActivity {
     private static final String TAG = "PruebaManagerActivity";
 
-    @BindView(R.id.rvCashBoxManager)
-    RecyclerView rvCashBoxManager;
-    @BindView(R.id.toolbarCBManager)
-    Toolbar toolbarCBManager;
     @BindView(R.id.lyCBM)
     CoordinatorLayout coordinatorLayout;
 
@@ -54,24 +52,25 @@ public class CashBoxManagerActivity extends AppCompatActivity {
         ButterKnife.bind(this);
 
         //Set Toolbar as ActionBar
-        setSupportActionBar(toolbarCBManager);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        setSupportActionBar(findViewById(R.id.toolbarCBManager));
+        ActionBar actionBar = getSupportActionBar();
+        if(actionBar!=null) {
+            getSupportActionBar().setTitle(R.string.titleCBM);
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
 
         //Initialize data
         cashBoxManager = IOCashBoxManager.loadCashBoxManager(this);
 
         //Set up RecyclerView
+        RecyclerView rvCashBoxManager = findViewById(R.id.rvCashBoxManager);
         rvCashBoxManager.setHasFixedSize(true);
         rvCashBoxManager.setLayoutManager(new LinearLayoutManager(this));
         adapter = new CashBoxManagerRecyclerAdapter(cashBoxManager, this);
         rvCashBoxManager.setAdapter(adapter);
-        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new CashBoxSwipeController(adapter));
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new CashBoxSwipeController(adapter, PreferenceManager.getDefaultSharedPreferences(this).getBoolean("swipeDelete", true)));
         itemTouchHelper.attachToRecyclerView(rvCashBoxManager);
         adapter.setOnStartDragListener(itemTouchHelper::startDrag);
-
-        //Set up fab
-        FloatingActionButton fab = findViewById(R.id.fabCBManager);
-        fab.setOnClickListener(view -> showAddDialog());
 
         LogUtil.debug(TAG, "onCreate: ");
     }
@@ -101,14 +100,18 @@ public class CashBoxManagerActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         LogUtil.debug(TAG, "onActivityResult: " + cashBoxManager.toString());
-        if (data != null && requestCode == CashBoxManagerRecyclerAdapter.REQUEST_CODE_ITEM && resultCode == RESULT_OK)
+        if (data != null && requestCode == CashBoxManagerRecyclerAdapter.REQUEST_CODE_ITEM && resultCode == RESULT_OK) {
             cashBoxManager = data.getParcelableExtra(CashBoxManagerRecyclerAdapter.CASHBOX_MANAGER_EXTRA);
-//            cashBoxManager = (CashBoxManager) data.getSerializableExtra(CashBoxManagerRecyclerAdapter.CASHBOX_MANAGER_EXTRA);
+            adapter.updateCashBoxManager(cashBoxManager);
+        }
         LogUtil.debug(TAG, "onActivityResult: " + cashBoxManager.toString());
-        adapter.updateCashBoxManager(cashBoxManager);
-//        adapter.notifyDataSetChanged();
 
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @OnClick(R.id.fabCBManager)
+    void onFabClicked() {
+        showAddDialog();
     }
 
     @Override
@@ -129,6 +132,7 @@ public class CashBoxManagerActivity extends AppCompatActivity {
             case R.id.action_manager_reorder:
                 return adapter.showActionMode();
             case R.id.action_manager_settings:
+                startActivity(new Intent(this, SettingsActivity.class));
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

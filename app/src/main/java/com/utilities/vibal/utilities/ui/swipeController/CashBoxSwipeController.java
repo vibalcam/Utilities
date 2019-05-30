@@ -19,12 +19,14 @@ import static androidx.recyclerview.widget.ItemTouchHelper.RIGHT;
 import static androidx.recyclerview.widget.ItemTouchHelper.UP;
 
 public class CashBoxSwipeController extends ItemTouchHelper.Callback {
+    private final boolean swipeLeftDelete;
     private CashBoxAdapterSwipable adapter;
     private int fromIndex = -1;
     private int toIndex = -1;
 
-    public CashBoxSwipeController(CashBoxAdapterSwipable adapter) {
+    public CashBoxSwipeController(CashBoxAdapterSwipable adapter, boolean swipeLeftDelete) {
         this.adapter = adapter;
+        this.swipeLeftDelete = swipeLeftDelete;
     }
 
     @Override
@@ -71,12 +73,12 @@ public class CashBoxSwipeController extends ItemTouchHelper.Callback {
             Rect rectTotal = new Rect(viewHolder.itemView.getLeft(), viewHolder.itemView.getTop(), viewHolder.itemView.getRight(), viewHolder.itemView.getBottom());
 
             // Choose Drawable and background color
-            if (dX > 0) {  // right swipe -> modify
-                drawable = recyclerView.getContext().getDrawable(R.drawable.ic_edit_white_24dp);
-                paint.setColor(Color.BLUE);
-            } else {    // left swipe -> delete
+            if ((dX < 0 && swipeLeftDelete) || (dX > 0 && !swipeLeftDelete)) {  // delete swipe
                 drawable = recyclerView.getContext().getDrawable(R.drawable.delete);
                 paint.setColor(Color.RED);
+            } else {    // modify swipe
+                drawable = recyclerView.getContext().getDrawable(R.drawable.ic_edit_white_24dp);
+                paint.setColor(Color.BLUE);
             }
             if (Math.abs(dX) < rectTotal.width() / 3)
                 paint.setColor(Color.LTGRAY);
@@ -87,9 +89,9 @@ public class CashBoxSwipeController extends ItemTouchHelper.Callback {
 
                 int size = drawable.getIntrinsicHeight() > rectTotal.height() ? rectTotal.height() : drawable.getIntrinsicHeight();
                 int padding = (rectTotal.height() - size) / 2;
-                if (dX > 0)    // icon on the left side
+                if (dX > 0)    // icon on the left side when swiping right
                     drawable.setBounds(rectTotal.left + padding, rectTotal.top + padding, rectTotal.left + padding + size, rectTotal.bottom - padding);
-                else    // icon on the right side
+                else    // icon on the right side when swiping left
                     drawable.setBounds(rectTotal.right - padding - size, rectTotal.top + padding, rectTotal.right - padding, rectTotal.bottom - padding);
                 drawable.draw(c);
             }

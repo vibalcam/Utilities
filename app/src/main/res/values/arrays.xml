@@ -1,0 +1,17 @@
+<resources>
+    <!--General Preferences-->
+    <string-array name="defaultStart_values">
+        <!--Main Activity-->
+        <item>main</item>
+        <!--RandomChooser-->
+        <item>randomChooser</item>
+        <!--CashBox Manager-->
+        <item>cashBoxManager</item>
+    </string-array>
+
+    <string-array name="defaultStart_entries">
+        <item>Home Screen</item>
+        <item>Random Chooser</item>
+        <item>CashBox Manager</item>
+    </string-array>
+</resources>

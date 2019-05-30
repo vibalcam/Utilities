@@ -11,18 +11,18 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.ShareActionProvider;
-import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.view.MenuItemCompat;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -31,6 +31,7 @@ import com.utilities.vibal.utilities.io.IOCashBoxManager;
 import com.utilities.vibal.utilities.models.CashBox;
 import com.utilities.vibal.utilities.models.CashBoxManager;
 import com.utilities.vibal.utilities.ui.cashBoxManager.CashBoxManagerRecyclerAdapter;
+import com.utilities.vibal.utilities.ui.settings.SettingsActivity;
 import com.utilities.vibal.utilities.ui.swipeController.CashBoxSwipeController;
 import com.utilities.vibal.utilities.util.LogUtil;
 import com.utilities.vibal.utilities.util.Util;
@@ -42,12 +43,12 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 public class CashBoxItemActivity extends AppCompatActivity {
     private static final double MAX_SHOW_CASH = 99999999;
     private static final String TAG = "PruebaItemActivity";
-    @BindView(R.id.toolbarCBItem)
-    Toolbar toolbarCBItem;
+
     @BindView(R.id.rvCashBoxItem)
     RecyclerView rvCashBoxItem;
     @BindView(R.id.itemCash)
@@ -68,32 +69,32 @@ public class CashBoxItemActivity extends AppCompatActivity {
 
         //Get data
         Intent intent = getIntent();
-        int cashBoxIndex = intent.getIntExtra(CashBoxManagerRecyclerAdapter.STRING_EXTRA, 0);
+        int cashBoxIndex = intent.getIntExtra(CashBoxManagerRecyclerAdapter.INDEX_EXTRA, 0);
         cashBoxManager = intent.getParcelableExtra(CashBoxManagerRecyclerAdapter.CASHBOX_MANAGER_EXTRA);
         cashBox = cashBoxManager.get(cashBoxIndex);
 
         //Set Toolbar as ActionBar
-        setSupportActionBar(toolbarCBItem);
+        setSupportActionBar(findViewById(R.id.toolbarCBItem));
         LogUtil.debug(TAG, "on create: titulo: " + cashBox.getName());
-        getSupportActionBar().setTitle(cashBox.getName());
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        ActionBar actionBar = getSupportActionBar();
+        if(actionBar!=null) {
+            actionBar.setTitle(cashBox.getName());
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
 
         //Set up RecyclerView
 //        rvCashBoxItem.setNestedScrollingEnabled(true);
         rvCashBoxItem.setHasFixedSize(true);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(rvCashBoxItem.getContext());
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         rvCashBoxItem.setLayoutManager(layoutManager);
         CashBoxItemRecyclerAdapter adapter = new CashBoxItemRecyclerAdapter(cashBox, this);
         rvCashBoxItem.setAdapter(adapter);
-        (new ItemTouchHelper(new CashBoxSwipeController(adapter))).attachToRecyclerView(rvCashBoxItem);
-        rvCashBoxItem.addItemDecoration(new DividerItemDecoration(rvCashBoxItem.getContext(), layoutManager.getOrientation()));
+        boolean swipeLeftDelete = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("swipeDelete", true);
+        (new ItemTouchHelper(new CashBoxSwipeController(adapter, swipeLeftDelete))).attachToRecyclerView(rvCashBoxItem);
+        rvCashBoxItem.addItemDecoration(new DividerItemDecoration(this, layoutManager.getOrientation()));
 
         //Set cash to the actual value
         updateCash();
-
-        //Set up Fab
-        FloatingActionButton fab = findViewById(R.id.fabCBItem);
-        fab.setOnClickListener((View view) -> showAddDialog());
     }
 
     @Override
@@ -105,9 +106,6 @@ public class CashBoxItemActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-
-//        // Save data
-//        saveCashBoxManager();
         // Rename the temporary file to the actual store file
         IOCashBoxManager.renameCashBoxManagerTemp(this);
     }
@@ -118,8 +116,9 @@ public class CashBoxItemActivity extends AppCompatActivity {
         LogUtil.debug(TAG, "onDestroy: ");
     }
 
-    public RecyclerView getRecyclerView() {
-        return rvCashBoxItem;
+    @OnClick(R.id.fabCBItem)
+    void onFabClicked() {
+        showAddDialog();
     }
 
     public void saveCashBoxManager() {
@@ -187,6 +186,7 @@ public class CashBoxItemActivity extends AppCompatActivity {
                 deleteAll();
                 return true;
             case R.id.action_item_settings:
+                startActivity(new Intent(this, SettingsActivity.class));
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -195,29 +195,19 @@ public class CashBoxItemActivity extends AppCompatActivity {
 
     private void deleteAll() {
         if (!cashBox.isEmpty()) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle(R.string.confirmDeleteAllDialog)
-                    .setMessage("Are you sure you want to delete all entries? This action CANNOT be undone")
-                    .setNegativeButton(R.string.cancelDialog, null)
-                    .setPositiveButton(R.string.confirmDeleteDialogConfirm, (DialogInterface dialog, int which) -> {
-                        List<CashBox.Entry> entryList = cashBox.clear();
-                        int size = entryList.size();
-                        rvCashBoxItem.getAdapter().notifyItemRangeRemoved(0, size);
-//                        updateCash();
-                        Snackbar.make(itemCBCoordinatorLayout, getString(R.string.snackbarEntriesDeleted, size), Snackbar.LENGTH_LONG)
-                                .setAction(R.string.undo, v -> {
-                                    cashBox.addAll(entryList);
-                                    rvCashBoxItem.getAdapter().notifyItemRangeInserted(0, size);
-                                    notifyCashBoxChanged();
-//                                    updateCash();
-//                                    saveCashBoxManager();
-                                })
-                                .show();
-//                        saveCashBoxManager();
-                        notifyCashBoxChanged();
-                    }).show();
+            List<CashBox.Entry> entryList = cashBox.clear();
+            int size = entryList.size();
+            rvCashBoxItem.getAdapter().notifyItemRangeRemoved(0, size);
+            Snackbar.make(itemCBCoordinatorLayout, getString(R.string.snackbarEntriesDeleted, size), Snackbar.LENGTH_LONG)
+                .setAction(R.string.undo, v -> {
+                    cashBox.addAll(entryList);
+                    rvCashBoxItem.getAdapter().notifyItemRangeInserted(0, size);
+                    notifyCashBoxChanged();
+                })
+                .show();
+            notifyCashBoxChanged();
         } else
-            Toast.makeText(this, "No entries to delete", Toast.LENGTH_SHORT)
+            Toast.makeText(this, R.string.noEntriesDelete, Toast.LENGTH_SHORT)
                     .show();
     }
 

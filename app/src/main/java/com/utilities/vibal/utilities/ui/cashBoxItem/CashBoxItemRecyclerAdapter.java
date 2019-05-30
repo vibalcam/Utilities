@@ -77,7 +77,7 @@ public class CashBoxItemRecyclerAdapter extends RecyclerView.Adapter<CashBoxItem
         CashBox.Entry deletedEntry = cashBox.remove(position);
         notifyItemRemoved(position);
 //        cashBoxItemActivity.updateCash();
-        Snackbar.make(cashBoxItemActivity.getRecyclerView(), cashBoxItemActivity.getString(R.string.snackbarEntriesDeleted, 1), Snackbar.LENGTH_LONG)
+        Snackbar.make(cashBoxItemActivity.rvCashBoxItem, cashBoxItemActivity.getString(R.string.snackbarEntriesDeleted, 1), Snackbar.LENGTH_LONG)
                 .setAction(R.string.undo, (View v) -> {
                     cashBox.add(position, deletedEntry);
                     notifyItemInserted(position);
@@ -128,7 +128,7 @@ public class CashBoxItemRecyclerAdapter extends RecyclerView.Adapter<CashBoxItem
 //                        cashBoxItemActivity.updateCash();
                         notifyItemChanged(position);
                         dialog1.dismiss();
-                        Snackbar.make(cashBoxItemActivity.getRecyclerView(), R.string.snackbarEntryModified, Snackbar.LENGTH_LONG)
+                        Snackbar.make(cashBoxItemActivity.rvCashBoxItem, R.string.snackbarEntryModified, Snackbar.LENGTH_LONG)
                                 .setAction(R.string.undo, (View v1) -> {
                                     cashBox.modify(position, modifiedEntry);
 //                                cashBoxItemActivity.updateCash();

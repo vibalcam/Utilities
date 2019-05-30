@@ -39,8 +39,8 @@ import butterknife.ButterKnife;
 import butterknife.OnTouch;
 
 public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxManagerRecyclerAdapter.ViewHolder> implements CashBoxAdapterSwipable {
-    public static final String STRING_EXTRA = "com.utilities.vibal.CashBoxIndex";
-    public static final String CASHBOX_MANAGER_EXTRA = "com.utilities.vibal.CashBoxManager";
+    public static final String INDEX_EXTRA = "com.utilities.vibal.cashBoxIndex";
+    public static final String CASHBOX_MANAGER_EXTRA = "com.utilities.vibal.cashBoxManager";
     static final int REQUEST_CODE_ITEM = 1;
 
     private static final boolean SWIPE_ENABLED = true;
@@ -337,7 +337,7 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
             if (actionMode == null) {
 //            CashBox cashBox = cashBoxManager.get(selectedIndex);
                 Intent intent = new Intent(cashBoxManagerActivity, CashBoxItemActivity.class);
-                intent.putExtra(STRING_EXTRA, selectedViewHolder.getAdapterPosition());
+                intent.putExtra(INDEX_EXTRA, selectedViewHolder.getAdapterPosition());
                 intent.putExtra(CASHBOX_MANAGER_EXTRA, (Parcelable) cashBoxManager);
 //            cashBoxManagerActivity.startActivity(intent);
                 cashBoxManagerActivity.startActivityForResult(intent, REQUEST_CODE_ITEM);

@@ -9,7 +9,7 @@
     <item
         android:id="@+id/action_manager_reorder"
         android:title="@string/menu_contextualToolbar"
-        android:icon="@drawable/reorder_horizontal_white_24dp"
+        android:icon="@drawable/ic_edit_white_24dp"
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_manager_settings"

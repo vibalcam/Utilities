@@ -7,8 +7,7 @@
     android:paddingTop="@dimen/inputTextMargin"
     android:paddingBottom="@dimen/inputTextMargin"
     android:paddingStart="@dimen/paddingDialog"
-    android:paddingEnd="@dimen/paddingDialog"
-    android:background="@color/colorRVBackgroundCashBox">
+    android:paddingEnd="@dimen/paddingDialog">
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/inputLayoutChangeName"
         android:layout_width="match_parent"

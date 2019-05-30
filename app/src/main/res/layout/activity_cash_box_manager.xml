@@ -5,7 +5,6 @@
     android:id="@+id/lyCBM"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/white"
     android:fitsSystemWindows="true"
     tools:context=".ui.cashBoxManager.CashBoxManagerActivity">
 
@@ -38,6 +37,6 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
         android:src="@drawable/ic_add"
-        app:srcCompat="@android:drawable/ic_dialog_email"/>
+        app:srcCompat="@drawable/ic_add"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
