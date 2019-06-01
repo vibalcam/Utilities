@@ -129,6 +129,10 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
             viewHolder.reorderImage.setVisibility(View.GONE);
             viewHolder.rvAmount.setVisibility(View.VISIBLE);
             viewHolder.rvAmount.setText(currencyFormat.format(cashBox.getCash()));
+            if(cashBox.getCash()<0)
+                viewHolder.rvAmount.setTextColor(cashBoxManagerActivity.getColor(R.color.colorNegativeNumber));
+            else
+                viewHolder.rvAmount.setTextColor(cashBoxManagerActivity.getColor(R.color.colorPositiveNumber));
         }
 
         // Update selected ViewHolder

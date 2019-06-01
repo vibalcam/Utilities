@@ -18,8 +18,6 @@
         app:helperTextEnabled="true"
         app:helperText="Can be blank"
         app:endIconMode="clear_text"
-        app:counterEnabled="true"
-        app:counterMaxLength="50"
         android:hint="@string/enterInfoDialog" >
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/inputTextInfo"
@@ -27,8 +25,7 @@
             android:layout_height="match_parent"
             android:textColor="@android:color/black"
             android:inputType="textMultiLine"
-            android:allowUndo="true"
-            android:maxLength="50" />
+            android:allowUndo="true" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout

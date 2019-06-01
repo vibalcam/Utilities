@@ -48,13 +48,21 @@ public class CashBoxItemRecyclerAdapter extends RecyclerView.Adapter<CashBoxItem
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int index) {
-        viewHolder.rvItemAmount.setText(cashBoxItemActivity.formatCurrency.format(cashBox.getAmount(index)));
-        String info = cashBox.getInfo(index);
-        if (info.isEmpty())
+        CashBox.Entry entry = cashBox.getEntry(index);
+
+        // Amount
+        viewHolder.rvItemAmount.setText(cashBoxItemActivity.formatCurrency.format(entry.getAmount()));
+        if(entry.getAmount()<0)
+            viewHolder.rvItemAmount.setTextColor(cashBoxItemActivity.getColor(R.color.colorNegativeNumber));
+        else
+            viewHolder.rvItemAmount.setTextColor(cashBoxItemActivity.getColor(R.color.colorPositiveNumber));
+        // Info
+        if (entry.getInfo().isEmpty())
             viewHolder.rvItemInfo.setText(R.string.noInfoEntered);
         else
-            viewHolder.rvItemInfo.setText(info);
-        viewHolder.rvItemDate.setText(dateFormat.format(cashBox.getDate(index).getTime()));
+            viewHolder.rvItemInfo.setText(entry.getInfo());
+        // Date
+        viewHolder.rvItemDate.setText(dateFormat.format(entry.getDate().getTime()));
     }
 
     @Override
@@ -109,7 +117,7 @@ public class CashBoxItemRecyclerAdapter extends RecyclerView.Adapter<CashBoxItem
             TextInputLayout layoutAmount = ((AlertDialog) dialog1).findViewById(R.id.inputLayoutAmount);
 
             CashBox.Entry entry = cashBox.getEntry(position);
-            inputInfo.setText(entry.getCause());
+            inputInfo.setText(entry.getInfo());
             inputAmount.setText(String.format(Locale.getDefault(), "%.2f", entry.getAmount()));
 
             inputAmount.selectAll();

@@ -134,8 +134,13 @@ public class CashBoxItemActivity extends AppCompatActivity {
         double cash = cashBox.getCash();
         if (Math.abs(cash) > MAX_SHOW_CASH)
             itemCash.setText(R.string.outOfRange);
-        else
+        else {
             itemCash.setText(formatCurrency.format(cash));
+            if(cash<0)
+                itemCash.setTextColor(getColor(R.color.colorNegativeNumber));
+            else
+                itemCash.setTextColor(getColor(R.color.colorPositiveNumber));
+        }
     }
 
     /**

@@ -80,7 +80,7 @@ public class CashBoxSwipeController extends ItemTouchHelper.Callback {
                 drawable = recyclerView.getContext().getDrawable(R.drawable.ic_edit_white_24dp);
                 paint.setColor(Color.BLUE);
             }
-            if (Math.abs(dX) < rectTotal.width() / 3)
+            if (Math.abs(dX) < rectTotal.width() * 2 / 5)
                 paint.setColor(Color.LTGRAY);
 
             // Draw

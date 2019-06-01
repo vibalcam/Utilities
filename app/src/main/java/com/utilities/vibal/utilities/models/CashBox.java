@@ -93,7 +93,7 @@ public class CashBox implements Serializable, Parcelable {
     }
 
     public String getInfo(int position) {
-        return entries.get(position).getCause();
+        return entries.get(position).getInfo();
     }
 
     public Calendar getDate(int position) {
@@ -242,25 +242,25 @@ public class CashBox implements Serializable, Parcelable {
         };
         private static final long serialVersionUID = 3L;
 
-        private final String cause;
+        private final String info;
         private final Calendar date;
         private final double amount;
 
-        private Entry(double amount, String cause, Calendar date) {
-            this.cause = cause.trim();
+        private Entry(double amount, String info, Calendar date) {
+            this.info = info.trim();
             this.date = date;
             this.amount = amount;
         }
 
         private Entry(Parcel parcel) {
-            cause = parcel.readString();
+            info = parcel.readString();
             date = Calendar.getInstance();
             date.setTimeInMillis(parcel.readLong());
             amount = parcel.readDouble();
         }
 
-        public String getCause() {
-            return cause;
+        public String getInfo() {
+            return info;
         }
 
         public Calendar getDate() {
@@ -283,7 +283,7 @@ public class CashBox implements Serializable, Parcelable {
                     "\t\t" +
                     currencyFormat.format(amount) +
                     "\n" +
-                    cause;
+                    info;
         }
 
         @Override
@@ -293,7 +293,7 @@ public class CashBox implements Serializable, Parcelable {
 
         @Override
         public void writeToParcel(Parcel dest, int flags) {
-            dest.writeString(cause);
+            dest.writeString(info);
             dest.writeLong(date.getTimeInMillis());
             dest.writeDouble(amount);
         }

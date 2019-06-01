@@ -10,7 +10,8 @@
     android:paddingStart="@dimen/main_marginHorizontal"
     android:paddingTop="@dimen/main_marginVertical"
     android:paddingBottom="@dimen/main_marginVertical"
-    android:paddingEnd="@dimen/main_marginHorizontal">
+    android:paddingEnd="@dimen/main_marginHorizontal"
+    android:background="@android:color/white">
     <TextView
         android:id="@+id/rvName"
         android:layout_width="match_parent"
