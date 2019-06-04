@@ -24,6 +24,7 @@ import com.utilities.vibal.utilities.R;
 import com.utilities.vibal.utilities.io.IOCashBoxManager;
 import com.utilities.vibal.utilities.models.CashBox;
 import com.utilities.vibal.utilities.models.CashBoxManager;
+import com.utilities.vibal.utilities.ui.cashBoxItem.CashBoxItemActivity;
 import com.utilities.vibal.utilities.ui.settings.SettingsActivity;
 import com.utilities.vibal.utilities.ui.swipeController.CashBoxSwipeController;
 import com.utilities.vibal.utilities.util.LogUtil;
@@ -37,6 +38,9 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 public class CashBoxManagerActivity extends AppCompatActivity {
+    public static final String EXTRA_ACTION = "com.utilities.vibal.utilities.ui.cashBoxManager.action";
+    public static final int ACTION_ADD_CASHBOX = 1;
+
     private static final String TAG = "PruebaManagerActivity";
 
     @BindView(R.id.lyCBM)
@@ -59,10 +63,10 @@ public class CashBoxManagerActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
-        //Initialize data
+        // Initialize data
         cashBoxManager = IOCashBoxManager.loadCashBoxManager(this);
 
-        //Set up RecyclerView
+        // Set up RecyclerView
         RecyclerView rvCashBoxManager = findViewById(R.id.rvCashBoxManager);
         rvCashBoxManager.setHasFixedSize(true);
         rvCashBoxManager.setLayoutManager(new LinearLayoutManager(this));
@@ -72,7 +76,16 @@ public class CashBoxManagerActivity extends AppCompatActivity {
         itemTouchHelper.attachToRecyclerView(rvCashBoxManager);
         adapter.setOnStartDragListener(itemTouchHelper::startDrag);
 
+        // Look at intent
+        doIntentAction();
+
         LogUtil.debug(TAG, "onCreate: ");
+    }
+
+    private void doIntentAction() {
+        Intent intent = getIntent();
+        if (intent.getIntExtra(EXTRA_ACTION, 0) == 1)
+            showAddDialog();
     }
 
     // Cuando se ponga el widget
@@ -101,7 +114,7 @@ public class CashBoxManagerActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         LogUtil.debug(TAG, "onActivityResult: " + cashBoxManager.toString());
         if (data != null && requestCode == CashBoxManagerRecyclerAdapter.REQUEST_CODE_ITEM && resultCode == RESULT_OK) {
-            cashBoxManager = data.getParcelableExtra(CashBoxManagerRecyclerAdapter.CASHBOX_MANAGER_EXTRA);
+            cashBoxManager = data.getParcelableExtra(CashBoxItemActivity.EXTRA_CASHBOX_MANAGER);
             adapter.updateCashBoxManager(cashBoxManager);
         }
         LogUtil.debug(TAG, "onActivityResult: " + cashBoxManager.toString());

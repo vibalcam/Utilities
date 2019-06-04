@@ -39,6 +39,11 @@ public class CashBoxItemRecyclerAdapter extends RecyclerView.Adapter<CashBoxItem
         this.cashBoxItemActivity = activity;
     }
 
+    void updateCashBox(CashBox cashBox) {
+        this.cashBox = cashBox;
+        notifyDataSetChanged();
+    }
+
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {

@@ -9,6 +9,18 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <receiver android:name=".widget.CashBoxWidget">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/cash_box_manager_widget_info" />
+        </receiver>
+        <service android:name=".widget.CashBoxWidgetService"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />
+
         <activity
             android:name=".ui.settings.SettingsActivity"
             android:label="@string/title_activity_settings" />
@@ -16,7 +28,8 @@
             android:name=".ui.cashBoxItem.CashBoxItemActivity"
             android:label="@string/title_activity_cash_box_item"
             android:parentActivityName=".ui.cashBoxManager.CashBoxManagerActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme.NoActionBar"
+            android:launchMode="singleTop">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.utilities.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity" />
@@ -25,7 +38,8 @@
             android:name=".ui.cashBoxManager.CashBoxManagerActivity"
             android:label="@string/main_cashBoxManager"
             android:parentActivityName=".ui.MainActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme.NoActionBar"
+            android:launchMode="singleTop">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.utilities.vibal.utilities.ui.MainActivity" />

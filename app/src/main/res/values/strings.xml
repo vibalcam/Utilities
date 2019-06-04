@@ -51,7 +51,7 @@
 
     <!--About and help-->
     <string name="aboutApp">Utilities v%s
-        \n\nvibal 20/05/2019
+        \n\nvibal 04/06/2019
     </string>
     <string name="appHelpTitle">Available Utilities</string>
     <string name="appHelpMessage"><b>Random Chooser:</b> perfect for when you need to get a randomly ordered list or flip a coin.
@@ -82,4 +82,7 @@
     <string name="pref_swipeDelete">Swipe left action</string>
     <string name="summaryOn_swipeDelete">Swiping left deletes the entry</string>
     <string name="summaryOff_swipeDelete">Swiping right deletes the entry</string>
+
+    <!--CashBox Manager Widget-->
+    <string name="emptyCashBoxManager">No CashBoxes added</string>
 </resources>

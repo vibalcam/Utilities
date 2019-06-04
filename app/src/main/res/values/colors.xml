@@ -7,6 +7,8 @@
     <color name="colorRVSelectedCashBox">#DCDCDC</color>
     <color name="colorRVBackgroundCashBox">#FFFFFF</color>
     <color name="colorDivider">#7D7D7D</color>
+
+    <!--CashBox Manager-->
     <color name="colorNegativeNumber">#E3332B</color>
     <color name="colorPositiveNumber">#000000</color>
 </resources>

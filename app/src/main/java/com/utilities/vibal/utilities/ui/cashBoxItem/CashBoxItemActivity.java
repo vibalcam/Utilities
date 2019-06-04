@@ -30,7 +30,6 @@ import com.utilities.vibal.utilities.R;
 import com.utilities.vibal.utilities.io.IOCashBoxManager;
 import com.utilities.vibal.utilities.models.CashBox;
 import com.utilities.vibal.utilities.models.CashBoxManager;
-import com.utilities.vibal.utilities.ui.cashBoxManager.CashBoxManagerRecyclerAdapter;
 import com.utilities.vibal.utilities.ui.settings.SettingsActivity;
 import com.utilities.vibal.utilities.ui.swipeController.CashBoxSwipeController;
 import com.utilities.vibal.utilities.util.LogUtil;
@@ -46,6 +45,9 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 public class CashBoxItemActivity extends AppCompatActivity {
+    public static final String EXTRA_INDEX = "com.utilities.vibal.utilities.ui.cashBoxItem.cashBoxIndex";
+    public static final String EXTRA_CASHBOX_MANAGER = "com.utilities.vibal.utilities.ui.cashBoxItem.cashBoxManagerExtra";
+
     private static final double MAX_SHOW_CASH = 99999999;
     private static final String TAG = "PruebaItemActivity";
 
@@ -68,10 +70,7 @@ public class CashBoxItemActivity extends AppCompatActivity {
         ButterKnife.bind(this);
 
         //Get data
-        Intent intent = getIntent();
-        int cashBoxIndex = intent.getIntExtra(CashBoxManagerRecyclerAdapter.INDEX_EXTRA, 0);
-        cashBoxManager = intent.getParcelableExtra(CashBoxManagerRecyclerAdapter.CASHBOX_MANAGER_EXTRA);
-        cashBox = cashBoxManager.get(cashBoxIndex);
+        getDataFromIntent(getIntent());
 
         //Set Toolbar as ActionBar
         setSupportActionBar(findViewById(R.id.toolbarCBItem));
@@ -101,6 +100,27 @@ public class CashBoxItemActivity extends AppCompatActivity {
     protected void onRestart() {
         super.onRestart();
         formatCurrency = NumberFormat.getCurrencyInstance();
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        getDataFromIntent(intent);
+        CashBoxItemRecyclerAdapter adapter = (CashBoxItemRecyclerAdapter) rvCashBoxItem.getAdapter();
+        if(adapter!=null)
+            adapter.updateCashBox(cashBox);
+        updateCash();
+        updateShareIntent();
+        ActionBar actionBar = getSupportActionBar();
+        if(actionBar!=null)
+            actionBar.setTitle(cashBox.getName());
+    }
+
+    private void getDataFromIntent(Intent intent) {
+        int cashBoxIndex = intent.getIntExtra(EXTRA_INDEX, 0);
+        cashBoxManager = intent.getParcelableExtra(EXTRA_CASHBOX_MANAGER);
+        cashBox = cashBoxManager.get(cashBoxIndex);
     }
 
     @Override
@@ -170,7 +190,7 @@ public class CashBoxItemActivity extends AppCompatActivity {
 
     private void returnResult() {
         Intent intent = new Intent();
-        intent.putExtra(CashBoxManagerRecyclerAdapter.CASHBOX_MANAGER_EXTRA, (Parcelable) cashBoxManager);
+        intent.putExtra(EXTRA_CASHBOX_MANAGER, (Parcelable) cashBoxManager);
         setResult(RESULT_OK, intent);
         finish();
     }

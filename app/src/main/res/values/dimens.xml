@@ -1,13 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <dimen name="titleText">30sp</dimen>
-  <dimen name="main_marginHorizontal">10dp</dimen>
-  <dimen name="main_marginVertical">8dp</dimen>
-  <dimen name="fab_margin">16dp</dimen>
-  <dimen name="inputTextMargin">4dp</dimen>
-  <dimen name="rvMarginItemCB">4dp</dimen>
+    <dimen name="titleText">30sp</dimen>
+    <dimen name="main_marginHorizontal">10dp</dimen>
+    <dimen name="main_marginVertical">8dp</dimen>
+    <dimen name="fab_margin">16dp</dimen>
+    <dimen name="inputTextMargin">4dp</dimen>
+    <dimen name="rvMarginItemCB">4dp</dimen>
     <dimen name="rvMarginRC">2dp</dimen>
-  <dimen name="paddingDialog">8dp</dimen>
-  <dimen name="marginRV_name_cash">5dp</dimen>
-  <dimen name="marginRV_date_amount">5dp</dimen>
+    <dimen name="paddingDialog">8dp</dimen>
+    <dimen name="marginRV_name_cash">5dp</dimen>
+    <dimen name="marginRV_date_amount">5dp</dimen>
+
+    <!--CashBox Manager Widget-->
+    <dimen name="paddingTitle_cbmWidget">5dp</dimen>
+    <dimen name="marginAddButton_cbmWidget">16dp</dimen>
+    <dimen name="paddingList_cbmWidget">10dp</dimen>
+    <dimen name="paddingListItem_cbmWidget">10dp</dimen>
 </resources>
