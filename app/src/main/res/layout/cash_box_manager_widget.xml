@@ -1,0 +1,58 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/gradient_cbm_widget">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/titleCBM"
+            android:textAlignment="center"
+            android:background="@null"
+            android:textColor="@android:color/white"
+            android:textStyle="bold"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:paddingBottom="@dimen/paddingTitle_cbmWidget"
+            android:paddingTop="@dimen/paddingTitle_cbmWidget"
+            android:layout_alignParentStart="true"
+            android:layout_toStartOf="@+id/addButtonCBMWidget"/>
+
+        <ImageButton
+            android:id="@+id/addButtonCBMWidget"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:scaleType="centerInside"
+            android:background="?android:selectableItemBackground"
+            android:src="@drawable/ic_add"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="@dimen/marginAddButton_cbmWidget"
+            tools:ignore="ContentDescription" />
+    </RelativeLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/white"
+        android:paddingStart="@dimen/paddingList_cbmWidget"
+        android:paddingEnd="@dimen/paddingList_cbmWidget">
+        <ListView
+            android:id="@+id/listCBMWidget"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+        <TextView
+            android:id="@+id/listEmptyCBMWidget"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="@string/emptyCashBoxManager"
+            android:gravity="center"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="@android:color/black" />
+    </FrameLayout>
+</LinearLayout>
