@@ -137,7 +137,7 @@ public class CashBoxItemRecyclerAdapter extends RecyclerView.Adapter<CashBoxItem
                         Util.showKeyboard(cashBoxItemActivity, inputAmount);
                     } else {
                         double amount = Util.parseDouble(inputAmount.getText().toString());
-                        CashBox.Entry modifiedEntry = cashBox.modify(position, amount, inputInfo.getText().toString(), cashBox.getDate(position));
+                        CashBox.Entry modifiedEntry = cashBox.modify(position, amount, inputInfo.getText().toString(), cashBox.getEntry(position).getDate());
 //                        cashBoxItemActivity.updateCash();
                         notifyItemChanged(position);
                         dialog1.dismiss();

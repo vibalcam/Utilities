@@ -3,11 +3,14 @@ package com.utilities.vibal.utilities.models;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import java.io.Serializable;
+import androidx.annotation.NonNull;
+
+import com.utilities.vibal.utilities.util.LogUtil;
+
 import java.util.ArrayList;
 import java.util.List;
 
-public class CashBoxManager implements Serializable, Parcelable {
+public class CashBoxManager implements Parcelable {
     public static final Parcelable.Creator<CashBoxManager> CREATOR = new Parcelable.Creator<CashBoxManager>() {
         @Override
         public CashBoxManager createFromParcel(Parcel source) {
@@ -20,16 +23,13 @@ public class CashBoxManager implements Serializable, Parcelable {
         }
     };
 
-    private static final long serialVersionUID = 1L;
-
-    private static final String TAG = "PruebaCashBoxItem";
     private final List<CashBox> cashBoxes;
 
     public CashBoxManager() {
         cashBoxes = new ArrayList<>();
     }
 
-    public CashBoxManager(Parcel parcel) {
+    private CashBoxManager(@NonNull Parcel parcel) {
         cashBoxes = parcel.createTypedArrayList(CashBox.CREATOR);
     }
 
@@ -107,10 +107,15 @@ public class CashBoxManager implements Serializable, Parcelable {
         }
     }
 
-    public boolean duplicate(int index, String newName) throws IllegalArgumentException {
-        CashBox cashBox = (CashBox) cashBoxes.get(index).clone();
-        cashBox.setName(newName);
-        return this.add(index + 1, cashBox);
+    public boolean duplicate(int index, String newName) throws IllegalArgumentException, CloneNotSupportedException {
+        try {
+            CashBox cashBox = cashBoxes.get(index).clone();
+            cashBox.setName(newName);
+            return this.add(index + 1, cashBox);
+        } catch (CloneNotSupportedException e) {
+            LogUtil.error("PruebaCashBoxManager", "cloning: ", e);
+            throw e;
+        }
     }
 
     @Override

@@ -50,9 +50,6 @@
     <string name="title_activity_settings">Settings</string>
 
     <!--About and help-->
-    <string name="aboutApp">Utilities v%s
-        \n\nvibal 04/06/2019
-    </string>
     <string name="appHelpTitle">Available Utilities</string>
     <string name="appHelpMessage"><b>Random Chooser:</b> perfect for when you need to get a randomly ordered list or flip a coin.
         \n<b>Debt Manager:</b> it will help you remember when a friend borrowed money from you, just in case he "accidentally" forgets.
