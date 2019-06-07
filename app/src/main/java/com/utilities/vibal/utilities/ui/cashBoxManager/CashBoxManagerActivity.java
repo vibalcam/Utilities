@@ -13,6 +13,7 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -21,7 +22,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.utilities.vibal.utilities.R;
-import com.utilities.vibal.utilities.io.IOCashBoxManager;
 import com.utilities.vibal.utilities.models.CashBox;
 import com.utilities.vibal.utilities.models.CashBoxManager;
 import com.utilities.vibal.utilities.ui.cashBoxItem.CashBoxItemActivity;
@@ -30,8 +30,8 @@ import com.utilities.vibal.utilities.ui.swipeController.CashBoxSwipeController;
 import com.utilities.vibal.utilities.util.LogUtil;
 import com.utilities.vibal.utilities.util.Util;
 
-import java.io.IOException;
 import java.util.Calendar;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -46,6 +46,7 @@ public class CashBoxManagerActivity extends AppCompatActivity {
     @BindView(R.id.lyCBM)
     CoordinatorLayout coordinatorLayout;
 
+    CashBoxViewModel cashBoxViewModel;
     private CashBoxManagerRecyclerAdapter adapter;
     private CashBoxManager cashBoxManager;
 
@@ -63,18 +64,27 @@ public class CashBoxManagerActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
-        // Initialize data
-        cashBoxManager = IOCashBoxManager.loadCashBoxManager(this);
-
         // Set up RecyclerView
         RecyclerView rvCashBoxManager = findViewById(R.id.rvCashBoxManager);
         rvCashBoxManager.setHasFixedSize(true);
         rvCashBoxManager.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new CashBoxManagerRecyclerAdapter(cashBoxManager, this);
+        adapter = new CashBoxManagerRecyclerAdapter(this);
         rvCashBoxManager.setAdapter(adapter);
-        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new CashBoxSwipeController(adapter, PreferenceManager.getDefaultSharedPreferences(this).getBoolean("swipeDelete", true)));
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new CashBoxSwipeController(adapter,
+                PreferenceManager.getDefaultSharedPreferences(this)
+                        .getBoolean("swipeDelete", true)));
         itemTouchHelper.attachToRecyclerView(rvCashBoxManager);
         adapter.setOnStartDragListener(itemTouchHelper::startDrag);
+
+        // Initialize data TODO
+//        cashBoxManager = IOCashBoxManager.loadCashBoxManager(this);
+        cashBoxManager = new CashBoxManager();
+
+        cashBoxViewModel = ViewModelProviders.of(this).get(CashBoxViewModel.class);
+        cashBoxViewModel.getCashBoxes().observe(this, (List<CashBox> cashBoxes) -> {
+            adapter.setCashBoxes(cashBoxes);
+            Toast.makeText(CashBoxManagerActivity.this, "on changed", Toast.LENGTH_LONG).show();
+        });
 
         // Look at intent
         doIntentAction();
@@ -101,7 +111,7 @@ public class CashBoxManagerActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         LogUtil.debug(TAG, "onStop: ");
-        IOCashBoxManager.renameCashBoxManagerTemp(this);
+//        IOCashBoxManager.renameCashBoxManagerTemp(this);
     }
 
     @Override
@@ -115,7 +125,7 @@ public class CashBoxManagerActivity extends AppCompatActivity {
         LogUtil.debug(TAG, "onActivityResult: " + cashBoxManager.toString());
         if (data != null && requestCode == CashBoxManagerRecyclerAdapter.REQUEST_CODE_ITEM && resultCode == RESULT_OK) {
             cashBoxManager = data.getParcelableExtra(CashBoxItemActivity.EXTRA_CASHBOX_MANAGER);
-            adapter.updateCashBoxManager(cashBoxManager);
+//            adapter.setCashBoxes(cashBoxManager); TODO
         }
         LogUtil.debug(TAG, "onActivityResult: " + cashBoxManager.toString());
 
@@ -152,13 +162,14 @@ public class CashBoxManagerActivity extends AppCompatActivity {
         }
     }
 
+    //TODO
     void saveCashBoxManager() {
-        try {
-            IOCashBoxManager.saveCashBoxManagerTemp(cashBoxManager, this);
-        } catch (IOException e) {
-            LogUtil.error(TAG, "onStop: error save", e);
-            e.printStackTrace();
-        }
+//        try {
+//            IOCashBoxManager.saveCashBoxManagerTemp(cashBoxManager, this);
+//        } catch (IOException e) {
+//            LogUtil.error(TAG, "onStop: error save", e);
+//            e.printStackTrace();
+//        }
     }
 
     private void deleteAll() {

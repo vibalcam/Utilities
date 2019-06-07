@@ -26,13 +26,14 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.utilities.vibal.utilities.R;
 import com.utilities.vibal.utilities.models.CashBox;
-import com.utilities.vibal.utilities.models.CashBoxManager;
 import com.utilities.vibal.utilities.ui.cashBoxItem.CashBoxItemActivity;
 import com.utilities.vibal.utilities.ui.swipeController.CashBoxAdapterSwipable;
 import com.utilities.vibal.utilities.ui.swipeController.OnStartDragListener;
 import com.utilities.vibal.utilities.util.Util;
 
 import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -46,11 +47,13 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
 
     private final CashBoxManagerActivity cashBoxManagerActivity;
     private final NumberFormat currencyFormat = NumberFormat.getCurrencyInstance();
-    ActionMode actionMode;
     private OnStartDragListener onStartDragListener;
     private ShareActionProvider shareActionProvider;
-    private CashBoxManager cashBoxManager;
     private ViewHolder selectedViewHolder = null;
+    private List<CashBox> cashBoxes = new ArrayList<>();
+
+    // Contextual toolbar
+    ActionMode actionMode;
     private ActionMode.Callback actionModeCallback = new ActionMode.Callback() {
         @Override
         public boolean onCreateActionMode(ActionMode mode, Menu menu) {
@@ -98,8 +101,7 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
         }
     };
 
-    CashBoxManagerRecyclerAdapter(CashBoxManager cashBoxManager, CashBoxManagerActivity cashBoxManagerActivity) {
-        this.cashBoxManager = cashBoxManager;
+    CashBoxManagerRecyclerAdapter(CashBoxManagerActivity cashBoxManagerActivity) {
         this.cashBoxManagerActivity = cashBoxManagerActivity;
     }
 
@@ -116,7 +118,7 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int index) {
-        CashBox cashBox = cashBoxManager.get(index);
+        CashBox cashBox = cashBoxes.get(index);
         viewHolder.rvName.setText(cashBox.getName());
 
         // Enable or disable dragging
@@ -141,11 +143,11 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
 
     @Override
     public int getItemCount() {
-        return cashBoxManager.size();
+        return cashBoxes.size();
     }
-
-    void updateCashBoxManager(CashBoxManager cashBoxManager) {
-        this.cashBoxManager = cashBoxManager;
+    
+    void setCashBoxes(List<CashBox> cashBoxes) {
+        this.cashBoxes = cashBoxes;
         notifyDataSetChanged();
     }
 
@@ -164,22 +166,23 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
         notifyItemMoved(fromPosition, toPosition);
     }
 
+    //TODO
     @Override
     public void onItemDrop(int fromPosition, int toPosition) {
-        cashBoxManager.move(fromPosition, toPosition);
-        cashBoxManagerActivity.saveCashBoxManager();
+//        cashBoxes.move(fromPosition, toPosition);
+//        cashBoxManagerActivity.saveCashBoxManager();
     }
 
     @Override
     public void onItemDelete(int position) {
         if (actionMode != null)
             actionMode.finish();
-        CashBox deletedCashBox = cashBoxManager.remove(position);
+        CashBox deletedCashBox = cashBoxes.remove(position);
         notifyItemRemoved(position);
 
         Snackbar.make(cashBoxManagerActivity.coordinatorLayout, cashBoxManagerActivity.getString(R.string.snackbarEntriesDeleted, 1), Snackbar.LENGTH_LONG)
                 .setAction(R.string.undo, (View v1) -> {
-                    cashBoxManager.add(position, deletedCashBox);
+                    cashBoxes.add(position, deletedCashBox);
                     notifyItemInserted(position);
                     cashBoxManagerActivity.saveCashBoxManager();
                 })
@@ -197,7 +200,7 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
             Button positive = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
             TextInputEditText inputName = ((AlertDialog) dialog).findViewById(R.id.inputTextChangeName);
             TextInputLayout layoutName = ((AlertDialog) dialog).findViewById(R.id.inputLayoutChangeName);
-            String oldName = cashBoxManager.get(position).getName();
+            String oldName = cashBoxes.get(position).getName();
 
             inputName.setText(oldName);
             layoutName.setCounterMaxLength(CashBox.MAX_LENGTH_NAME);
@@ -210,10 +213,11 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
             positive.setOnClickListener((View v1) -> {
                 String newName = inputName.getText().toString();
                 try {
-                    if (cashBoxManager.changeName(position, newName)) {
+//                    if (cashBoxes.changeName(position, newName)) { TODO
+                    if (true) {
                         notifyItemChanged(position);
                         dialog.dismiss();
-//                                cashBoxManager.saveDataTemp(getContext());
+//                                cashBoxes.saveDataTemp(getContext());
                         cashBoxManagerActivity.saveCashBoxManager();
                     } else {
                         layoutName.setError(cashBoxManagerActivity.getString(R.string.nameInUse));
@@ -253,16 +257,17 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
 
             Util.showKeyboard(cashBoxManagerActivity, inputName);
             inputName.setMaxLines(CashBox.MAX_LENGTH_NAME);
-            inputName.setText(cashBoxManager.get(index).getName());
+            inputName.setText(cashBoxes.get(index).getName());
             layoutName.setCounterMaxLength(CashBox.MAX_LENGTH_NAME);
 
             positive.setOnClickListener((View v1) -> {
                 try {
-                    if (cashBoxManager.duplicate(index, inputName.getText().toString())) {
+//                    if (cashBoxes.duplicate(index, inputName.getText().toString())) { TODO
+                    if (true) {
                         notifyItemInserted(index + 1);
                         dialog.dismiss();
                         Toast.makeText(cashBoxManagerActivity, "Entry cloned", Toast.LENGTH_SHORT).show();
-//                            cashBoxManager.saveDataTemp(getContext());
+//                            cashBoxes.saveDataTemp(getContext());
                         cashBoxManagerActivity.saveCashBoxManager();
                     } else {
                         layoutName.setError(cashBoxManagerActivity.getString(R.string.nameInUse));
@@ -291,7 +296,7 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
 
     private void updateShareIntent(int index) {
         if (shareActionProvider != null)
-            shareActionProvider.setShareIntent(Util.getShareIntent(cashBoxManager.get(index)));
+            shareActionProvider.setShareIntent(Util.getShareIntent(cashBoxes.get(index)));
     }
 
     boolean showActionMode() {
@@ -337,10 +342,10 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
             setSelectedViewHolder(this);
 
             if (actionMode == null) {
-//            CashBox cashBox = cashBoxManager.get(selectedIndex);
+//            CashBox cashBox = cashBoxes.get(selectedIndex);
                 Intent intent = new Intent(cashBoxManagerActivity, CashBoxItemActivity.class);
                 intent.putExtra(CashBoxItemActivity.EXTRA_INDEX, selectedViewHolder.getAdapterPosition());
-                intent.putExtra(CashBoxItemActivity.EXTRA_CASHBOX_MANAGER, (Parcelable) cashBoxManager);
+                intent.putExtra(CashBoxItemActivity.EXTRA_CASHBOX_MANAGER, (Parcelable) cashBoxes);
 //            cashBoxManagerActivity.startActivity(intent);
                 cashBoxManagerActivity.startActivityForResult(intent, REQUEST_CODE_ITEM);
 

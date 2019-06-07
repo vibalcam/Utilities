@@ -37,13 +37,15 @@ public class CashBox implements Parcelable,Cloneable {
 
     @Embedded
     private final CashBoxInfo cashBoxInfo;
-    @Relation(parentColumn = "cashBoxInfo.name", entityColumn = "nameCashBox")
+    @Relation(parentColumn = "name", entityColumn = "nameCashBox")
     private List<Entry> entries;
 
+    @Ignore
     public CashBox(String name) throws IllegalArgumentException {
         this(new CashBoxInfo(name,0),new ArrayList<Entry>());
     }
 
+    @Ignore
     public CashBox(String name, List<Entry> entries) throws  IllegalArgumentException {
         this.entries = entries;
         cashBoxInfo = new CashBoxInfo(name,calculateCash(entries));
@@ -58,6 +60,7 @@ public class CashBox implements Parcelable,Cloneable {
         this.entries = entries;
     }
 
+    @Ignore
     public CashBox(Parcel parcel) {
         cashBoxInfo = CashBoxInfo.CREATOR.createFromParcel(parcel);
         entries = parcel.createTypedArrayList(Entry.CREATOR);
@@ -86,6 +89,10 @@ public class CashBox implements Parcelable,Cloneable {
         return cashBoxInfo.getCash();
     }
 
+    public List<Entry> getEntries() {
+        return entries;
+    }
+
     public Entry getEntry(int index) {
         return entries.get(index);
     }
@@ -103,29 +110,25 @@ public class CashBox implements Parcelable,Cloneable {
      * @return Total cash after the addition
      */
     public double add(double amount, String cause, Calendar date) {
-        return add(0, new Entry(amount, cause, date));
+        return add(0, amount, cause, date);
     }
 
     public double add(int index, double amount, String cause, Calendar date) {
-        return add(index, new Entry(amount, cause, date));
+        cashBoxInfo.cash += amount;
+        entries.add(index, new Entry(getName(),amount,cause,date));
+        return getCash();
     }
 
-    /**
-     * Used for undo operation
-     *
-     * @param entry entry to add back to the CashBox
-     * @return cash after adding
-     */
     public double add(int index, Entry entry) {
-        cashBoxInfo.cash += entry.getAmount();
-        entries.add(index,entry.getEntryOfCashBox(getName()));
-        return cashBoxInfo.cash;
+        return add(index, entry.amount, entry.info, entry.date);
     }
 
     public double addAll(List<Entry> entries) {
-        this.entries.addAll(entries);
-        cashBoxInfo.cash += calculateCash(entries);
-        return cashBoxInfo.cash;
+        int size = entries.size()-1;
+        for(Entry entry: entries)
+            add(size++, entry);
+
+        return getCash();
     }
 
     private int calculateCash(@NonNull List<Entry> entries) {
@@ -167,13 +170,13 @@ public class CashBox implements Parcelable,Cloneable {
      * @return Total cash after the modification
      */
     public Entry modify(int index, double amount, String cause, Calendar date) {
-        return modify(index, new Entry(amount, cause, date));
+        Entry modifiedEntry = entries.set(index, new Entry(getName(), amount, cause, date));
+        cashBoxInfo.cash += amount - modifiedEntry.getAmount();
+        return modifiedEntry;
     }
 
-    public Entry modify(int index, Entry entry) {
-        Entry modifiedEntry = entries.set(index, entry);
-        cashBoxInfo.cash += entry.getAmount() - modifiedEntry.getAmount();
-        return modifiedEntry;
+    public Entry modify(int index, Entry entry) throws IllegalArgumentException {
+        return modify(index, entry.amount, entry.info, entry.date);
     }
 
     public int sizeEntries() {
@@ -234,6 +237,8 @@ public class CashBox implements Parcelable,Cloneable {
             }
         };
 
+        private int orderPos;
+        @NonNull
         @PrimaryKey
         private String name;
         private double cash; //sum of amounts
@@ -243,10 +248,12 @@ public class CashBox implements Parcelable,Cloneable {
             this.cash = cash;
         }
 
+        @Ignore
         public CashBoxInfo(String name) {
             this(name, 0);
         }
 
+        @Ignore
         private CashBoxInfo(Parcel parcel) {
             name = parcel.readString();
             cash = parcel.readDouble();
@@ -258,6 +265,14 @@ public class CashBox implements Parcelable,Cloneable {
 
         public double getCash() {
             return cash;
+        }
+
+        public int getOrderPos() {
+            return orderPos;
+        }
+
+        public void setOrderPos(int orderPos) {
+            this.orderPos = orderPos;
         }
 
         /**
@@ -301,7 +316,7 @@ public class CashBox implements Parcelable,Cloneable {
         }
     }
 
-    // Immutable object in order for clone to be easier
+    // Immutable object in orderPos for clone to be easier
     // When modifying directly, watch out, since an entry can be in cloned cashBoxes (no set methods)
     @Entity(tableName = "entries_table")
     public static class Entry implements Parcelable {
@@ -332,15 +347,10 @@ public class CashBox implements Parcelable,Cloneable {
          * Do NOT use this constructor. Only for Room.
          */
         public Entry(String nameCashBox, double amount, @NonNull String info, Calendar date) {
-            this(amount,info,date);
-            this.nameCashBox = nameCashBox;
-        }
-
-        @Ignore
-        public Entry (double amount, @NonNull String info, Calendar date) {
             this.info = info.trim();
             this.date = date;
             this.amount = amount;
+            this.nameCashBox = nameCashBox;
         }
 
         private Entry(@NonNull Parcel parcel) {
@@ -355,20 +365,12 @@ public class CashBox implements Parcelable,Cloneable {
             this.id = id;
         }
 
-        private Entry getEntryOfCashBox(String nameCashBox) {
-            if (this.nameCashBox != null) {
-                if(new CashBoxInfo(nameCashBox).equals(new CashBoxInfo(this.nameCashBox)))
-                    return this;
-                else
-                    return new Entry(nameCashBox,amount,info,date);
-            } else {
-                this.nameCashBox = nameCashBox;
-                return this;
-            }
-        }
-
         public int getId() {
             return id;
+        }
+
+        public String getNameCashBox() {
+            return nameCashBox;
         }
 
         public String getInfo() {
