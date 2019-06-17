@@ -11,6 +11,9 @@ import com.utilities.vibal.utilities.util.LogUtil;
 
 import java.util.List;
 
+import io.reactivex.Completable;
+import io.reactivex.Single;
+
 public class CashBoxRepository {
     private CashBoxDao cashBoxDao;
     private CashBoxEntryDao cashBoxEntryDao;
@@ -27,9 +30,39 @@ public class CashBoxRepository {
         return cashBoxes;
     }
 
-    public Single
+    public Completable insertCashBoxInfo(CashBox.CashBoxInfo cashBoxInfo) {
+        return cashBoxDao.insert(cashBoxInfo);
+    }
 
-    public void insertCashBoxInfo(CashBox.CashBoxInfo cashBoxInfo) throws SQLiteConstraintException {
+    public Completable updateCashBoxInfo(CashBox.CashBoxInfo cashBoxInfo) {
+        return cashBoxDao.update(cashBoxInfo);
+    }
+
+    public Completable deleteCashBox(CashBox.CashBoxInfo cashBoxInfo) {
+        return cashBoxDao.delete(cashBoxInfo);
+    }
+
+    public Single<Integer> deleteAllCashBoxes() {
+        return cashBoxDao.deleteAll();
+    }
+
+    public Completable insertEntry(CashBox.Entry entry) {
+        return cashBoxEntryDao.insert(entry);
+    }
+
+    public Completable updateEntry(CashBox.Entry entry) {
+        return cashBoxEntryDao.update(entry);
+    }
+
+    public Completable deleteEntry(CashBox.Entry entry) {
+        return  cashBoxEntryDao.delete(entry);
+    }
+
+    public Single<Integer> deleteAllEntries(int cashBoxId) {
+        return cashBoxEntryDao.deleteAll(cashBoxId);
+    }
+
+    /*public void insertCashBoxInfo(CashBox.CashBoxInfo cashBoxInfo) throws SQLiteConstraintException {
         try {
             new InsertCashBoxAsyncTask(cashBoxDao).execute(cashBoxInfo);
         } catch (RuntimeException e) {
@@ -181,5 +214,5 @@ public class CashBoxRepository {
             cashBoxEntryDao.deleteAll(integers[0]);
             return null;
         }
-    }
+    }*/
 }

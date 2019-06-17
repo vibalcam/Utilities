@@ -12,10 +12,13 @@ import com.utilities.vibal.utilities.models.CashBox;
 
 import java.util.List;
 
+import io.reactivex.Completable;
+import io.reactivex.Single;
+
 @Dao
 public abstract class CashBoxDao {
-    @Query("SELECT COUNT(*) FROM cashBoxesInfo_table WHERE name=:name")
-    abstract int existsCashBox(String name);
+//    @Query("SELECT COUNT(*) FROM cashBoxesInfo_table WHERE name=:name")
+//    abstract int countCashBoxByName(String name);
 
 //    @Transaction
 //    @Query("SELECT * FROM cashBoxesInfo_table WHERE name=:name")
@@ -29,16 +32,16 @@ public abstract class CashBoxDao {
     abstract LiveData<List<CashBox>> getAllCashBoxes();
 
     @Insert
-    abstract void insert(CashBox.CashBoxInfo cashBoxInfo);
+    abstract Completable insert(CashBox.CashBoxInfo cashBoxInfo);
 
     @Update
-    abstract void update(CashBox.CashBoxInfo cashBoxInfo);
+    abstract Completable update(CashBox.CashBoxInfo cashBoxInfo);
 
     @Delete
-    abstract void delete(CashBox.CashBoxInfo cashBoxInfo);
+    abstract Completable delete(CashBox.CashBoxInfo cashBoxInfo);
 
     @Query("DELETE FROM cashBoxesInfo_table")
-    abstract void deleteAll();
+    abstract Single<Integer> deleteAll();
 
 //    @Query("UPDATE cashBoxesInfo_table SET orderPos=:newPos WHERE name=:name")
 //    abstract void updateOrder(String name, int newPos);

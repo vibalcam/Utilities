@@ -4,10 +4,12 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
+import androidx.room.ColumnInfo;
 import androidx.room.Embedded;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
 import androidx.room.Ignore;
+import androidx.room.Index;
 import androidx.room.PrimaryKey;
 import androidx.room.Relation;
 
@@ -223,7 +225,7 @@ public class CashBox implements Parcelable,Cloneable {
         return builder.toString();
     }
 
-    @Entity(tableName = "cashBoxesInfo_table")
+    @Entity(tableName = "cashBoxesInfo_table", indices = {@Index(value = "name", unique = true)})
     public static class CashBoxInfo implements Parcelable,Cloneable {
         @Ignore
         public static final Parcelable.Creator<CashBoxInfo> CREATOR = new Parcelable.Creator<CashBoxInfo>() {

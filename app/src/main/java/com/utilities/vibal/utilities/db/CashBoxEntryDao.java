@@ -8,17 +8,20 @@ import androidx.room.Update;
 
 import com.utilities.vibal.utilities.models.CashBox;
 
+import io.reactivex.Completable;
+import io.reactivex.Single;
+
 @Dao
 public interface CashBoxEntryDao {
     @Insert
-    void insert(CashBox.Entry entry);
+    Completable insert(CashBox.Entry entry);
 
     @Delete
-    void delete(CashBox.Entry entry);
+    Completable delete(CashBox.Entry entry);
 
     @Update
-    void update(CashBox.Entry entry);
+    Completable update(CashBox.Entry entry);
 
     @Query("DELETE FROM entries_table WHERE cashBoxId=:id")
-    void deleteAll(int id);
+    Single<Integer> deleteAll(int id);
 }

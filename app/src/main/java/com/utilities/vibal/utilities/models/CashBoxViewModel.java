@@ -12,6 +12,8 @@ import com.utilities.vibal.utilities.util.LogUtil;
 
 import java.util.List;
 
+import io.reactivex.Completable;
+
 public class CashBoxViewModel extends AndroidViewModel {
     private CashBoxRepository repository;
     private LiveData<List<CashBox>> cashBoxes;
@@ -26,18 +28,15 @@ public class CashBoxViewModel extends AndroidViewModel {
         return cashBoxes;
     }
 
-    public boolean addCashBox(CashBox cashBox) {
-        try {
-            repository.insertCashBoxInfo(cashBox.getCashBoxInfo());
-            return true;
-        } catch (SQLiteConstraintException e) {
-            return false;
-        }
+    public Completable addCashBox(CashBox cashBox) {
+        Completable completable = repository.insertCashBoxInfo(cashBox.getCashBoxInfo());
+        for(CashBox.Entry entry:cashBox.getEntries())
+            completable = completable.andThen(repository.insertEntry(entry));
+        return completable;
     }
 
     public boolean changeCashBoxName(CashBox cashBox, String newName) {
-        cashBox.setName(newName);
-        return addCashBox(cashBox);
+        return true;
     }
 
     public void deleteCashBox(CashBox cashBox) {
