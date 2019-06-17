@@ -1,18 +1,17 @@
 package com.utilities.vibal.utilities.models;
 
 import android.app.Application;
-import android.database.sqlite.SQLiteConstraintException;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 
 import com.utilities.vibal.utilities.db.CashBoxRepository;
-import com.utilities.vibal.utilities.util.LogUtil;
 
 import java.util.List;
 
 import io.reactivex.Completable;
+import io.reactivex.Single;
 
 public class CashBoxViewModel extends AndroidViewModel {
     private CashBoxRepository repository;
@@ -35,45 +34,43 @@ public class CashBoxViewModel extends AndroidViewModel {
         return completable;
     }
 
-    public boolean changeCashBoxName(CashBox cashBox, String newName) {
-        return true;
+    public Completable changeCashBoxName(CashBox cashBox, String newName) {
+        CashBox.CashBoxInfo cashBoxInfo = cashBox.getCashBoxInfo().clone();
+        cashBoxInfo.setName(newName);
+        return repository.updateCashBoxInfo(cashBoxInfo);
     }
 
-    public void deleteCashBox(CashBox cashBox) {
-        repository.deleteCashBox(cashBox.getCashBoxInfo());
+    public Completable deleteCashBox(CashBox cashBox) {
+        return repository.deleteCashBox(cashBox.getCashBoxInfo());
     }
 
-    public void deleteAllCashBoxes() {
-        repository.deleteAllCashBoxes();
+    public Single<Integer> deleteAllCashBoxes() {
+        return repository.deleteAllCashBoxes();
     }
 
-    public boolean duplicateCashBox(CashBox cashBox, String newName) {
-        try {
-            return changeCashBoxName(cashBox.clone(), newName);
-        } catch (CloneNotSupportedException e) {
-            // Should never occur
-            LogUtil.error("Prueba", "CashBox clone not supported", e);
-            return false;
-        }
+    public Completable duplicateCashBox(CashBox cashBox, String newName) {
+        CashBox cashBoxDup = cashBox.clone();
+        cashBoxDup.setName(newName);
+        return addCashBox(cashBoxDup);
     }
 
     public void moveCashBox(CashBox cashBox, int index) {
-
+        //TODO
     }
 
-    public void addEntry(CashBox cashBox, CashBox.Entry entry) {
-
+    public Completable addEntry(CashBox cashBox, CashBox.Entry entry) {
+        return repository.insertEntry(entry.getEntryWithCashBoxId(cashBox.getCashBoxInfo().getId()));
     }
 
-    public void updateEntry(CashBox.Entry entry) {
-        repository.updateEntry(entry);
+    public Completable updateEntry(CashBox.Entry entry) {
+        return repository.updateEntry(entry);
     }
 
-    public  void deleteEntry(CashBox.Entry entry) {
-        repository.deleteEntry(entry);
+    public  Completable deleteEntry(CashBox.Entry entry) {
+        return repository.deleteEntry(entry);
     }
 
-    public void deleteAllEntries(CashBox cashBox) {
-        repository.deleteAllEntries(cashBox.getCashBoxInfo().getId());
+    public Single<Integer> deleteAllEntries(CashBox cashBox) {
+        return repository.deleteAllEntries(cashBox.getCashBoxInfo().getId());
     }
 }

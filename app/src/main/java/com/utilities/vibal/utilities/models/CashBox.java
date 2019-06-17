@@ -4,7 +4,6 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
-import androidx.room.ColumnInfo;
 import androidx.room.Embedded;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
@@ -24,7 +23,7 @@ import java.util.Objects;
 
 import static androidx.room.ForeignKey.CASCADE;
 
-public class CashBox implements Parcelable,Cloneable {
+public class CashBox implements Parcelable {
     public static final int MAX_LENGTH_NAME = 15;
     public static final Parcelable.Creator<CashBox> CREATOR = new Parcelable.Creator<CashBox>() {
         @Override
@@ -202,8 +201,11 @@ public class CashBox implements Parcelable,Cloneable {
      */
     @Override
     @SuppressWarnings("CloneDoesntCallSuperClone")
-    public CashBox clone() throws CloneNotSupportedException {
-        return new CashBox(cashBoxInfo.clone(),new ArrayList<Entry>(entries));
+    public CashBox clone() {
+        List<Entry> entryList = new ArrayList<>();
+        for(Entry entry:entries)
+            entryList.add(entry.clone());
+        return new CashBox(cashBoxInfo.clone(),entryList);
     }
 
     @Override
@@ -226,7 +228,7 @@ public class CashBox implements Parcelable,Cloneable {
     }
 
     @Entity(tableName = "cashBoxesInfo_table", indices = {@Index(value = "name", unique = true)})
-    public static class CashBoxInfo implements Parcelable,Cloneable {
+    public static class CashBoxInfo implements Parcelable {
         @Ignore
         public static final Parcelable.Creator<CashBoxInfo> CREATOR = new Parcelable.Creator<CashBoxInfo>() {
             @Override
@@ -304,8 +306,11 @@ public class CashBox implements Parcelable,Cloneable {
         }
 
         @Override
-        public CashBoxInfo clone() throws CloneNotSupportedException {
-            return (CashBoxInfo) super.clone();
+        @SuppressWarnings("CloneDoesntCallSuperClone")
+        public CashBoxInfo clone() {
+            CashBoxInfo cashBoxInfo = new CashBoxInfo(name,cash);
+            cashBoxInfo.setId(id);
+            return cashBoxInfo;
         }
 
         // Implementation of Parcelable
@@ -399,6 +404,12 @@ public class CashBox implements Parcelable,Cloneable {
             this.id = id;
         }
 
+        public Entry getEntryWithCashBoxId(int cashBoxId) {
+            Entry entry = this.cashBoxId!=NO_CASHBOX ? this.clone() : this;
+            entry.cashBoxId = cashBoxId;
+            return entry;
+        }
+
         @Override
         @NonNull
         public String toString() {
@@ -414,7 +425,9 @@ public class CashBox implements Parcelable,Cloneable {
                     info;
         }
 
-        public Entry copy() {
+        @Override
+        @SuppressWarnings("CloneDoesntCallSuperClone")
+        public Entry clone() {
             return new Entry(amount,info,date);
         }
 
