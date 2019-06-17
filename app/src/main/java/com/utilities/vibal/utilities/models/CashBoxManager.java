@@ -1,49 +1,11 @@
 package com.utilities.vibal.utilities.models;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-
-import androidx.annotation.NonNull;
-
 import com.utilities.vibal.utilities.util.LogUtil;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class CashBoxManager implements Parcelable {
-    public static final Parcelable.Creator<CashBoxManager> CREATOR = new Parcelable.Creator<CashBoxManager>() {
-        @Override
-        public CashBoxManager createFromParcel(Parcel source) {
-            return new CashBoxManager(source);
-        }
-
-        @Override
-        public CashBoxManager[] newArray(int size) {
-            return new CashBoxManager[size];
-        }
-    };
-
-    private final List<CashBox> cashBoxes;
-
-    public CashBoxManager() {
-        cashBoxes = new ArrayList<>();
-    }
-
-    private CashBoxManager(@NonNull Parcel parcel) {
-        cashBoxes = parcel.createTypedArrayList(CashBox.CREATOR);
-    }
-
-    public CashBox get(int pos) {
-        return cashBoxes.get(pos);
-    }
-
-    public int size() {
-        return cashBoxes.size();
-    }
-
-    public boolean isEmpty() {
-        return cashBoxes.isEmpty();
-    }
+public class CashBoxManager {
+    private List<CashBox> cashBoxes;
 
     /**
      * Adds a cashBox
@@ -116,15 +78,5 @@ public class CashBoxManager implements Parcelable {
             LogUtil.error("PruebaCashBoxManager", "cloning: ", e);
             return false;
         }
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeTypedList(cashBoxes);
     }
 }

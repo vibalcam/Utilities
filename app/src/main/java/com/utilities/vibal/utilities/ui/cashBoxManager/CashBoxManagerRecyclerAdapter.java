@@ -1,7 +1,6 @@
 package com.utilities.vibal.utilities.ui.cashBoxManager;
 
 import android.content.Intent;
-import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -19,6 +18,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.view.ActionMode;
 import androidx.appcompat.widget.ShareActionProvider;
 import androidx.core.view.MenuItemCompat;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.snackbar.Snackbar;
@@ -32,14 +33,12 @@ import com.utilities.vibal.utilities.ui.swipeController.OnStartDragListener;
 import com.utilities.vibal.utilities.util.Util;
 
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnTouch;
 
-public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxManagerRecyclerAdapter.ViewHolder> implements CashBoxAdapterSwipable {
+public class CashBoxManagerRecyclerAdapter extends ListAdapter<CashBox, CashBoxManagerRecyclerAdapter.ViewHolder> implements CashBoxAdapterSwipable {
     static final int REQUEST_CODE_ITEM = 1;
 
     private static final boolean SWIPE_ENABLED = true;
@@ -50,7 +49,6 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
     private OnStartDragListener onStartDragListener;
     private ShareActionProvider shareActionProvider;
     private ViewHolder selectedViewHolder = null;
-    private List<CashBox> cashBoxes = new ArrayList<>();
 
     // Contextual toolbar
     ActionMode actionMode;
@@ -101,7 +99,21 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
         }
     };
 
+    //DiffUtil Callback
+    private static final DiffUtil.ItemCallback<CashBox> DIFF_CALLBACK = new DiffUtil.ItemCallback<CashBox>() {
+        @Override
+        public boolean areItemsTheSame(@NonNull CashBox oldItem, @NonNull CashBox newItem) {
+            return oldItem.equals(newItem);
+        }
+
+        @Override
+        public boolean areContentsTheSame(@NonNull CashBox oldItem, @NonNull CashBox newItem) {
+            return oldItem.getCash() == newItem.getCash();
+        }
+    };
+
     CashBoxManagerRecyclerAdapter(CashBoxManagerActivity cashBoxManagerActivity) {
+        super(DIFF_CALLBACK);
         this.cashBoxManagerActivity = cashBoxManagerActivity;
     }
 
@@ -118,7 +130,7 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int index) {
-        CashBox cashBox = cashBoxes.get(index);
+        CashBox cashBox = getItem(index);
         viewHolder.rvName.setText(cashBox.getName());
 
         // Enable or disable dragging
@@ -142,16 +154,6 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
     }
 
     @Override
-    public int getItemCount() {
-        return cashBoxes.size();
-    }
-    
-    void setCashBoxes(List<CashBox> cashBoxes) {
-        this.cashBoxes = cashBoxes;
-        notifyDataSetChanged();
-    }
-
-    @Override
     public boolean isDragEnabled() {
         return actionMode != null;
     }
@@ -169,25 +171,34 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
     //TODO
     @Override
     public void onItemDrop(int fromPosition, int toPosition) {
+//        cashBoxManagerActivity.cashBoxViewModel.moveCashBox();
+
 //        cashBoxes.move(fromPosition, toPosition);
-//        cashBoxManagerActivity.saveCashBoxManager();
     }
 
     @Override
     public void onItemDelete(int position) {
         if (actionMode != null)
             actionMode.finish();
-        CashBox deletedCashBox = cashBoxes.remove(position);
-        notifyItemRemoved(position);
+//        CashBox deletedCashBox = cashBoxes.remove(position);
+//        notifyItemRemoved(position);
+//
+//        Snackbar.make(cashBoxManagerActivity.coordinatorLayout, cashBoxManagerActivity.getString(R.string.snackbarEntriesDeleted, 1), Snackbar.LENGTH_LONG)
+//                .setAction(R.string.undo, (View v1) -> {
+//                    cashBoxes.add(position, deletedCashBox);
+//                    notifyItemInserted(position);
+//                    cashBoxManagerActivity.saveCashBoxManager();
+//                })
+//                .show();
+//        cashBoxManagerActivity.saveCashBoxManager();
+        CashBox deletedCashBox = getItem(position);
+        cashBoxManagerActivity.cashBoxViewModel.deleteCashBox(deletedCashBox);
 
         Snackbar.make(cashBoxManagerActivity.coordinatorLayout, cashBoxManagerActivity.getString(R.string.snackbarEntriesDeleted, 1), Snackbar.LENGTH_LONG)
                 .setAction(R.string.undo, (View v1) -> {
-                    cashBoxes.add(position, deletedCashBox);
-                    notifyItemInserted(position);
-                    cashBoxManagerActivity.saveCashBoxManager();
+                    cashBoxManagerActivity.cashBoxViewModel.addCashBox(deletedCashBox);
                 })
                 .show();
-        cashBoxManagerActivity.saveCashBoxManager();
     }
 
     @Override
@@ -200,7 +211,7 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
             Button positive = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
             TextInputEditText inputName = ((AlertDialog) dialog).findViewById(R.id.inputTextChangeName);
             TextInputLayout layoutName = ((AlertDialog) dialog).findViewById(R.id.inputLayoutChangeName);
-            String oldName = cashBoxes.get(position).getName();
+            String oldName = getItem(position).getName();
 
             inputName.setText(oldName);
             layoutName.setCounterMaxLength(CashBox.MAX_LENGTH_NAME);
@@ -214,11 +225,9 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
                 String newName = inputName.getText().toString();
                 try {
 //                    if (cashBoxes.changeName(position, newName)) { TODO
-                    if (true) {
-                        notifyItemChanged(position);
+                    if(cashBoxManagerActivity.cashBoxViewModel.changeCashBoxName(getItem(position),newName)) {
+//                        notifyItemChanged(position);
                         dialog.dismiss();
-//                                cashBoxes.saveDataTemp(getContext());
-                        cashBoxManagerActivity.saveCashBoxManager();
                     } else {
                         layoutName.setError(cashBoxManagerActivity.getString(R.string.nameInUse));
                         inputName.selectAll();
@@ -257,18 +266,16 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
 
             Util.showKeyboard(cashBoxManagerActivity, inputName);
             inputName.setMaxLines(CashBox.MAX_LENGTH_NAME);
-            inputName.setText(cashBoxes.get(index).getName());
+            inputName.setText(getItem(index).getName());
             layoutName.setCounterMaxLength(CashBox.MAX_LENGTH_NAME);
 
             positive.setOnClickListener((View v1) -> {
                 try {
 //                    if (cashBoxes.duplicate(index, inputName.getText().toString())) { TODO
-                    if (true) {
-                        notifyItemInserted(index + 1);
+                    if (cashBoxManagerActivity.cashBoxViewModel.duplicateCashBox(getItem(index),inputName.getText().toString())) {
+//                        notifyItemInserted(index + 1);
                         dialog.dismiss();
                         Toast.makeText(cashBoxManagerActivity, "Entry cloned", Toast.LENGTH_SHORT).show();
-//                            cashBoxes.saveDataTemp(getContext());
-                        cashBoxManagerActivity.saveCashBoxManager();
                     } else {
                         layoutName.setError(cashBoxManagerActivity.getString(R.string.nameInUse));
                         inputName.selectAll();
@@ -296,7 +303,7 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
 
     private void updateShareIntent(int index) {
         if (shareActionProvider != null)
-            shareActionProvider.setShareIntent(Util.getShareIntent(cashBoxes.get(index)));
+            shareActionProvider.setShareIntent(Util.getShareIntent(getItem(index)));
     }
 
     boolean showActionMode() {
@@ -327,7 +334,7 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
         }
 
         @OnTouch(R.id.reorderImage)
-        public boolean onTouch(MotionEvent event) {
+        boolean onTouch(MotionEvent event) {
             setSelectedViewHolder(this);
             if (onStartDragListener != null && event.getActionMasked() == MotionEvent.ACTION_DOWN) {
                 onStartDragListener.onStartDrag(this);
@@ -345,7 +352,7 @@ public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxM
 //            CashBox cashBox = cashBoxes.get(selectedIndex);
                 Intent intent = new Intent(cashBoxManagerActivity, CashBoxItemActivity.class);
                 intent.putExtra(CashBoxItemActivity.EXTRA_INDEX, selectedViewHolder.getAdapterPosition());
-                intent.putExtra(CashBoxItemActivity.EXTRA_CASHBOX_MANAGER, (Parcelable) cashBoxes);
+//                intent.putExtra(CashBoxItemActivity.EXTRA_CASHBOX_MANAGER, (Parcelable) cashBoxes);
 //            cashBoxManagerActivity.startActivity(intent);
                 cashBoxManagerActivity.startActivityForResult(intent, REQUEST_CODE_ITEM);
 

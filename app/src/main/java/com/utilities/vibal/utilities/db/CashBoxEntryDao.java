@@ -19,6 +19,6 @@ public interface CashBoxEntryDao {
     @Update
     void update(CashBox.Entry entry);
 
-    @Query("DELETE FROM entries_table WHERE nameCashBox=:name")
-    void deleteAll(String name);
+    @Query("DELETE FROM entries_table WHERE cashBoxId=:id")
+    void deleteAll(int id);
 }

@@ -8,7 +8,6 @@ import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.Toast;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -23,8 +22,7 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.utilities.vibal.utilities.R;
 import com.utilities.vibal.utilities.models.CashBox;
-import com.utilities.vibal.utilities.models.CashBoxManager;
-import com.utilities.vibal.utilities.ui.cashBoxItem.CashBoxItemActivity;
+import com.utilities.vibal.utilities.models.CashBoxViewModel;
 import com.utilities.vibal.utilities.ui.settings.SettingsActivity;
 import com.utilities.vibal.utilities.ui.swipeController.CashBoxSwipeController;
 import com.utilities.vibal.utilities.util.LogUtil;
@@ -48,7 +46,6 @@ public class CashBoxManagerActivity extends AppCompatActivity {
 
     CashBoxViewModel cashBoxViewModel;
     private CashBoxManagerRecyclerAdapter adapter;
-    private CashBoxManager cashBoxManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,14 +73,11 @@ public class CashBoxManagerActivity extends AppCompatActivity {
         itemTouchHelper.attachToRecyclerView(rvCashBoxManager);
         adapter.setOnStartDragListener(itemTouchHelper::startDrag);
 
-        // Initialize data TODO
-//        cashBoxManager = IOCashBoxManager.loadCashBoxManager(this);
-        cashBoxManager = new CashBoxManager();
-
+        // Initialize data
         cashBoxViewModel = ViewModelProviders.of(this).get(CashBoxViewModel.class);
         cashBoxViewModel.getCashBoxes().observe(this, (List<CashBox> cashBoxes) -> {
-            adapter.setCashBoxes(cashBoxes);
-            Toast.makeText(CashBoxManagerActivity.this, "on changed", Toast.LENGTH_LONG).show();
+            adapter.submitList(cashBoxes);
+            Toast.makeText(CashBoxManagerActivity.this, "on changed", Toast.LENGTH_LONG).show(); //TODO
         });
 
         // Look at intent
@@ -98,38 +92,16 @@ public class CashBoxManagerActivity extends AppCompatActivity {
             showAddDialog();
     }
 
-    // Cuando se ponga el widget
-//    @Override
-//    protected void onRestart() {
-//        super.onRestart();
-//        // Reload the data
-////        cashBoxManager = IOCashBoxManager.loadCashBoxManager(this);
-//        LogUtil.debug(TAG, "onRestart: ");
-//    }
-
     @Override
     protected void onStop() {
         super.onStop();
         LogUtil.debug(TAG, "onStop: ");
-//        IOCashBoxManager.renameCashBoxManagerTemp(this);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         LogUtil.debug(TAG, "onDestroy: ");
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        LogUtil.debug(TAG, "onActivityResult: " + cashBoxManager.toString());
-        if (data != null && requestCode == CashBoxManagerRecyclerAdapter.REQUEST_CODE_ITEM && resultCode == RESULT_OK) {
-            cashBoxManager = data.getParcelableExtra(CashBoxItemActivity.EXTRA_CASHBOX_MANAGER);
-//            adapter.setCashBoxes(cashBoxManager); TODO
-        }
-        LogUtil.debug(TAG, "onActivityResult: " + cashBoxManager.toString());
-
-        super.onActivityResult(requestCode, resultCode, data);
     }
 
     @OnClick(R.id.fabCBManager)
@@ -162,27 +134,14 @@ public class CashBoxManagerActivity extends AppCompatActivity {
         }
     }
 
-    //TODO
-    void saveCashBoxManager() {
-//        try {
-//            IOCashBoxManager.saveCashBoxManagerTemp(cashBoxManager, this);
-//        } catch (IOException e) {
-//            LogUtil.error(TAG, "onStop: error save", e);
-//            e.printStackTrace();
-//        }
-    }
-
     private void deleteAll() {
-        if (!cashBoxManager.isEmpty()) {
+        if(adapter.getItemCount()!=0) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle(R.string.confirmDeleteAllDialog)
                     .setMessage("Are you sure you want to delete all entries? This action CANNOT be undone")
                     .setNegativeButton(R.string.cancelDialog, null)
                     .setPositiveButton(R.string.confirmDeleteDialogConfirm, (DialogInterface dialog, int which) -> {
-                        int size = cashBoxManager.size();
-                        cashBoxManager.clear();
-                        adapter.notifyItemRangeRemoved(0, size);
-                        saveCashBoxManager();
+                        cashBoxViewModel.deleteAllCashBoxes();
                         Toast.makeText(this, "Deleted all entries", Toast.LENGTH_SHORT).show();
                     }).show();
         } else
@@ -215,13 +174,15 @@ public class CashBoxManagerActivity extends AppCompatActivity {
                 try {
                     CashBox cashBox = new CashBox(inputTextName.getText().toString());
                     String strInitCash = inputTextInitCash.getText().toString().trim();
+                    CashBox.Entry entry = null;
                     if (!strInitCash.isEmpty() && Util.parseDouble(strInitCash) != 0)
-                        cashBox.add(Util.parseDouble(strInitCash), "Initial Amount", Calendar.getInstance());
-                    if (cashBoxManager.add(cashBox)) {
-                        adapter.notifyItemInserted(cashBoxManager.size() - 1);
+                        entry = new CashBox.Entry(Util.parseDouble(strInitCash), "Initial Amount", Calendar.getInstance());
+                    if (cashBoxViewModel.addCashBox(cashBox)) {
+                        if(entry!=null)
+                            cashBoxViewModel.addEntry(cashBox,entry);
                         dialog1.dismiss();
-                        saveCashBoxManager();
-                    } else {
+                    }
+                    else {
                         inputLayoutName.setError(CashBoxManagerActivity.this.getString(R.string.nameInUse));
                         inputTextName.selectAll();
                         Util.showKeyboard(CashBoxManagerActivity.this, inputTextName);

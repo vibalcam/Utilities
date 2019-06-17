@@ -18,6 +18,7 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Objects;
 
 import static androidx.room.ForeignKey.CASCADE;
 
@@ -37,7 +38,7 @@ public class CashBox implements Parcelable,Cloneable {
 
     @Embedded
     private final CashBoxInfo cashBoxInfo;
-    @Relation(parentColumn = "name", entityColumn = "nameCashBox")
+    @Relation(parentColumn = "id", entityColumn = "cashBoxId")
     private List<Entry> entries;
 
     @Ignore
@@ -97,7 +98,7 @@ public class CashBox implements Parcelable,Cloneable {
         return entries.get(index);
     }
 
-    public void setName(String name) throws IllegalArgumentException {
+    void setName(String name) throws IllegalArgumentException {
         cashBoxInfo.setName(name);
     }
 
@@ -115,7 +116,7 @@ public class CashBox implements Parcelable,Cloneable {
 
     public double add(int index, double amount, String cause, Calendar date) {
         cashBoxInfo.cash += amount;
-        entries.add(index, new Entry(getName(),amount,cause,date));
+        entries.add(index, new Entry(cashBoxInfo.getId(),amount,cause,date));
         return getCash();
     }
 
@@ -156,7 +157,7 @@ public class CashBox implements Parcelable,Cloneable {
     public List<Entry> clear() {
         cashBoxInfo.cash = 0;
         List<Entry> entriesRemoved = entries;
-        entries = new ArrayList<Entry>();
+        entries = new ArrayList<>();
         return entriesRemoved;
     }
 
@@ -170,7 +171,7 @@ public class CashBox implements Parcelable,Cloneable {
      * @return Total cash after the modification
      */
     public Entry modify(int index, double amount, String cause, Calendar date) {
-        Entry modifiedEntry = entries.set(index, new Entry(getName(), amount, cause, date));
+        Entry modifiedEntry = entries.set(index, new Entry(cashBoxInfo.getId(), amount, cause, date));
         cashBoxInfo.cash += amount - modifiedEntry.getAmount();
         return modifiedEntry;
     }
@@ -237,28 +238,34 @@ public class CashBox implements Parcelable,Cloneable {
             }
         };
 
-        private int orderPos;
+        @PrimaryKey(autoGenerate = true)
+        private int id;
         @NonNull
-        @PrimaryKey
         private String name;
         private double cash; //sum of amounts
 
-        public CashBoxInfo(String name, double cash) {
+        public CashBoxInfo(String name, double cash) throws IllegalArgumentException {
             setName(name);
             this.cash = cash;
         }
 
         @Ignore
-        public CashBoxInfo(String name) {
+        public CashBoxInfo(String name) throws IllegalArgumentException {
             this(name, 0);
         }
 
         @Ignore
         private CashBoxInfo(Parcel parcel) {
-            name = parcel.readString();
+            id = parcel.readInt();
+            name = Objects.requireNonNull(parcel.readString());
             cash = parcel.readDouble();
         }
 
+        public int getId() {
+            return id;
+        }
+
+        @NonNull
         public String getName() {
             return name;
         }
@@ -267,12 +274,8 @@ public class CashBox implements Parcelable,Cloneable {
             return cash;
         }
 
-        public int getOrderPos() {
-            return orderPos;
-        }
-
-        public void setOrderPos(int orderPos) {
-            this.orderPos = orderPos;
+        public void setId(int id) {
+            this.id = id;
         }
 
         /**
@@ -281,14 +284,14 @@ public class CashBox implements Parcelable,Cloneable {
          * @param name The name of the CashBox
          * @throws IllegalArgumentException if the name is empty or its length exceeds the MAX_LENGTH_NAME
          */
-        private void setName(String name) throws IllegalArgumentException {
+        void setName(@NonNull String name) throws IllegalArgumentException {
             name = name.trim();
             if (name.isEmpty())
                 throw new IllegalArgumentException("Name cannot be empty");
             else if (name.length() > MAX_LENGTH_NAME)
                 throw new IllegalArgumentException("Name cannot exceed " + MAX_LENGTH_NAME + " characters");
-            else
-                this.name = name;
+
+            this.name = name;
         }
 
         @Override
@@ -299,7 +302,7 @@ public class CashBox implements Parcelable,Cloneable {
         }
 
         @Override
-        protected CashBoxInfo clone() throws CloneNotSupportedException {
+        public CashBoxInfo clone() throws CloneNotSupportedException {
             return (CashBoxInfo) super.clone();
         }
 
@@ -311,6 +314,7 @@ public class CashBox implements Parcelable,Cloneable {
 
         @Override
         public void writeToParcel(Parcel dest, int flags) {
+            dest.writeInt(id);
             dest.writeString(name);
             dest.writeDouble(cash);
         }
@@ -320,6 +324,8 @@ public class CashBox implements Parcelable,Cloneable {
     // When modifying directly, watch out, since an entry can be in cloned cashBoxes (no set methods)
     @Entity(tableName = "entries_table")
     public static class Entry implements Parcelable {
+        @Ignore
+        public static final int NO_CASHBOX = -1;
         @Ignore
         public static final Parcelable.Creator<Entry> CREATOR = new Parcelable.Creator<Entry>() {
             @Override
@@ -336,41 +342,43 @@ public class CashBox implements Parcelable,Cloneable {
         @PrimaryKey(autoGenerate = true)
         private int id;
         @ForeignKey(entity = CashBoxInfo.class,
-                parentColumns = "name", childColumns = "nameCashBox",
+                parentColumns = "id", childColumns = "cashBoxId",
                 onDelete = CASCADE, onUpdate = CASCADE)
-        private String nameCashBox;
+        private int cashBoxId;
         private final String info;
         private final Calendar date;
         private final double amount;
 
         /**
-         * Do NOT use this constructor. Only for Room.
+         * Constructor for Room
          */
-        public Entry(String nameCashBox, double amount, @NonNull String info, Calendar date) {
+        public Entry(int cashBoxId, double amount, @NonNull String info, Calendar date) {
             this.info = info.trim();
             this.date = date;
             this.amount = amount;
-            this.nameCashBox = nameCashBox;
+            this.cashBoxId = cashBoxId;
         }
 
+        @Ignore
+        public Entry(double amount, @NonNull String info, Calendar date) {
+            this(NO_CASHBOX,amount,info,date);
+        }
+
+        @Ignore
         private Entry(@NonNull Parcel parcel) {
             id = parcel.readInt();
-            nameCashBox = parcel.readString();
+            cashBoxId = parcel.readInt();
             info = parcel.readString();
             date = Converters.fromTimestamp(parcel.readLong());
             amount = parcel.readDouble();
-        }
-
-        public void setId(int id) {
-            this.id = id;
         }
 
         public int getId() {
             return id;
         }
 
-        public String getNameCashBox() {
-            return nameCashBox;
+        public int getCashBoxId() {
+            return cashBoxId;
         }
 
         public String getInfo() {
@@ -383,6 +391,10 @@ public class CashBox implements Parcelable,Cloneable {
 
         public double getAmount() {
             return amount;
+        }
+
+        public void setId(int id) {
+            this.id = id;
         }
 
         @Override
@@ -400,6 +412,10 @@ public class CashBox implements Parcelable,Cloneable {
                     info;
         }
 
+        public Entry copy() {
+            return new Entry(amount,info,date);
+        }
+
         // Parcelable implementation
         @Override
         public int describeContents() {
@@ -409,7 +425,7 @@ public class CashBox implements Parcelable,Cloneable {
         @Override
         public void writeToParcel(Parcel dest, int flags) {
             dest.writeInt(id);
-            dest.writeString(nameCashBox);
+            dest.writeInt(cashBoxId);
             dest.writeString(info);
             dest.writeLong(Converters.calendarToTimestamp(date));
             dest.writeDouble(amount);

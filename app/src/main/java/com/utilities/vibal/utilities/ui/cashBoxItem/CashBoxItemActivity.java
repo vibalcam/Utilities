@@ -120,7 +120,7 @@ public class CashBoxItemActivity extends AppCompatActivity {
     private void getDataFromIntent(Intent intent) {
         int cashBoxIndex = intent.getIntExtra(EXTRA_INDEX, 0);
         cashBoxManager = intent.getParcelableExtra(EXTRA_CASHBOX_MANAGER);
-        cashBox = cashBoxManager.get(cashBoxIndex);
+//        cashBox = cashBoxManager.get(cashBoxIndex);TODO
     }
 
     @Override

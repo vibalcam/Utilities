@@ -1,11 +1,13 @@
 package com.utilities.vibal.utilities.db;
 
 import android.app.Application;
+import android.database.sqlite.SQLiteConstraintException;
 import android.os.AsyncTask;
 
 import androidx.lifecycle.LiveData;
 
 import com.utilities.vibal.utilities.models.CashBox;
+import com.utilities.vibal.utilities.util.LogUtil;
 
 import java.util.List;
 
@@ -21,24 +23,35 @@ public class CashBoxRepository {
         cashBoxes = cashBoxDao.getAllCashBoxes();
     }
 
-    public void insertCashBox(CashBox cashBox) {
-        new InsertCashBoxAsyncTask(cashBoxDao).execute(cashBox);
+    public LiveData<List<CashBox>> getCashBoxes() {
+        return cashBoxes;
     }
 
-    public void deleteCashBox(CashBox cashBox) {
-        new DeleteCashBoxAsyncTask(cashBoxDao).execute(cashBox);
+    public Single
+
+    public void insertCashBoxInfo(CashBox.CashBoxInfo cashBoxInfo) throws SQLiteConstraintException {
+        try {
+            new InsertCashBoxAsyncTask(cashBoxDao).execute(cashBoxInfo);
+        } catch (RuntimeException e) {
+            Throwable throwable = e.getCause();
+            LogUtil.error("Prueba", throwable.toString(),throwable);
+//            if(throwable instanceof  SQLiteConstraintException)
+//                throw (SQLiteConstraintException) throwable;
+//            else
+//                throw e;
+        }
+    }
+
+    public void updateCashBox(CashBox.CashBoxInfo cashBoxInfo) {
+        new UpdateCashBoxAsyncTask(cashBoxDao).execute(cashBoxInfo);
+    }
+
+    public void deleteCashBox(CashBox.CashBoxInfo cashBoxInfo) {
+        new DeleteCashBoxAsyncTask(cashBoxDao).execute(cashBoxInfo);
     }
 
     public void deleteAllCashBoxes() {
         new DeleteAllCashBoxAsyncTask(cashBoxDao).execute();
-    }
-
-    public void updateCashBox(CashBox cashBox) {
-        new UpdateCashBoxAsyncTask(cashBoxDao).execute(cashBox);
-    }
-
-    public LiveData<List<CashBox>> getCashBoxes() {
-        return cashBoxes;
     }
 
     public void insertEntry(CashBox.Entry entry) {
@@ -53,11 +66,11 @@ public class CashBoxRepository {
         new UpdateEntryAsyncTask(cashBoxEntryDao).execute(entry);
     }
 
-    public void deleteAllEntries(String name) {
-        new DeleteAllEntryAsyncTask(cashBoxEntryDao).execute();
+    public void deleteAllEntries(int id) {
+        new DeleteAllEntryAsyncTask(cashBoxEntryDao).execute(id);
     }
 
-    private static class InsertCashBoxAsyncTask extends AsyncTask<CashBox,Void,Void> {
+    private static class InsertCashBoxAsyncTask extends AsyncTask<CashBox.CashBoxInfo,Void,Void> {
         private CashBoxDao cashBoxDao;
 
         private InsertCashBoxAsyncTask(CashBoxDao cashBoxDao) {
@@ -65,13 +78,14 @@ public class CashBoxRepository {
         }
 
         @Override
-        protected Void doInBackground(CashBox... cashBoxes) {
-            cashBoxDao.insert(cashBoxes[0].getCashBoxInfo());
+        protected Void doInBackground(CashBox.CashBoxInfo... cashBoxesInfo) {
+            cashBoxesInfo[0].setId(1);
+            cashBoxDao.insert(cashBoxesInfo[0]);
             return null;
         }
     }
 
-    private static class UpdateCashBoxAsyncTask extends AsyncTask<CashBox,Void,Void> {
+    private static class UpdateCashBoxAsyncTask extends AsyncTask<CashBox.CashBoxInfo,Void,Void> {
         private CashBoxDao cashBoxDao;
 
         private UpdateCashBoxAsyncTask(CashBoxDao cashBoxDao) {
@@ -79,13 +93,13 @@ public class CashBoxRepository {
         }
 
         @Override
-        protected Void doInBackground(CashBox... cashBoxes) {
-            cashBoxDao.update(cashBoxes[0].getCashBoxInfo());
+        protected Void doInBackground(CashBox.CashBoxInfo... cashBoxesInfo) {
+            cashBoxDao.update(cashBoxesInfo[0]);
             return null;
         }
     }
 
-    private static class DeleteCashBoxAsyncTask extends AsyncTask<CashBox,Void,Void> {
+    private static class DeleteCashBoxAsyncTask extends AsyncTask<CashBox.CashBoxInfo,Void,Void> {
         private CashBoxDao cashBoxDao;
 
         private DeleteCashBoxAsyncTask(CashBoxDao cashBoxDao) {
@@ -93,8 +107,8 @@ public class CashBoxRepository {
         }
 
         @Override
-        protected Void doInBackground(CashBox... cashBoxes) {
-            cashBoxDao.delete(cashBoxes[0].getCashBoxInfo());
+        protected Void doInBackground(CashBox.CashBoxInfo... cashBoxesInfo) {
+            cashBoxDao.delete(cashBoxesInfo[0]);
             return null;
         }
     }
@@ -155,7 +169,7 @@ public class CashBoxRepository {
         }
     }
 
-    private static class DeleteAllEntryAsyncTask extends AsyncTask<String,Void,Void> {
+    private static class DeleteAllEntryAsyncTask extends AsyncTask<Integer,Void,Void> {
         private CashBoxEntryDao cashBoxEntryDao;
 
         private DeleteAllEntryAsyncTask(CashBoxEntryDao cashBoxEntryDao) {
@@ -163,8 +177,8 @@ public class CashBoxRepository {
         }
 
         @Override
-        protected Void doInBackground(String... strings) {
-            cashBoxEntryDao.deleteAll(strings[0]);
+        protected Void doInBackground(Integer... integers) {
+            cashBoxEntryDao.deleteAll(integers[0]);
             return null;
         }
     }
