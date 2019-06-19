@@ -88,7 +88,7 @@ public class CashBoxItemActivity extends AppCompatActivity {
         rvCashBoxItem.setLayoutManager(layoutManager);
         CashBoxItemRecyclerAdapter adapter = new CashBoxItemRecyclerAdapter(cashBox, this);
         rvCashBoxItem.setAdapter(adapter);
-        boolean swipeLeftDelete = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("swipeDelete", true);
+        boolean swipeLeftDelete = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("swipeLeftDelete", true);
         (new ItemTouchHelper(new CashBoxSwipeController(adapter, swipeLeftDelete))).attachToRecyclerView(rvCashBoxItem);
         rvCashBoxItem.addItemDecoration(new DividerItemDecoration(this, layoutManager.getOrientation()));
 

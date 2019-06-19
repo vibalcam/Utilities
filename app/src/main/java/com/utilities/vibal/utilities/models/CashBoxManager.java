@@ -1,7 +1,5 @@
 package com.utilities.vibal.utilities.models;
 
-import com.utilities.vibal.utilities.util.LogUtil;
-
 import java.util.List;
 
 public class CashBoxManager {
@@ -70,13 +68,13 @@ public class CashBoxManager {
     }
 
     public boolean duplicate(int index, String newName) throws IllegalArgumentException {
-        try {
+//        try {
             CashBox cashBox = cashBoxes.get(index).clone();
             cashBox.setName(newName);
             return this.add(index + 1, cashBox);
-        } catch (CloneNotSupportedException e) {
-            LogUtil.error("PruebaCashBoxManager", "cloning: ", e);
-            return false;
-        }
+//        } catch (CloneNotSupportedException e) {
+//            LogUtil.error("PruebaCashBoxManager", "cloning: ", e);
+//            return false;
+//        }
     }
 }

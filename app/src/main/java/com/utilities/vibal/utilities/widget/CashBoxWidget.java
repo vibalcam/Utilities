@@ -10,7 +10,7 @@ import android.widget.RemoteViews;
 
 import com.utilities.vibal.utilities.R;
 import com.utilities.vibal.utilities.ui.cashBoxItem.CashBoxItemActivity;
-import com.utilities.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity;
+import com.utilities.vibal.utilities.ui.cashBoxManagerOld.CashBoxManagerActivity;
 
 /**
  * Implementation of App Widget functionality.

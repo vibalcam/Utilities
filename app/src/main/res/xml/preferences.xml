@@ -12,7 +12,7 @@
 
     <PreferenceCategory app:title="@string/pref_CBM_header">
         <SwitchPreference
-            app:key="swipeDelete"
+            app:key="swipeLeftDelete"
             app:title="@string/pref_swipeDelete"
             app:summaryOn="@string/summaryOn_swipeDelete"
             app:summaryOff="@string/summaryOff_swipeDelete"

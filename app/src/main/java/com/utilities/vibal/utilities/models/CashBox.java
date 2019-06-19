@@ -405,6 +405,9 @@ public class CashBox implements Parcelable {
         }
 
         public Entry getEntryWithCashBoxId(int cashBoxId) {
+            if(this.cashBoxId==cashBoxId)
+                return this;
+
             Entry entry = this.cashBoxId!=NO_CASHBOX ? this.clone() : this;
             entry.cashBoxId = cashBoxId;
             return entry;

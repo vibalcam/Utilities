@@ -19,6 +19,8 @@ import static androidx.recyclerview.widget.ItemTouchHelper.RIGHT;
 import static androidx.recyclerview.widget.ItemTouchHelper.UP;
 
 public class CashBoxSwipeController extends ItemTouchHelper.Callback {
+    private static final float SWIPE_THRESHOLD = 0.4f;
+
     private final boolean swipeLeftDelete;
     private CashBoxAdapterSwipable adapter;
     private int fromIndex = -1;
@@ -80,7 +82,7 @@ public class CashBoxSwipeController extends ItemTouchHelper.Callback {
                 drawable = recyclerView.getContext().getDrawable(R.drawable.ic_edit_white_24dp);
                 paint.setColor(Color.BLUE);
             }
-            if (Math.abs(dX) < rectTotal.width() * 2 / 5)
+            if (Math.abs(dX) < rectTotal.width() * SWIPE_THRESHOLD)
                 paint.setColor(Color.LTGRAY);
 
             // Draw
@@ -96,6 +98,11 @@ public class CashBoxSwipeController extends ItemTouchHelper.Callback {
                 drawable.draw(c);
             }
         }
+    }
+
+    @Override
+    public float getSwipeThreshold(@NonNull RecyclerView.ViewHolder viewHolder) {
+        return SWIPE_THRESHOLD;
     }
 
     @Override

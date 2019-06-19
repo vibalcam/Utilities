@@ -1,4 +1,4 @@
-package com.utilities.vibal.utilities.ui.cashBoxManager;
+package com.utilities.vibal.utilities.ui.cashBoxManagerOld;
 
 import android.content.Intent;
 import android.view.LayoutInflater;
@@ -37,6 +37,8 @@ import java.text.NumberFormat;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnTouch;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 
 public class CashBoxManagerRecyclerAdapter extends ListAdapter<CashBox, CashBoxManagerRecyclerAdapter.ViewHolder> implements CashBoxAdapterSwipable {
     static final int REQUEST_CODE_ITEM = 1;
@@ -180,29 +182,25 @@ public class CashBoxManagerRecyclerAdapter extends ListAdapter<CashBox, CashBoxM
     public void onItemDelete(int position) {
         if (actionMode != null)
             actionMode.finish();
-//        CashBox deletedCashBox = cashBoxes.remove(position);
-//        notifyItemRemoved(position);
-//
-//        Snackbar.make(cashBoxManagerActivity.coordinatorLayout, cashBoxManagerActivity.getString(R.string.snackbarEntriesDeleted, 1), Snackbar.LENGTH_LONG)
-//                .setAction(R.string.undo, (View v1) -> {
-//                    cashBoxes.add(position, deletedCashBox);
-//                    notifyItemInserted(position);
-//                    cashBoxManagerActivity.saveCashBoxManager();
-//                })
-//                .show();
-//        cashBoxManagerActivity.saveCashBoxManager();
         CashBox deletedCashBox = getItem(position);
-        cashBoxManagerActivity.cashBoxViewModel.deleteCashBox(deletedCashBox);
-
-        Snackbar.make(cashBoxManagerActivity.coordinatorLayout, cashBoxManagerActivity.getString(R.string.snackbarEntriesDeleted, 1), Snackbar.LENGTH_LONG)
-                .setAction(R.string.undo, (View v1) -> {
-                    cashBoxManagerActivity.cashBoxViewModel.addCashBox(deletedCashBox);
-                })
-                .show();
+        cashBoxManagerActivity.disposable.add(
+                cashBoxManagerActivity.cashBoxViewModel.deleteCashBox(deletedCashBox)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(() -> Snackbar.make(cashBoxManagerActivity.coordinatorLayout,
+                            cashBoxManagerActivity.getString(R.string.snackbarEntriesDeleted, 1),
+                            Snackbar.LENGTH_LONG)
+                            .setAction(R.string.undo,v ->
+                                    cashBoxManagerActivity.disposable.add(
+                                            cashBoxManagerActivity.cashBoxViewModel.addCashBox(deletedCashBox)
+                                                    .subscribeOn(Schedulers.io())
+                                                    .observeOn(AndroidSchedulers.mainThread())
+                                                    .subscribe()))
+                            .show()));
     }
 
     @Override
-    public void onItemModify(int position) {
+    public void onItemModify(int position) {//TODO
         if (actionMode != null)
             actionMode.finish();
 
@@ -224,15 +222,15 @@ public class CashBoxManagerRecyclerAdapter extends ListAdapter<CashBox, CashBoxM
             positive.setOnClickListener((View v1) -> {
                 String newName = inputName.getText().toString();
                 try {
-//                    if (cashBoxes.changeName(position, newName)) { TODO
-                    if(cashBoxManagerActivity.cashBoxViewModel.changeCashBoxName(getItem(position),newName)) {
-//                        notifyItemChanged(position);
-                        dialog.dismiss();
-                    } else {
-                        layoutName.setError(cashBoxManagerActivity.getString(R.string.nameInUse));
-                        inputName.selectAll();
-                        Util.showKeyboard(cashBoxManagerActivity, inputName);
-                    }
+                    cashBoxManagerActivity.disposable.add(
+                            cashBoxManagerActivity.cashBoxViewModel.changeCashBoxName(getItem(position), newName)
+                                    .subscribeOn(Schedulers.io())
+                                    .observeOn(AndroidSchedulers.mainThread())
+                                    .subscribe(dialog::dismiss,throwable -> {
+                                        layoutName.setError(cashBoxManagerActivity.getString(R.string.nameInUse));
+                                        inputName.selectAll();
+                                        Util.showKeyboard(cashBoxManagerActivity, inputName);
+                                    }));
                 } catch (IllegalArgumentException e) {
                     layoutName.setError(e.getMessage());
                     inputName.selectAll();
@@ -272,7 +270,8 @@ public class CashBoxManagerRecyclerAdapter extends ListAdapter<CashBox, CashBoxM
             positive.setOnClickListener((View v1) -> {
                 try {
 //                    if (cashBoxes.duplicate(index, inputName.getText().toString())) { TODO
-                    if (cashBoxManagerActivity.cashBoxViewModel.duplicateCashBox(getItem(index),inputName.getText().toString())) {
+//                    if (cashBoxManagerActivity.cashBoxViewModel.duplicateCashBox(getItem(index),inputName.getText().toString())) {
+                    if(true) {
 //                        notifyItemInserted(index + 1);
                         dialog.dismiss();
                         Toast.makeText(cashBoxManagerActivity, "Entry cloned", Toast.LENGTH_SHORT).show();

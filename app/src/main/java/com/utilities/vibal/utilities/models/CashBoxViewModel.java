@@ -30,11 +30,11 @@ public class CashBoxViewModel extends AndroidViewModel {
     public Completable addCashBox(CashBox cashBox) {
         Completable completable = repository.insertCashBoxInfo(cashBox.getCashBoxInfo());
         for(CashBox.Entry entry:cashBox.getEntries())
-            completable = completable.andThen(repository.insertEntry(entry));
+            completable = completable.andThen(addEntry(cashBox,entry));
         return completable;
     }
 
-    public Completable changeCashBoxName(CashBox cashBox, String newName) {
+    public Completable changeCashBoxName(CashBox cashBox, String newName) throws IllegalArgumentException {
         CashBox.CashBoxInfo cashBoxInfo = cashBox.getCashBoxInfo().clone();
         cashBoxInfo.setName(newName);
         return repository.updateCashBoxInfo(cashBoxInfo);
@@ -54,8 +54,13 @@ public class CashBoxViewModel extends AndroidViewModel {
         return addCashBox(cashBoxDup);
     }
 
-    public void moveCashBox(CashBox cashBox, int index) {
+    public Completable moveCashBox(CashBox cashBox, int index) {
         //TODO
+        List<CashBox> cashBoxList = cashBoxes.getValue();
+//        if(cashBoxList==null)
+            return Completable.complete();
+
+
     }
 
     public Completable addEntry(CashBox cashBox, CashBox.Entry entry) {
