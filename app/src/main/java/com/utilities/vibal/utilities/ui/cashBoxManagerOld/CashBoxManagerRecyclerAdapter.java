@@ -350,7 +350,7 @@ public class CashBoxManagerRecyclerAdapter extends ListAdapter<CashBox, CashBoxM
             if (actionMode == null) {
 //            CashBox cashBox = cashBoxes.get(selectedIndex);
                 Intent intent = new Intent(cashBoxManagerActivity, CashBoxItemActivity.class);
-                intent.putExtra(CashBoxItemActivity.EXTRA_INDEX, selectedViewHolder.getAdapterPosition());
+                intent.putExtra(CashBoxItemActivity.EXTRA_CASHBOX_ID, selectedViewHolder.getAdapterPosition());
 //                intent.putExtra(CashBoxItemActivity.EXTRA_CASHBOX_MANAGER, (Parcelable) cashBoxes);
 //            cashBoxManagerActivity.startActivity(intent);
                 cashBoxManagerActivity.startActivityForResult(intent, REQUEST_CODE_ITEM);

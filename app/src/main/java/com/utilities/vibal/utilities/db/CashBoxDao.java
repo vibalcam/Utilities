@@ -31,6 +31,10 @@ public abstract class CashBoxDao {
     @Query("SELECT * FROM cashBoxesInfo_table ORDER BY id DESC")
     abstract LiveData<List<CashBox>> getAllCashBoxes();
 
+    // Get all CashBoxInfo to supply the widget
+    @Query("SELECT * FROM cashBoxesInfo_table ORDER BY id DESC")
+    public abstract List<CashBox.CashBoxInfo> getAllCashBoxInfoForWidget();
+
     @Insert
     abstract Completable insert(CashBox.CashBoxInfo cashBoxInfo);
 

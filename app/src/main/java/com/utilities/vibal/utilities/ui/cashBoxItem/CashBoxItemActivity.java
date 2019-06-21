@@ -45,8 +45,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 public class CashBoxItemActivity extends AppCompatActivity {
-    public static final String EXTRA_INDEX = "com.utilities.vibal.utilities.ui.cashBoxItem.cashBoxIndex";
-    public static final String EXTRA_CASHBOX_MANAGER = "com.utilities.vibal.utilities.ui.cashBoxItem.cashBoxManagerExtra";
+    public static final String EXTRA_CASHBOX_ID = "com.utilities.vibal.utilities.ui.cashBoxItem.cashBoxIndex";
 
     private static final double MAX_SHOW_CASH = 99999999;
     private static final String TAG = "PruebaItemActivity";
@@ -118,7 +117,7 @@ public class CashBoxItemActivity extends AppCompatActivity {
     }
 
     private void getDataFromIntent(Intent intent) {
-        int cashBoxIndex = intent.getIntExtra(EXTRA_INDEX, 0);
+        int cashBoxIndex = intent.getIntExtra(EXTRA_CASHBOX_ID, 0);
         cashBoxManager = intent.getParcelableExtra(EXTRA_CASHBOX_MANAGER);
 //        cashBox = cashBoxManager.get(cashBoxIndex);TODO
     }

@@ -9,8 +9,7 @@ import android.net.Uri;
 import android.widget.RemoteViews;
 
 import com.utilities.vibal.utilities.R;
-import com.utilities.vibal.utilities.ui.cashBoxItem.CashBoxItemActivity;
-import com.utilities.vibal.utilities.ui.cashBoxManagerOld.CashBoxManagerActivity;
+import com.utilities.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity;
 
 /**
  * Implementation of App Widget functionality.
@@ -40,7 +39,7 @@ public class CashBoxWidget extends AppWidgetProvider {
             views.setEmptyView(R.id.listCBMWidget,R.id.listEmptyCBMWidget);
 
             // OnClick for ListView
-            Intent listIntent = new Intent(context, CashBoxItemActivity.class);
+            Intent listIntent = new Intent(context, CashBoxManagerActivity.class);
             views.setPendingIntentTemplate(R.id.listCBMWidget,
                     PendingIntent.getActivity(context,DETAILS_REQUEST,listIntent,0));
 

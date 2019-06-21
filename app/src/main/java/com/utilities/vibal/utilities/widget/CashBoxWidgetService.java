@@ -2,17 +2,16 @@ package com.utilities.vibal.utilities.widget;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Parcelable;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
 import com.utilities.vibal.utilities.R;
-import com.utilities.vibal.utilities.io.IOCashBoxManager;
+import com.utilities.vibal.utilities.db.UtilitiesDatabase;
 import com.utilities.vibal.utilities.models.CashBox;
-import com.utilities.vibal.utilities.models.CashBoxManager;
 import com.utilities.vibal.utilities.ui.cashBoxItem.CashBoxItemActivity;
 
 import java.text.NumberFormat;
+import java.util.List;
 
 public class CashBoxWidgetService extends RemoteViewsService {
     @Override
@@ -22,21 +21,23 @@ public class CashBoxWidgetService extends RemoteViewsService {
 
     class CashBoxWidgetItemFactory implements RemoteViewsFactory {
         private Context context;
-        private CashBoxManager cashBoxManager;
+        private UtilitiesDatabase database;
+        private List<CashBox.CashBoxInfo> cashBoxInfos;
         private NumberFormat currencyFormat;
 
         CashBoxWidgetItemFactory(Context context) {
             this.context = context;
-            cashBoxManager = new CashBoxManager();
             currencyFormat = NumberFormat.getCurrencyInstance();
         }
 
         @Override
-        public void onCreate() {}
+        public void onCreate() {
+            database = UtilitiesDatabase.getInstance(getApplicationContext());
+        }
 
         @Override
         public void onDataSetChanged() {
-            cashBoxManager = IOCashBoxManager.loadCashBoxManager(context);
+            cashBoxInfos = database.cashBoxDao().getAllCashBoxInfoForWidget();
             currencyFormat = NumberFormat.getCurrencyInstance();
         }
 
@@ -45,26 +46,26 @@ public class CashBoxWidgetService extends RemoteViewsService {
 
         @Override
         public int getCount() {
-//            return cashBoxManager.size();TODO
-            return 0;
+            return cashBoxInfos == null ? 0 : cashBoxInfos.size();
         }
         @Override
         public RemoteViews getViewAt(int position) {
+            if(cashBoxInfos==null || cashBoxInfos.size()==0)
+                return null;
+
             // Set up layout
-//            CashBox cashBox = cashBoxManager.get(position);TODO
-            CashBox cashBox = new CashBox("Juan");
+            CashBox.CashBoxInfo cashBoxInfo = cashBoxInfos.get(position);
             RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.item_cbm_widget);
-            views.setTextViewText(R.id.nameCBMWidgetItem,cashBox.getName());
-            views.setTextViewText(R.id.amountCBMWidgetItem,currencyFormat.format(cashBox.getCash()));
-            if(cashBox.getCash()<0)
+            views.setTextViewText(R.id.nameCBMWidgetItem,cashBoxInfo.getName());
+            views.setTextViewText(R.id.amountCBMWidgetItem,currencyFormat.format(cashBoxInfo.getCash()));
+            if(cashBoxInfo.getCash()<0)
                 views.setTextColor(R.id.amountCBMWidgetItem,context.getColor(R.color.colorNegativeNumber));
             else
                 views.setTextColor(R.id.amountCBMWidgetItem,context.getColor(R.color.colorPositiveNumber));
 
             // Intent for OnClick
             Intent fillIntent = new Intent();
-            fillIntent.putExtra(CashBoxItemActivity.EXTRA_INDEX,position);
-            fillIntent.putExtra(CashBoxItemActivity.EXTRA_CASHBOX_MANAGER, (Parcelable) cashBoxManager);
+            fillIntent.putExtra(CashBoxItemActivity.EXTRA_CASHBOX_ID,cashBoxInfo.getId());
             views.setOnClickFillInIntent(R.id.listItem_cbmWidget,fillIntent);
             return views;
         }
