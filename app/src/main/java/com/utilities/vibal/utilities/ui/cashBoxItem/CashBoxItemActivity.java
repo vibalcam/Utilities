@@ -3,7 +3,6 @@ package com.utilities.vibal.utilities.ui.cashBoxItem;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -27,7 +26,6 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.utilities.vibal.utilities.R;
-import com.utilities.vibal.utilities.io.IOCashBoxManager;
 import com.utilities.vibal.utilities.models.CashBox;
 import com.utilities.vibal.utilities.models.CashBoxManager;
 import com.utilities.vibal.utilities.ui.settings.SettingsActivity;
@@ -35,7 +33,6 @@ import com.utilities.vibal.utilities.ui.swipeController.CashBoxSwipeController;
 import com.utilities.vibal.utilities.util.LogUtil;
 import com.utilities.vibal.utilities.util.Util;
 
-import java.io.IOException;
 import java.text.NumberFormat;
 import java.util.Calendar;
 import java.util.List;
@@ -65,7 +62,7 @@ public class CashBoxItemActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         LogUtil.debug(TAG, "on create:");
-        setContentView(R.layout.activity_cash_box_item);
+        setContentView(R.layout.cash_box_item_fragment);
         ButterKnife.bind(this);
 
         //Get data
@@ -118,7 +115,7 @@ public class CashBoxItemActivity extends AppCompatActivity {
 
     private void getDataFromIntent(Intent intent) {
         int cashBoxIndex = intent.getIntExtra(EXTRA_CASHBOX_ID, 0);
-        cashBoxManager = intent.getParcelableExtra(EXTRA_CASHBOX_MANAGER);
+//        cashBoxManager = intent.getParcelableExtra(EXTRA_CASHBOX_MANAGER);
 //        cashBox = cashBoxManager.get(cashBoxIndex);TODO
     }
 
@@ -126,7 +123,7 @@ public class CashBoxItemActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         // Rename the temporary file to the actual store file
-        IOCashBoxManager.renameCashBoxManagerTemp(this);
+//        IOCashBoxManager.renameCashBoxManagerTemp(this);
     }
 
     @Override
@@ -141,12 +138,12 @@ public class CashBoxItemActivity extends AppCompatActivity {
     }
 
     public void saveCashBoxManager() {
-        try {
-            IOCashBoxManager.saveCashBoxManagerTemp(cashBoxManager, this);
-        } catch (IOException e) {
-            LogUtil.error(TAG, "onStop: error save", e);
-            e.printStackTrace();
-        }
+//        try {
+////            IOCashBoxManager.saveCashBoxManagerTemp(cashBoxManager, this);
+//        } catch (IOException e) {
+//            LogUtil.error(TAG, "onStop: error save", e);
+//            e.printStackTrace();
+//        }
     }
 
     public void updateCash() {
@@ -189,7 +186,7 @@ public class CashBoxItemActivity extends AppCompatActivity {
 
     private void returnResult() {
         Intent intent = new Intent();
-        intent.putExtra(EXTRA_CASHBOX_MANAGER, (Parcelable) cashBoxManager);
+//        intent.putExtra(EXTRA_CASHBOX_MANAGER, (Parcelable) cashBoxManager);
         setResult(RESULT_OK, intent);
         finish();
     }
@@ -238,7 +235,7 @@ public class CashBoxItemActivity extends AppCompatActivity {
     private void showAddDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         AlertDialog dialog = builder.setTitle(R.string.newEntry)
-                .setView(R.layout.entry_cash_box_item_input)
+                .setView(R.layout.cash_box_item_entry_input)
                 .setNegativeButton(R.string.cancelDialog, null)
                 .setPositiveButton(R.string.addEntryDialog, null)
                 .create();

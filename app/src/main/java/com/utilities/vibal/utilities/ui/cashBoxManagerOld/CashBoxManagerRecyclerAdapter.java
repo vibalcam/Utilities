@@ -126,7 +126,7 @@ public class CashBoxManagerRecyclerAdapter extends ListAdapter<CashBox, CashBoxM
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int viewType) {
-        View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_cash_box_manager, viewGroup, false);
+        View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.cash_box_manager_item, viewGroup, false);
         return new ViewHolder(v);
     }
 
@@ -173,7 +173,7 @@ public class CashBoxManagerRecyclerAdapter extends ListAdapter<CashBox, CashBoxM
     //TODO
     @Override
     public void onItemDrop(int fromPosition, int toPosition) {
-//        cashBoxManagerActivity.cashBoxViewModel.moveCashBox();
+//        cashBoxManagerActivity.viewModel.moveCashBox();
 
 //        cashBoxes.move(fromPosition, toPosition);
     }
@@ -184,7 +184,7 @@ public class CashBoxManagerRecyclerAdapter extends ListAdapter<CashBox, CashBoxM
             actionMode.finish();
         CashBox deletedCashBox = getItem(position);
         cashBoxManagerActivity.disposable.add(
-                cashBoxManagerActivity.cashBoxViewModel.deleteCashBox(deletedCashBox)
+                cashBoxManagerActivity.viewModel.deleteCashBox(deletedCashBox)
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(() -> Snackbar.make(cashBoxManagerActivity.coordinatorLayout,
@@ -192,7 +192,7 @@ public class CashBoxManagerRecyclerAdapter extends ListAdapter<CashBox, CashBoxM
                             Snackbar.LENGTH_LONG)
                             .setAction(R.string.undo,v ->
                                     cashBoxManagerActivity.disposable.add(
-                                            cashBoxManagerActivity.cashBoxViewModel.addCashBox(deletedCashBox)
+                                            cashBoxManagerActivity.viewModel.addCashBox(deletedCashBox)
                                                     .subscribeOn(Schedulers.io())
                                                     .observeOn(AndroidSchedulers.mainThread())
                                                     .subscribe()))
@@ -223,7 +223,7 @@ public class CashBoxManagerRecyclerAdapter extends ListAdapter<CashBox, CashBoxM
                 String newName = inputName.getText().toString();
                 try {
                     cashBoxManagerActivity.disposable.add(
-                            cashBoxManagerActivity.cashBoxViewModel.changeCashBoxName(getItem(position), newName)
+                            cashBoxManagerActivity.viewModel.changeCashBoxName(getItem(position), newName)
                                     .subscribeOn(Schedulers.io())
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .subscribe(dialog::dismiss,throwable -> {
@@ -270,7 +270,7 @@ public class CashBoxManagerRecyclerAdapter extends ListAdapter<CashBox, CashBoxM
             positive.setOnClickListener((View v1) -> {
                 try {
 //                    if (cashBoxes.duplicate(index, inputName.getText().toString())) { TODO
-//                    if (cashBoxManagerActivity.cashBoxViewModel.duplicateCashBox(getItem(index),inputName.getText().toString())) {
+//                    if (cashBoxManagerActivity.viewModel.duplicateCashBox(getItem(index),inputName.getText().toString())) {
                     if(true) {
 //                        notifyItemInserted(index + 1);
                         dialog.dismiss();

@@ -55,7 +55,7 @@ public class CashBoxWidgetService extends RemoteViewsService {
 
             // Set up layout
             CashBox.CashBoxInfo cashBoxInfo = cashBoxInfos.get(position);
-            RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.item_cbm_widget);
+            RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.cash_box_manager_widget_item);
             views.setTextViewText(R.id.nameCBMWidgetItem,cashBoxInfo.getName());
             views.setTextViewText(R.id.amountCBMWidgetItem,currencyFormat.format(cashBoxInfo.getCash()));
             if(cashBoxInfo.getCash()<0)
