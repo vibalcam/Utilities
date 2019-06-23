@@ -8,6 +8,8 @@ import androidx.room.Update;
 
 import com.utilities.vibal.utilities.models.CashBox;
 
+import java.util.List;
+
 import io.reactivex.Completable;
 import io.reactivex.Single;
 
@@ -15,6 +17,9 @@ import io.reactivex.Single;
 public interface CashBoxEntryDao {
     @Insert
     Completable insert(CashBox.Entry entry);
+
+    @Insert
+    Completable insertAll(List<CashBox.Entry> entries);
 
     @Delete
     Completable delete(CashBox.Entry entry);

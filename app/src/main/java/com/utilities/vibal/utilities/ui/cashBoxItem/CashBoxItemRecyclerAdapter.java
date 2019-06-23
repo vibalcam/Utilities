@@ -47,7 +47,7 @@ public class CashBoxItemRecyclerAdapter extends RecyclerView.Adapter<CashBoxItem
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
-        View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_cash_box_item, viewGroup, false);
+        View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.cash_box_item_item, viewGroup, false);
         return new ViewHolder(v);
     }
 
@@ -109,7 +109,7 @@ public class CashBoxItemRecyclerAdapter extends RecyclerView.Adapter<CashBoxItem
 
         AlertDialog.Builder builder = new AlertDialog.Builder(cashBoxItemActivity);
         AlertDialog dialog = builder.setTitle(R.string.modifyEntry)
-                .setView(R.layout.entry_cash_box_item_input)
+                .setView(R.layout.cash_box_item_entry_input)
                 .setNegativeButton(R.string.cancelDialog, null)
                 .setPositiveButton(R.string.confirm, null)
                 .create();

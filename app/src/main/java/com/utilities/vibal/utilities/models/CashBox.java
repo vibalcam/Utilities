@@ -227,6 +227,11 @@ public class CashBox implements Parcelable {
         return builder.toString();
     }
 
+    @Override
+    public int hashCode() {
+        return cashBoxInfo.hashCode();
+    }
+
     @Entity(tableName = "cashBoxesInfo_table", indices = {@Index(value = "name", unique = true)})
     public static class CashBoxInfo implements Parcelable {
         @Ignore
@@ -303,6 +308,11 @@ public class CashBox implements Parcelable {
             if(obj instanceof CashBoxInfo)
                 return ((CashBoxInfo)obj).getName().equalsIgnoreCase(this.getName());
             return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return id;
         }
 
         @Override

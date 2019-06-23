@@ -1,13 +1,10 @@
 package com.utilities.vibal.utilities.db;
 
 import android.app.Application;
-import android.database.sqlite.SQLiteConstraintException;
-import android.os.AsyncTask;
 
 import androidx.lifecycle.LiveData;
 
 import com.utilities.vibal.utilities.models.CashBox;
-import com.utilities.vibal.utilities.util.LogUtil;
 
 import java.util.List;
 
@@ -17,17 +14,21 @@ import io.reactivex.Single;
 public class CashBoxRepository {
     private CashBoxDao cashBoxDao;
     private CashBoxEntryDao cashBoxEntryDao;
-    private LiveData<List<CashBox>> cashBoxes;
+    private LiveData<List<CashBox.CashBoxInfo>> cashBoxesInfo;
 
     public CashBoxRepository(Application application) {
         UtilitiesDatabase database = UtilitiesDatabase.getInstance(application);
         cashBoxDao = database.cashBoxDao();
         cashBoxEntryDao = database.cashBoxEntryDao();
-        cashBoxes = cashBoxDao.getAllCashBoxes();
+        cashBoxesInfo = cashBoxDao.getAllCashBoxesInfo();
     }
 
-    public LiveData<List<CashBox>> getCashBoxes() {
-        return cashBoxes;
+    public LiveData<List<CashBox.CashBoxInfo>> getCashBoxesInfo() {
+        return cashBoxesInfo;
+    }
+
+    public LiveData<CashBox> getCashBox(int id) {
+        return cashBoxDao.getCashBoxById(id);
     }
 
     public Completable insertCashBoxInfo(CashBox.CashBoxInfo cashBoxInfo) {
@@ -48,6 +49,10 @@ public class CashBoxRepository {
 
     public Completable insertEntry(CashBox.Entry entry) {
         return cashBoxEntryDao.insert(entry);
+    }
+
+    public Completable insertAllEntries(List<CashBox.Entry> entries) {
+        return cashBoxEntryDao.insertAll(entries);
     }
 
     public Completable updateEntry(CashBox.Entry entry) {
@@ -79,7 +84,7 @@ public class CashBoxRepository {
         new UpdateCashBoxAsyncTask(cashBoxDao).execute(cashBoxInfo);
     }
 
-    public void deleteCashBox(CashBox.CashBoxInfo cashBoxInfo) {
+    public void deleteCashBoxInfo(CashBox.CashBoxInfo cashBoxInfo) {
         new DeleteCashBoxAsyncTask(cashBoxDao).execute(cashBoxInfo);
     }
 

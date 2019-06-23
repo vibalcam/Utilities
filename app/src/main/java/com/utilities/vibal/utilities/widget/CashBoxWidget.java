@@ -17,7 +17,6 @@ import com.utilities.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity;
 public class CashBoxWidget extends AppWidgetProvider {
     public static final int ADD_REQUEST = 1;
     public static final int DETAILS_REQUEST = 2;
-    public static final String ACTION_REFRESH = "com.utilities.vibal.utilities.widget.actionRefresh";
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
@@ -40,6 +39,7 @@ public class CashBoxWidget extends AppWidgetProvider {
 
             // OnClick for ListView
             Intent listIntent = new Intent(context, CashBoxManagerActivity.class);
+            listIntent.putExtra(CashBoxManagerActivity.EXTRA_ACTION,CashBoxManagerActivity.ACTION_REFRESH);
             views.setPendingIntentTemplate(R.id.listCBMWidget,
                     PendingIntent.getActivity(context,DETAILS_REQUEST,listIntent,0));
 

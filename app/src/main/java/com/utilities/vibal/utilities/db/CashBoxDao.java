@@ -24,12 +24,16 @@ public abstract class CashBoxDao {
 //    @Query("SELECT * FROM cashBoxesInfo_table WHERE name=:name")
 //    abstract LiveData<CashBox> getCashBoxByName(String name);
 
-//    @Query("SELECT * FROM cashBoxesInfo_table ORDER BY orderPos ASC")
-//    abstract LiveData<List<CashBox.CashBoxInfo>> getAllCashBoxInfo();
+//    @Transaction
+//    @Query("SELECT * FROM cashBoxesInfo_table ORDER BY id DESC")
+//    abstract LiveData<List<CashBox>> getAllCashBoxes();
+
+    @Query("SELECT * FROM cashBoxesInfo_table ORDER BY id DESC")
+    abstract LiveData<List<CashBox.CashBoxInfo>> getAllCashBoxesInfo();
 
     @Transaction
-    @Query("SELECT * FROM cashBoxesInfo_table ORDER BY id DESC")
-    abstract LiveData<List<CashBox>> getAllCashBoxes();
+    @Query("SELECT * FROM cashBoxesInfo_table WHERE id=:id")
+    abstract LiveData<CashBox> getCashBoxById(int id);
 
     // Get all CashBoxInfo to supply the widget
     @Query("SELECT * FROM cashBoxesInfo_table ORDER BY id DESC")

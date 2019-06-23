@@ -9,6 +9,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
         <receiver android:name=".widget.CashBoxWidget">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -18,7 +19,9 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/cash_box_manager_widget_info" />
         </receiver>
-        <service android:name=".widget.CashBoxWidgetService"
+
+        <service
+            android:name=".widget.CashBoxWidgetService"
             android:permission="android.permission.BIND_REMOTEVIEWS" />
 
         <activity
@@ -27,23 +30,35 @@
         <activity
             android:name=".ui.cashBoxItem.CashBoxItemActivity"
             android:label="@string/title_activity_cash_box_item"
+            android:launchMode="singleTop"
             android:parentActivityName=".ui.cashBoxManagerOld.CashBoxManagerActivity"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:launchMode="singleTop">
+            android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.utilities.vibal.utilities.ui.cashBoxManagerOld.CashBoxManagerActivity" />
         </activity>
-        <activity
-            android:name=".ui.cashBoxManagerOld.CashBoxManagerActivity"
+
+        <activity android:name=".ui.cashBoxManager.CashBoxManagerActivity"
             android:label="@string/main_cashBoxManager"
+            android:launchMode="singleTop"
             android:parentActivityName=".ui.MainActivity"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:launchMode="singleTop">
+            android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.utilities.vibal.utilities.ui.MainActivity" />
         </activity>
+
+        <activity
+            android:name=".ui.cashBoxManagerOld.CashBoxManagerActivity"
+            android:label="@string/main_cashBoxManager"
+            android:launchMode="singleTop"
+            android:parentActivityName=".ui.MainActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.utilities.vibal.utilities.ui.MainActivity" />
+        </activity>
+
         <activity
             android:name=".ui.randomChooser.RandomChooserActivity"
             android:label="@string/main_randomChooser"
@@ -52,6 +67,7 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.utilities.vibal.utilities.ui.MainActivity" />
         </activity>
+
         <activity
             android:name=".ui.MainActivity"
             android:label="@string/app_name">

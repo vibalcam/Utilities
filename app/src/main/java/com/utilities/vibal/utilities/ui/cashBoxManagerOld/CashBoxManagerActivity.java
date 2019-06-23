@@ -47,14 +47,14 @@ public class CashBoxManagerActivity extends AppCompatActivity {
     @BindView(R.id.lyCBM)
     CoordinatorLayout coordinatorLayout;
 
-    CashBoxViewModel cashBoxViewModel;
+    CashBoxViewModel viewModel;
     CompositeDisposable disposable = new CompositeDisposable();
     private CashBoxManagerRecyclerAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_cash_box_manager);
+        setContentView(R.layout.cash_box_manager_fragment);
         ButterKnife.bind(this);
 
         //Set Toolbar as ActionBar
@@ -78,9 +78,9 @@ public class CashBoxManagerActivity extends AppCompatActivity {
         adapter.setOnStartDragListener(itemTouchHelper::startDrag);
 
         // Initialize data
-        cashBoxViewModel = ViewModelProviders.of(this).get(CashBoxViewModel.class);
-        cashBoxViewModel.getCashBoxes().observe(this, (List<CashBox> cashBoxes) -> {
-            adapter.submitList(cashBoxes);
+        viewModel = ViewModelProviders.of(this).get(CashBoxViewModel.class);
+        viewModel.getCashBoxesInfo().observe(this, (List<CashBox.CashBoxInfo> cashBoxesInfo) -> {
+//            adapter.submitList(cashBoxesInfo);
             Toast.makeText(CashBoxManagerActivity.this, "on changed", Toast.LENGTH_LONG).show(); //TODO
         });
 
@@ -150,7 +150,7 @@ public class CashBoxManagerActivity extends AppCompatActivity {
                 .setMessage("Are you sure you want to delete all entries? This action CANNOT be undone")
                 .setNegativeButton(R.string.cancelDialog, null)
                 .setPositiveButton(R.string.confirmDeleteDialogConfirm, (DialogInterface dialog, int which) ->
-                        disposable.add(cashBoxViewModel.deleteAllCashBoxes()
+                        disposable.add(viewModel.deleteAllCashBoxes()
                                 .subscribeOn(Schedulers.io())
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(integer -> Toast.makeText(this,
@@ -164,7 +164,7 @@ public class CashBoxManagerActivity extends AppCompatActivity {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         AlertDialog dialog = builder.setTitle(R.string.newEntry)
-                .setView(R.layout.new_cash_box_input)  //use that view from folder layout
+                .setView(R.layout.cash_box_new_input)  //use that view from folder layout
                 .setNegativeButton(R.string.cancelDialog, null)
                 .setPositiveButton(R.string.createCashBoxDialog, null)
                 .create();
@@ -187,7 +187,7 @@ public class CashBoxManagerActivity extends AppCompatActivity {
                     if (!strInitCash.isEmpty() && Util.parseDouble(strInitCash) != 0)
                         cashBox.add(Util.parseDouble(strInitCash), "Initial Amount", Calendar.getInstance());
 
-                    disposable.add(cashBoxViewModel.addCashBox(cashBox)
+                    disposable.add(viewModel.addCashBox(cashBox)
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(dialog1::dismiss, throwable -> {

@@ -184,7 +184,7 @@ public class CashBoxManagerRecyclerAdapter extends ListAdapter<CashBox, CashBoxM
             actionMode.finish();
         CashBox deletedCashBox = getItem(position);
         cashBoxManagerActivity.disposable.add(
-                cashBoxManagerActivity.viewModel.deleteCashBox(deletedCashBox)
+                cashBoxManagerActivity.viewModel.deleteCashBoxInfo(deletedCashBox)
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(() -> Snackbar.make(cashBoxManagerActivity.coordinatorLayout,

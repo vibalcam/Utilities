@@ -1,7 +1,6 @@
 package com.utilities.vibal.utilities.db;
 
 import android.content.Context;
-import android.os.AsyncTask;
 
 import androidx.annotation.NonNull;
 import androidx.room.Database;
@@ -12,6 +11,9 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import com.utilities.vibal.utilities.models.CashBox;
 import com.utilities.vibal.utilities.util.Converters;
+
+import io.reactivex.Completable;
+import io.reactivex.schedulers.Schedulers;
 
 @Database(entities = {CashBox.CashBoxInfo.class,CashBox.Entry.class},version = 1,exportSchema = false)
 @TypeConverters(Converters.class)
@@ -36,22 +38,29 @@ public abstract class UtilitiesDatabase extends RoomDatabase {
         @Override
         public void onCreate(@NonNull SupportSQLiteDatabase db) {
             super.onCreate(db);
-            new PopulateDBAsyncTask(instance).execute();
+            Completable.create(emitter -> instance.cashBoxDao().
+                    insert(new CashBox.CashBoxInfo("Example")))
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(Schedulers.single())
+                    .subscribe();
+
+
+//            new PopulateDBAsyncTask(instance).execute();
         }
     };
 
-    private static class PopulateDBAsyncTask extends AsyncTask<Void,Void,Void> {
-        private CashBoxDao cashBoxDao;
-
-        private PopulateDBAsyncTask(UtilitiesDatabase database) {
-            cashBoxDao = database.cashBoxDao();
-        }
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            CashBox cashBox = new CashBox("Example");
-            cashBoxDao.insert(cashBox.getCashBoxInfo());
-            return null;
-        }
-    }
+//    private static class PopulateDBAsyncTask extends AsyncTask<Void,Void,Void> {
+//        private CashBoxDao cashBoxDao;
+//
+//        private PopulateDBAsyncTask(UtilitiesDatabase database) {
+//            cashBoxDao = database.cashBoxDao();
+//        }
+//
+//        @Override
+//        protected Void doInBackground(Void... voids) {
+//            CashBox cashBox = new CashBox("Example");
+//            cashBoxDao.insert(cashBox.getCashBoxInfo());
+//            return null;
+//        }
+//    }
 }
