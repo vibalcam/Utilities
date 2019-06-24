@@ -1,21 +1,15 @@
 package com.utilities.vibal.utilities.db;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-
 import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
-import com.utilities.vibal.utilities.models.CashBox;
 import com.utilities.vibal.utilities.util.LogUtil;
 
-import java.util.Objects;
-
 @Entity(tableName = "cashBoxesInfo_table", indices = {@Index(value = "name", unique = true)})
-public class CashBoxInfo {
+public class CashBoxInfo implements Cloneable {
     @Ignore
     public static final int MAX_LENGTH_NAME = 15;
 

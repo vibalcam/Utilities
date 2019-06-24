@@ -39,7 +39,7 @@ public class CashBoxWidget extends AppWidgetProvider {
 
             // OnClick for ListView
             Intent listIntent = new Intent(context, CashBoxManagerActivity.class);
-            listIntent.putExtra(CashBoxManagerActivity.EXTRA_ACTION,CashBoxManagerActivity.ACTION_REFRESH);
+            listIntent.putExtra(CashBoxManagerActivity.EXTRA_ACTION,CashBoxManagerActivity.ACTION_DETAILS);
             views.setPendingIntentTemplate(R.id.listCBMWidget,
                     PendingIntent.getActivity(context,DETAILS_REQUEST,listIntent,0));
 
@@ -51,7 +51,7 @@ public class CashBoxWidget extends AppWidgetProvider {
 
 //    @Override
 //    public void onReceive(Context context, Intent intent) {
-//        if(ACTION_REFRESH.equals(intent.getAction())) {
+//        if(ACTION_DETAILS.equals(intent.getAction())) {
 //            int appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,AppWidgetManager.INVALID_APPWIDGET_ID);
 //            AppWidgetManager.getInstance(context).notifyAppWidgetViewDataChanged(appWidgetId, R.id.listCBMWidget);
 //        } else

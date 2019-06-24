@@ -1,6 +1,7 @@
 package com.utilities.vibal.utilities.db;
 
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MediatorLiveData;
 import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
@@ -31,22 +32,44 @@ public abstract class CashBoxDao {
 //    @Query("SELECT * FROM cashBoxesInfo_table ORDER BY id DESC")
     @Query("SELECT C.id,C.name,SUM(amount) AS cash FROM cashBoxesInfo_table AS C " +
             "LEFT JOIN entries_table AS E ON C.id=E.cashBoxId " +
-            "GROUP BY C.id,C.name")
+            "GROUP BY C.id,C.name " +
+            "ORDER BY C.id DESC")
     abstract LiveData<List<CashBox.InfoWithCash>> getAllCashBoxesInfo();
 
-    @Transaction
-//    @Query("SELECT * FROM cashBoxesInfo_table WHERE id=:id")
+//    @Transaction
+////    @Query("SELECT * FROM cashBoxesInfo_table WHERE id=:id")
+//    @Query("SELECT C.id,C.name,SUM(amount) AS cash FROM cashBoxesInfo_table AS C " +
+//            "LEFT JOIN entries_table AS E ON C.id=E.cashBoxId " +
+//            "WHERE C.id=:id " +
+//            "GROUP BY C.id,C.name")
+//    abstract LiveData<CashBox> getCashBoxById(int id);
+
     @Query("SELECT C.id,C.name,SUM(amount) AS cash FROM cashBoxesInfo_table AS C " +
             "LEFT JOIN entries_table AS E ON C.id=E.cashBoxId " +
             "WHERE C.id=:id " +
             "GROUP BY C.id,C.name")
-    abstract LiveData<CashBox> getCashBoxById(int id);
+    abstract LiveData<CashBox.InfoWithCash> getCashBoxInfoWithCashById(int id);
+
+    @Query("SELECT * FROM entries_table WHERE cashBoxId=:cashBoxId ORDER BY date DESC")
+    abstract LiveData<List<CashBox.Entry>> getEntriesByCashBoxId(int cashBoxId);
+
+    @Transaction
+    MediatorLiveData<CashBox> getCashBoxById(int id) {
+        LiveData<CashBox.InfoWithCash> cashBoxInfoWithCashById = getCashBoxInfoWithCashById(id);
+        LiveData<List<CashBox.Entry>> entriesByCashBoxId = getEntriesByCashBoxId(id);
+
+        MediatorLiveData<CashBox> liveDataMerger = new MediatorLiveData<>();
+        liveDataMerger.setValue(new CashBox(cashBoxInfoWithCashById.getValue(),entriesByCashBoxId.getValue()));
+        liveDataMerger.addSource(cashBoxInfoWithCashById,infoWithCash -> liveDataMerger.setValue());
+
+    }
 
     // Get all CashBoxInfo to supply the widget
 //    @Query("SELECT * FROM cashBoxesInfo_table ORDER BY id DESC")
     @Query("SELECT C.id,C.name,SUM(amount) AS cash FROM cashBoxesInfo_table AS C " +
             "LEFT JOIN entries_table AS E ON C.id=E.cashBoxId " +
-            "GROUP BY C.id,C.name")
+            "GROUP BY C.id,C.name " +
+            "ORDER BY C.id DESC")
     public abstract List<CashBox.InfoWithCash> getAllCashBoxInfoForWidget();
 
     @Insert

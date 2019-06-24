@@ -54,10 +54,12 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.OnTouch;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 
+import static com.utilities.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity.ACTION_ADD_CASHBOX;
+import static com.utilities.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity.ACTION_DETAILS;
 import static com.utilities.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity.EXTRA_ACTION;
+import static com.utilities.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity.EXTRA_CASHBOX_ID;
 
 public class CashBoxManagerFragment extends Fragment {
     //DiffUtil Callback
@@ -69,7 +71,8 @@ public class CashBoxManagerFragment extends Fragment {
 
         @Override
         public boolean areContentsTheSame(@NonNull CashBox.InfoWithCash oldItem, @NonNull CashBox.InfoWithCash newItem) {
-            return oldItem.getCash() == newItem.getCash();
+            return oldItem.getCash() == newItem.getCash() &&
+                    oldItem.equals(newItem);
         }
     };
     private static final String TAG = "PruebaManagerFragment";
@@ -77,7 +80,6 @@ public class CashBoxManagerFragment extends Fragment {
     @BindView(R.id.lyCBM) CoordinatorLayout coordinatorLayout;
 
     private CashBoxViewModel viewModel;
-    private CompositeDisposable disposable;
     private CashBoxManagerRecyclerAdapter adapter;
 
     public static CashBoxManagerFragment newInstance() {
@@ -112,11 +114,10 @@ public class CashBoxManagerFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
         // Initialize data
         viewModel = ViewModelProviders.of(Objects.requireNonNull(getActivity())).get(CashBoxViewModel.class);
-        viewModel.getCashBoxesInfo().observe(getViewLifecycleOwner(), cashBoxes -> {
-            adapter.submitList(cashBoxes);
+        viewModel.getCashBoxesInfo().observe(getViewLifecycleOwner(), infoWithCashes -> {
+            adapter.submitList(infoWithCashes);
             Toast.makeText(getContext(), "on changed", Toast.LENGTH_LONG).show(); //TODO
         });
-        disposable = ((CashBoxManagerActivity) getActivity()).getDisposable();
 
 //        //Set Toolbar as ActionBar TODO
 //        setSupportActionBar(findViewById(R.id.toolbarCBManager));
@@ -132,9 +133,23 @@ public class CashBoxManagerFragment extends Fragment {
 
     private void doIntentAction() {
         Intent intent = getActivity().getIntent();
-        if (intent.getIntExtra(EXTRA_ACTION, 0) == 1)
+        int action = intent==null ? 0 : intent.getIntExtra(EXTRA_ACTION,0);
+
+        if (action == ACTION_ADD_CASHBOX)
             showAddDialog();
-        // TODO: SHOW DETAILS
+        else if(action== ACTION_DETAILS)
+            swapToItemFragment(intent.getIntExtra(EXTRA_CASHBOX_ID, CashBox.Entry.NO_CASHBOX));
+    }
+
+    private void swapToItemFragment(int cashBoxId) {
+        LogUtil.debug("Prueba",""+cashBoxId);
+        viewModel.setCurrentCashBoxId(cashBoxId);
+
+        getFragmentManager()
+                .beginTransaction()
+                .addToBackStack(null)
+                .replace(R.id.container,CashBoxItemFragment.newInstance())
+                .commit();
     }
 
     @OnClick(R.id.fabCBManager)
@@ -177,7 +192,7 @@ public class CashBoxManagerFragment extends Fragment {
                 .setMessage("Are you sure you want to delete all entries? This action CANNOT be undone")
                 .setNegativeButton(R.string.cancelDialog, null)
                 .setPositiveButton(R.string.confirmDeleteDialogConfirm, (DialogInterface dialog, int which) ->
-                        disposable.add(viewModel.deleteAllCashBoxes()
+                        viewModel.addDisposable(viewModel.deleteAllCashBoxes()
                                 .subscribeOn(Schedulers.io())
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(integer -> Toast.makeText(getContext(),
@@ -212,9 +227,10 @@ public class CashBoxManagerFragment extends Fragment {
                     CashBox cashBox = new CashBox(inputTextName.getText().toString());
                     String strInitCash = inputTextInitCash.getText().toString().trim();
                     if (!strInitCash.isEmpty() && Util.parseDouble(strInitCash) != 0)
-                        cashBox.add(Util.parseDouble(strInitCash), "Initial Amount", Calendar.getInstance());
+                        cashBox.getEntries().add(new CashBox.Entry(Util.parseDouble(strInitCash),
+                                "Initial Amount", Calendar.getInstance()));
 
-                    disposable.add(viewModel.addCashBox(cashBox)
+                    viewModel.addDisposable(viewModel.addCashBox(cashBox)
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(dialog1::dismiss, throwable -> {
@@ -365,14 +381,14 @@ public class CashBoxManagerFragment extends Fragment {
             if (actionMode != null)
                 actionMode.finish();
             CashBox.InfoWithCash deletedCashBoxInfo = getItem(position);
-            disposable.add(viewModel.deleteCashBoxInfo(deletedCashBoxInfo)
+            viewModel.addDisposable(viewModel.deleteCashBoxInfo(deletedCashBoxInfo)
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(() -> Snackbar.make(coordinatorLayout,
                                     getString(R.string.snackbarEntriesDeleted, 1),
                                     Snackbar.LENGTH_LONG)
                                     .setAction(R.string.undo,v ->
-                                            disposable.add(
+                                            viewModel.addDisposable(
                                                     viewModel.addCashBoxInfo(deletedCashBoxInfo)
                                                             .subscribeOn(Schedulers.io())
                                                             .observeOn(AndroidSchedulers.mainThread())
@@ -403,7 +419,7 @@ public class CashBoxManagerFragment extends Fragment {
                 positive.setOnClickListener((View v1) -> {
                     String newName = inputName.getText().toString();
                     try {
-                        disposable.add(
+                        viewModel.addDisposable(
                                 viewModel.changeCashBoxName(getItem(position), newName)
                                         .subscribeOn(Schedulers.io())
                                         .observeOn(AndroidSchedulers.mainThread())
@@ -525,13 +541,7 @@ public class CashBoxManagerFragment extends Fragment {
                 setSelectedViewHolder(this);
 
                 if (actionMode == null) {
-                    viewModel.setCurrentCashBoxId(getItem(getAdapterPosition()).getCashBoxInfo().getId());
-
-                    getFragmentManager()
-                            .beginTransaction()
-                            .addToBackStack(null)
-                            .replace(R.id.container,CashBoxItemFragment.newInstance())
-                            .commit();
+                    swapToItemFragment(getItem(getAdapterPosition()).getCashBoxInfo().getId());
 
                     //Erase highlighting element
                     setSelectedViewHolder(null);

@@ -59,7 +59,7 @@ public abstract class UtilitiesDatabase extends RoomDatabase {
 //        @Override
 //        protected Void doInBackground(Void... voids) {
 //            CashBox cashBox = new CashBox("Example");
-//            cashBoxDao.insert(cashBox.getCashBoxInfo());
+//            cashBoxDao.insert(cashBox.getInfoWithCash());
 //            return null;
 //        }
 //    }

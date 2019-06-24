@@ -13,6 +13,8 @@ import java.util.List;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
 
 import static com.utilities.vibal.utilities.models.CashBox.Entry.NO_CASHBOX;
 
@@ -20,6 +22,7 @@ public class CashBoxViewModel extends AndroidViewModel {
     private CashBoxRepository repository;
     private LiveData<List<CashBox.InfoWithCash>> cashBoxesInfo;
     private int currentCashBoxId = NO_CASHBOX;
+    private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     public CashBoxViewModel(@NonNull Application application) {
         super(application);
@@ -44,8 +47,8 @@ public class CashBoxViewModel extends AndroidViewModel {
         return repository.insertCashBoxInfo(cashBoxInfo);
     }
 
-    public Completable addCashBox(CashBox cashBox) {
-        CashBox.InfoWithCash cashBoxInfo = cashBox.getCashBoxInfo();
+    public Completable addCashBox(CashBox cashBox) { // TODO: does not work right
+        CashBox.InfoWithCash cashBoxInfo = cashBox.getInfoWithCash();
         Completable completable = addCashBoxInfo(cashBoxInfo);
         for(CashBox.Entry entry:cashBox.getEntries())
             completable = completable.andThen(addEntry(cashBoxInfo.getCashBoxInfo().getId(),entry));
@@ -108,5 +111,16 @@ public class CashBoxViewModel extends AndroidViewModel {
 
     public Single<Integer> deleteAllEntriesFromCurrentCashBox() {
         return repository.deleteAllEntries(currentCashBoxId);
+    }
+
+    public void addDisposable(Disposable disposable) {
+        compositeDisposable.add(disposable);
+    }
+
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        compositeDisposable.clear();
+        LogUtil.debug("PruebaViewModel", "onCleared: clearing disposable");
     }
 }
