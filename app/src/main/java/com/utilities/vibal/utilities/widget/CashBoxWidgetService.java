@@ -8,7 +8,7 @@ import android.widget.RemoteViewsService;
 import com.utilities.vibal.utilities.R;
 import com.utilities.vibal.utilities.db.UtilitiesDatabase;
 import com.utilities.vibal.utilities.models.CashBox;
-import com.utilities.vibal.utilities.ui.cashBoxItem.CashBoxItemActivity;
+import com.utilities.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity;
 
 import java.text.NumberFormat;
 import java.util.List;
@@ -22,7 +22,7 @@ public class CashBoxWidgetService extends RemoteViewsService {
     class CashBoxWidgetItemFactory implements RemoteViewsFactory {
         private Context context;
         private UtilitiesDatabase database;
-        private List<CashBox.CashBoxInfo> cashBoxInfos;
+        private List<CashBox.InfoWithCash> cashBoxInfos;
         private NumberFormat currencyFormat;
 
         CashBoxWidgetItemFactory(Context context) {
@@ -54,9 +54,9 @@ public class CashBoxWidgetService extends RemoteViewsService {
                 return null;
 
             // Set up layout
-            CashBox.CashBoxInfo cashBoxInfo = cashBoxInfos.get(position);
+            CashBox.InfoWithCash cashBoxInfo = cashBoxInfos.get(position);
             RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.cash_box_manager_widget_item);
-            views.setTextViewText(R.id.nameCBMWidgetItem,cashBoxInfo.getName());
+            views.setTextViewText(R.id.nameCBMWidgetItem,cashBoxInfo.getCashBoxInfo().getName());
             views.setTextViewText(R.id.amountCBMWidgetItem,currencyFormat.format(cashBoxInfo.getCash()));
             if(cashBoxInfo.getCash()<0)
                 views.setTextColor(R.id.amountCBMWidgetItem,context.getColor(R.color.colorNegativeNumber));
@@ -65,7 +65,7 @@ public class CashBoxWidgetService extends RemoteViewsService {
 
             // Intent for OnClick
             Intent fillIntent = new Intent();
-            fillIntent.putExtra(CashBoxItemActivity.EXTRA_CASHBOX_ID,cashBoxInfo.getId());
+            fillIntent.putExtra(CashBoxManagerActivity.EXTRA_CASHBOX_ID,cashBoxInfo.getCashBoxInfo().getId());
             views.setOnClickFillInIntent(R.id.listItem_cbmWidget,fillIntent);
             return views;
         }

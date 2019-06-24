@@ -8,10 +8,10 @@ import androidx.room.Embedded;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
 import androidx.room.Ignore;
-import androidx.room.Index;
 import androidx.room.PrimaryKey;
 import androidx.room.Relation;
 
+import com.utilities.vibal.utilities.db.CashBoxInfo;
 import com.utilities.vibal.utilities.util.Converters;
 
 import java.text.DateFormat;
@@ -19,12 +19,10 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Objects;
 
 import static androidx.room.ForeignKey.CASCADE;
 
 public class CashBox implements Parcelable {
-    public static final int MAX_LENGTH_NAME = 15;
     public static final Parcelable.Creator<CashBox> CREATOR = new Parcelable.Creator<CashBox>() {
         @Override
         public CashBox createFromParcel(Parcel source) {
@@ -38,33 +36,33 @@ public class CashBox implements Parcelable {
     };
 
     @Embedded
-    private final CashBoxInfo cashBoxInfo;
+    private final InfoWithCash cashBoxInfo;
     @Relation(parentColumn = "id", entityColumn = "cashBoxId")
     private List<Entry> entries;
 
     @Ignore
     public CashBox(String name) throws IllegalArgumentException {
-        this(new CashBoxInfo(name,0),new ArrayList<Entry>());
+        this(new InfoWithCash(name,0),new ArrayList<Entry>());
     }
 
     @Ignore
     public CashBox(String name, List<Entry> entries) throws  IllegalArgumentException {
         this.entries = entries;
-        cashBoxInfo = new CashBoxInfo(name,calculateCash(entries));
+        cashBoxInfo = new InfoWithCash(name,calculateCash(entries));
     }
 
     /**
      * You must ensure that cash is the sum of all the amounts.
      * Should not be used directly.
      */
-    public CashBox(CashBoxInfo cashBoxInfo, List<Entry> entries) throws IllegalArgumentException {
+    public CashBox(InfoWithCash cashBoxInfo, List<Entry> entries) throws IllegalArgumentException {
         this.cashBoxInfo = cashBoxInfo;
         this.entries = entries;
     }
 
     @Ignore
     public CashBox(Parcel parcel) {
-        cashBoxInfo = CashBoxInfo.CREATOR.createFromParcel(parcel);
+        cashBoxInfo = InfoWithCash.CREATOR.createFromParcel(parcel);
         entries = parcel.createTypedArrayList(Entry.CREATOR);
     }
 
@@ -79,12 +77,12 @@ public class CashBox implements Parcelable {
         dest.writeTypedList(entries);
     }
 
-    public CashBoxInfo getCashBoxInfo() {
+    public InfoWithCash getCashBoxInfo() {
         return cashBoxInfo;
     }
 
     public String getName() {
-        return cashBoxInfo.getName();
+        return cashBoxInfo.getCashBoxInfo().getName();
     }
 
     public double getCash() {
@@ -100,7 +98,7 @@ public class CashBox implements Parcelable {
     }
 
     void setName(String name) throws IllegalArgumentException {
-        cashBoxInfo.setName(name);
+        cashBoxInfo.getCashBoxInfo().setName(name);
     }
 
     /**
@@ -117,7 +115,7 @@ public class CashBox implements Parcelable {
 
     public double add(int index, double amount, String cause, Calendar date) {
         cashBoxInfo.cash += amount;
-        entries.add(index, new Entry(cashBoxInfo.getId(),amount,cause,date));
+        entries.add(index, new Entry(cashBoxInfo.getCashBoxInfo().getId(),amount,cause,date));
         return getCash();
     }
 
@@ -172,7 +170,7 @@ public class CashBox implements Parcelable {
      * @return Total cash after the modification
      */
     public Entry modify(int index, double amount, String cause, Calendar date) {
-        Entry modifiedEntry = entries.set(index, new Entry(cashBoxInfo.getId(), amount, cause, date));
+        Entry modifiedEntry = entries.set(index, new Entry(cashBoxInfo.getCashBoxInfo().getId(), amount, cause, date));
         cashBoxInfo.cash += amount - modifiedEntry.getAmount();
         return modifiedEntry;
     }
@@ -216,7 +214,7 @@ public class CashBox implements Parcelable {
         StringBuilder builder = new StringBuilder();
 
         builder.append("*")
-                .append(cashBoxInfo.name)
+                .append(cashBoxInfo.getCashBoxInfo().getName())
                 .append("*");
         for (Entry entry : entries)
             builder.append("\n\n")
@@ -232,95 +230,69 @@ public class CashBox implements Parcelable {
         return cashBoxInfo.hashCode();
     }
 
-    @Entity(tableName = "cashBoxesInfo_table", indices = {@Index(value = "name", unique = true)})
-    public static class CashBoxInfo implements Parcelable {
-        @Ignore
-        public static final Parcelable.Creator<CashBoxInfo> CREATOR = new Parcelable.Creator<CashBoxInfo>() {
+    public static class InfoWithCash implements Parcelable {
+        public static final Parcelable.Creator<InfoWithCash> CREATOR = new Parcelable.Creator<InfoWithCash>() {
             @Override
-            public CashBoxInfo createFromParcel(Parcel source) {
-                return new CashBoxInfo(source);
+            public InfoWithCash createFromParcel(Parcel source) {
+                return new InfoWithCash(source);
             }
 
             @Override
-            public CashBoxInfo[] newArray(int size) {
-                return new CashBoxInfo[size];
+            public InfoWithCash[] newArray(int size) {
+                return new InfoWithCash[size];
             }
         };
 
-        @PrimaryKey(autoGenerate = true)
-        private int id;
-        @NonNull
-        private String name;
+        @Embedded
+        private final CashBoxInfo cashBoxInfo;
         private double cash; //sum of amounts
 
-        public CashBoxInfo(String name, double cash) throws IllegalArgumentException {
-            setName(name);
+        @Ignore
+        public InfoWithCash(String name, double cash) throws IllegalArgumentException {
+            this(new CashBoxInfo(name),cash);
+        }
+
+        @Ignore
+        public InfoWithCash(String name) throws IllegalArgumentException {
+            this(name, 0);
+        }
+
+        public InfoWithCash(CashBoxInfo cashBoxInfo, double cash) {
+            this.cashBoxInfo = cashBoxInfo;
             this.cash = cash;
         }
 
         @Ignore
-        public CashBoxInfo(String name) throws IllegalArgumentException {
-            this(name, 0);
-        }
-
-        @Ignore
-        private CashBoxInfo(Parcel parcel) {
-            id = parcel.readInt();
-            name = Objects.requireNonNull(parcel.readString());
+        private InfoWithCash(Parcel parcel) {
+            cashBoxInfo = new CashBoxInfo(parcel.readString());
+            cashBoxInfo.setId(parcel.readInt());
             cash = parcel.readDouble();
-        }
-
-        public int getId() {
-            return id;
-        }
-
-        @NonNull
-        public String getName() {
-            return name;
         }
 
         public double getCash() {
             return cash;
         }
 
-        public void setId(int id) {
-            this.id = id;
-        }
-
-        /**
-         * Sets the name of the CashBox
-         *
-         * @param name The name of the CashBox
-         * @throws IllegalArgumentException if the name is empty or its length exceeds the MAX_LENGTH_NAME
-         */
-        void setName(@NonNull String name) throws IllegalArgumentException {
-            name = name.trim();
-            if (name.isEmpty())
-                throw new IllegalArgumentException("Name cannot be empty");
-            else if (name.length() > MAX_LENGTH_NAME)
-                throw new IllegalArgumentException("Name cannot exceed " + MAX_LENGTH_NAME + " characters");
-
-            this.name = name;
+        public CashBoxInfo getCashBoxInfo() {
+            return cashBoxInfo;
         }
 
         @Override
         public boolean equals(Object obj) {
-            if(obj instanceof CashBoxInfo)
-                return ((CashBoxInfo)obj).getName().equalsIgnoreCase(this.getName());
+            if(obj instanceof InfoWithCash)
+                return ((InfoWithCash)obj).getCashBoxInfo().equals(cashBoxInfo);
             return false;
         }
 
         @Override
         public int hashCode() {
-            return id;
+            return cashBoxInfo.hashCode();
         }
 
         @Override
-        @SuppressWarnings("CloneDoesntCallSuperClone")
-        public CashBoxInfo clone() {
-            CashBoxInfo cashBoxInfo = new CashBoxInfo(name,cash);
-            cashBoxInfo.setId(id);
-            return cashBoxInfo;
+        //@SuppressWarnings("CloneDoesntCallSuperClone")
+        public InfoWithCash clone() {
+            return new InfoWithCash(cashBoxInfo.clone(),cash);
         }
 
         // Implementation of Parcelable
@@ -331,8 +303,8 @@ public class CashBox implements Parcelable {
 
         @Override
         public void writeToParcel(Parcel dest, int flags) {
-            dest.writeInt(id);
-            dest.writeString(name);
+            dest.writeString(cashBoxInfo.getName());
+            dest.writeInt(cashBoxInfo.getId());
             dest.writeDouble(cash);
         }
     }
@@ -358,7 +330,7 @@ public class CashBox implements Parcelable {
 
         @PrimaryKey(autoGenerate = true)
         private int id;
-        @ForeignKey(entity = CashBoxInfo.class,
+        @ForeignKey(entity = InfoWithCash.class,
                 parentColumns = "id", childColumns = "cashBoxId",
                 onDelete = CASCADE, onUpdate = CASCADE)
         private int cashBoxId;

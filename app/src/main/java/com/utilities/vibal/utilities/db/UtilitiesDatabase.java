@@ -15,7 +15,7 @@ import com.utilities.vibal.utilities.util.Converters;
 import io.reactivex.Completable;
 import io.reactivex.schedulers.Schedulers;
 
-@Database(entities = {CashBox.CashBoxInfo.class,CashBox.Entry.class},version = 1,exportSchema = false)
+@Database(entities = {CashBoxInfo.class,CashBox.Entry.class},version = 1,exportSchema = false)
 @TypeConverters(Converters.class)
 public abstract class UtilitiesDatabase extends RoomDatabase {
     private static UtilitiesDatabase instance;
@@ -39,7 +39,7 @@ public abstract class UtilitiesDatabase extends RoomDatabase {
         public void onCreate(@NonNull SupportSQLiteDatabase db) {
             super.onCreate(db);
             Completable.create(emitter -> instance.cashBoxDao().
-                    insert(new CashBox.CashBoxInfo("Example")))
+                    insert(new CashBoxInfo("Example")))
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.single())
                     .subscribe();

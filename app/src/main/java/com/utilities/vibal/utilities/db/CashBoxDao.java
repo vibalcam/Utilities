@@ -28,25 +28,35 @@ public abstract class CashBoxDao {
 //    @Query("SELECT * FROM cashBoxesInfo_table ORDER BY id DESC")
 //    abstract LiveData<List<CashBox>> getAllCashBoxes();
 
-    @Query("SELECT * FROM cashBoxesInfo_table ORDER BY id DESC")
-    abstract LiveData<List<CashBox.CashBoxInfo>> getAllCashBoxesInfo();
+//    @Query("SELECT * FROM cashBoxesInfo_table ORDER BY id DESC")
+    @Query("SELECT C.id,C.name,SUM(amount) AS cash FROM cashBoxesInfo_table AS C " +
+            "LEFT JOIN entries_table AS E ON C.id=E.cashBoxId " +
+            "GROUP BY C.id,C.name")
+    abstract LiveData<List<CashBox.InfoWithCash>> getAllCashBoxesInfo();
 
     @Transaction
-    @Query("SELECT * FROM cashBoxesInfo_table WHERE id=:id")
+//    @Query("SELECT * FROM cashBoxesInfo_table WHERE id=:id")
+    @Query("SELECT C.id,C.name,SUM(amount) AS cash FROM cashBoxesInfo_table AS C " +
+            "LEFT JOIN entries_table AS E ON C.id=E.cashBoxId " +
+            "WHERE C.id=:id " +
+            "GROUP BY C.id,C.name")
     abstract LiveData<CashBox> getCashBoxById(int id);
 
     // Get all CashBoxInfo to supply the widget
-    @Query("SELECT * FROM cashBoxesInfo_table ORDER BY id DESC")
-    public abstract List<CashBox.CashBoxInfo> getAllCashBoxInfoForWidget();
+//    @Query("SELECT * FROM cashBoxesInfo_table ORDER BY id DESC")
+    @Query("SELECT C.id,C.name,SUM(amount) AS cash FROM cashBoxesInfo_table AS C " +
+            "LEFT JOIN entries_table AS E ON C.id=E.cashBoxId " +
+            "GROUP BY C.id,C.name")
+    public abstract List<CashBox.InfoWithCash> getAllCashBoxInfoForWidget();
 
     @Insert
-    abstract Completable insert(CashBox.CashBoxInfo cashBoxInfo);
+    abstract Completable insert(CashBoxInfo cashBoxInfo);
 
     @Update
-    abstract Completable update(CashBox.CashBoxInfo cashBoxInfo);
+    abstract Completable update(CashBoxInfo cashBoxInfo);
 
     @Delete
-    abstract Completable delete(CashBox.CashBoxInfo cashBoxInfo);
+    abstract Completable delete(CashBoxInfo cashBoxInfo);
 
     @Query("DELETE FROM cashBoxesInfo_table")
     abstract Single<Integer> deleteAll();

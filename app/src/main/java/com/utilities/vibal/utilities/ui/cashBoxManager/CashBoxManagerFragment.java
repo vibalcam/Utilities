@@ -36,6 +36,7 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.utilities.vibal.utilities.R;
+import com.utilities.vibal.utilities.db.CashBoxInfo;
 import com.utilities.vibal.utilities.models.CashBox;
 import com.utilities.vibal.utilities.models.CashBoxViewModel;
 import com.utilities.vibal.utilities.ui.swipeController.CashBoxAdapterSwipable;
@@ -60,14 +61,14 @@ import static com.utilities.vibal.utilities.ui.cashBoxManager.CashBoxManagerActi
 
 public class CashBoxManagerFragment extends Fragment {
     //DiffUtil Callback
-    private static final DiffUtil.ItemCallback<CashBox.CashBoxInfo> DIFF_CALLBACK = new DiffUtil.ItemCallback<CashBox.CashBoxInfo>() {
+    private static final DiffUtil.ItemCallback<CashBox.InfoWithCash> DIFF_CALLBACK = new DiffUtil.ItemCallback<CashBox.InfoWithCash>() {
         @Override
-        public boolean areItemsTheSame(@NonNull CashBox.CashBoxInfo oldItem, @NonNull CashBox.CashBoxInfo newItem) {
-            return oldItem.getId()==newItem.getId();
+        public boolean areItemsTheSame(@NonNull CashBox.InfoWithCash oldItem, @NonNull CashBox.InfoWithCash newItem) {
+            return oldItem.getCashBoxInfo().getId()==newItem.getCashBoxInfo().getId();
         }
 
         @Override
-        public boolean areContentsTheSame(@NonNull CashBox.CashBoxInfo oldItem, @NonNull CashBox.CashBoxInfo newItem) {
+        public boolean areContentsTheSame(@NonNull CashBox.InfoWithCash oldItem, @NonNull CashBox.InfoWithCash newItem) {
             return oldItem.getCash() == newItem.getCash();
         }
     };
@@ -238,7 +239,7 @@ public class CashBoxManagerFragment extends Fragment {
         dialog.show();
     }
 
-    public class CashBoxManagerRecyclerAdapter extends ListAdapter<CashBox.CashBoxInfo, CashBoxManagerRecyclerAdapter.ViewHolder> implements CashBoxAdapterSwipable {
+    public class CashBoxManagerRecyclerAdapter extends ListAdapter<CashBox.InfoWithCash, CashBoxManagerRecyclerAdapter.ViewHolder> implements CashBoxAdapterSwipable {
         private static final boolean SWIPE_ENABLED = true;
         private static final String TAG = "PruebaManagerActivity";
 
@@ -313,8 +314,8 @@ public class CashBoxManagerFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(@NonNull ViewHolder viewHolder, int index) {
-            CashBox.CashBoxInfo cashBoxInfo = getItem(index);
-            viewHolder.rvName.setText(cashBoxInfo.getName());
+            CashBox.InfoWithCash cashBoxInfo = getItem(index);
+            viewHolder.rvName.setText(cashBoxInfo.getCashBoxInfo().getName());
 
             // Enable or disable dragging
             if (isDragEnabled()) {
@@ -363,7 +364,7 @@ public class CashBoxManagerFragment extends Fragment {
         public void onItemDelete(int position) {
             if (actionMode != null)
                 actionMode.finish();
-            CashBox.CashBoxInfo deletedCashBoxInfo = getItem(position);
+            CashBox.InfoWithCash deletedCashBoxInfo = getItem(position);
             disposable.add(viewModel.deleteCashBoxInfo(deletedCashBoxInfo)
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
@@ -389,10 +390,10 @@ public class CashBoxManagerFragment extends Fragment {
                 Button positive = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
                 TextInputEditText inputName = ((AlertDialog) dialog).findViewById(R.id.inputTextChangeName);
                 TextInputLayout layoutName = ((AlertDialog) dialog).findViewById(R.id.inputLayoutChangeName);
-                String oldName = getItem(position).getName();
+                String oldName = getItem(position).getCashBoxInfo().getName();
 
                 inputName.setText(oldName);
-                layoutName.setCounterMaxLength(CashBox.MAX_LENGTH_NAME);
+                layoutName.setCounterMaxLength(CashBoxInfo.MAX_LENGTH_NAME);
                 inputName.setSelectAllOnFocus(true);
 
                 // Show keyboard and select the whole text
@@ -443,9 +444,9 @@ public class CashBoxManagerFragment extends Fragment {
                 TextInputLayout layoutName = ((AlertDialog) dialog).findViewById(R.id.inputLayoutChangeName);
 
                 Util.showKeyboard(getContext(), inputName);
-                inputName.setMaxLines(CashBox.MAX_LENGTH_NAME);
-                inputName.setText(getItem(index).getName());
-                layoutName.setCounterMaxLength(CashBox.MAX_LENGTH_NAME);
+                inputName.setMaxLines(CashBoxInfo.MAX_LENGTH_NAME);
+                inputName.setText(getItem(index).getCashBoxInfo().getName());
+                layoutName.setCounterMaxLength(CashBoxInfo.MAX_LENGTH_NAME);
 
                 positive.setOnClickListener((View v1) -> {
                     try {
@@ -524,7 +525,7 @@ public class CashBoxManagerFragment extends Fragment {
                 setSelectedViewHolder(this);
 
                 if (actionMode == null) {
-                    viewModel.setCurrentCashBoxId(getItem(getAdapterPosition()).getId());
+                    viewModel.setCurrentCashBoxId(getItem(getAdapterPosition()).getCashBoxInfo().getId());
 
                     getFragmentManager()
                             .beginTransaction()

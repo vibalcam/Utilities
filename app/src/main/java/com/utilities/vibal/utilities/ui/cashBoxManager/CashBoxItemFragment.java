@@ -273,7 +273,7 @@ public class CashBoxItemFragment extends Fragment {
                 viewHolder.rvItemAmount.setTextColor(getActivity().getColor(R.color.colorNegativeNumber));
             else
                 viewHolder.rvItemAmount.setTextColor(getActivity().getColor(R.color.colorPositiveNumber));
-            // Info
+            // CashBoxInfo
             if (entry.getInfo().isEmpty())
                 viewHolder.rvItemInfo.setText(R.string.noInfoEntered);
             else

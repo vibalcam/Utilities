@@ -18,7 +18,7 @@ import static com.utilities.vibal.utilities.models.CashBox.Entry.NO_CASHBOX;
 
 public class CashBoxViewModel extends AndroidViewModel {
     private CashBoxRepository repository;
-    private LiveData<List<CashBox.CashBoxInfo>> cashBoxesInfo;
+    private LiveData<List<CashBox.InfoWithCash>> cashBoxesInfo;
     private int currentCashBoxId = NO_CASHBOX;
 
     public CashBoxViewModel(@NonNull Application application) {
@@ -27,7 +27,7 @@ public class CashBoxViewModel extends AndroidViewModel {
         cashBoxesInfo = repository.getCashBoxesInfo();
     }
 
-    public LiveData<List<CashBox.CashBoxInfo>> getCashBoxesInfo() {
+    public LiveData<List<CashBox.InfoWithCash>> getCashBoxesInfo() {
         return cashBoxesInfo;
     }
 
@@ -39,26 +39,26 @@ public class CashBoxViewModel extends AndroidViewModel {
         this.currentCashBoxId = currentCashBoxId;
     }
 
-    public Completable addCashBoxInfo(CashBox.CashBoxInfo cashBoxInfo) {
-        LogUtil.debug("Prueba",""+cashBoxInfo.getId());
+    public Completable addCashBoxInfo(CashBox.InfoWithCash cashBoxInfo) {
+        LogUtil.debug("Prueba",""+cashBoxInfo.getCashBoxInfo().getId());
         return repository.insertCashBoxInfo(cashBoxInfo);
     }
 
     public Completable addCashBox(CashBox cashBox) {
-        CashBox.CashBoxInfo cashBoxInfo = cashBox.getCashBoxInfo();
+        CashBox.InfoWithCash cashBoxInfo = cashBox.getCashBoxInfo();
         Completable completable = addCashBoxInfo(cashBoxInfo);
         for(CashBox.Entry entry:cashBox.getEntries())
-            completable = completable.andThen(addEntry(cashBoxInfo.getId(),entry));
+            completable = completable.andThen(addEntry(cashBoxInfo.getCashBoxInfo().getId(),entry));
         return completable;
     }
 
-    public Completable changeCashBoxName(CashBox.CashBoxInfo cashBoxInfo, String newName) throws IllegalArgumentException {
-        CashBox.CashBoxInfo changedCashBoxInfo = cashBoxInfo.clone();
-        changedCashBoxInfo.setName(newName);
+    public Completable changeCashBoxName(CashBox.InfoWithCash cashBoxInfo, String newName) throws IllegalArgumentException {
+        CashBox.InfoWithCash changedCashBoxInfo = cashBoxInfo.clone();
+        changedCashBoxInfo.getCashBoxInfo().setName(newName);
         return repository.updateCashBoxInfo(changedCashBoxInfo);
     }
 
-    public Completable deleteCashBoxInfo(CashBox.CashBoxInfo cashBoxInfo) {
+    public Completable deleteCashBoxInfo(CashBox.InfoWithCash cashBoxInfo) {
         return repository.deleteCashBox(cashBoxInfo);
     }
 
@@ -74,7 +74,7 @@ public class CashBoxViewModel extends AndroidViewModel {
 
     public Completable moveCashBox(CashBox cashBox, int index) {
         //TODO
-        List<CashBox.CashBoxInfo> cashBoxInfoList = cashBoxesInfo.getValue();
+        List<CashBox.InfoWithCash> cashBoxInfoList = cashBoxesInfo.getValue();
 //        if(cashBoxList==null)
             return Completable.complete();
 

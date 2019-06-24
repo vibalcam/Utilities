@@ -14,7 +14,7 @@ import io.reactivex.Single;
 public class CashBoxRepository {
     private CashBoxDao cashBoxDao;
     private CashBoxEntryDao cashBoxEntryDao;
-    private LiveData<List<CashBox.CashBoxInfo>> cashBoxesInfo;
+    private LiveData<List<CashBox.InfoWithCash>> cashBoxesInfo;
 
     public CashBoxRepository(Application application) {
         UtilitiesDatabase database = UtilitiesDatabase.getInstance(application);
@@ -23,7 +23,7 @@ public class CashBoxRepository {
         cashBoxesInfo = cashBoxDao.getAllCashBoxesInfo();
     }
 
-    public LiveData<List<CashBox.CashBoxInfo>> getCashBoxesInfo() {
+    public LiveData<List<CashBox.InfoWithCash>> getCashBoxesInfo() {
         return cashBoxesInfo;
     }
 
@@ -31,16 +31,16 @@ public class CashBoxRepository {
         return cashBoxDao.getCashBoxById(id);
     }
 
-    public Completable insertCashBoxInfo(CashBox.CashBoxInfo cashBoxInfo) {
-        return cashBoxDao.insert(cashBoxInfo);
+    public Completable insertCashBoxInfo(CashBox.InfoWithCash cashBoxInfo) {
+        return cashBoxDao.insert(cashBoxInfo.getCashBoxInfo());
     }
 
-    public Completable updateCashBoxInfo(CashBox.CashBoxInfo cashBoxInfo) {
-        return cashBoxDao.update(cashBoxInfo);
+    public Completable updateCashBoxInfo(CashBox.InfoWithCash cashBoxInfo) {
+        return cashBoxDao.update(cashBoxInfo.getCashBoxInfo());
     }
 
-    public Completable deleteCashBox(CashBox.CashBoxInfo cashBoxInfo) {
-        return cashBoxDao.delete(cashBoxInfo);
+    public Completable deleteCashBox(CashBox.InfoWithCash cashBoxInfo) {
+        return cashBoxDao.delete(cashBoxInfo.getCashBoxInfo());
     }
 
     public Single<Integer> deleteAllCashBoxes() {
