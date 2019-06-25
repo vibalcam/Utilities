@@ -147,6 +147,8 @@ public class CashBoxManagerFragment extends Fragment {
 
         getFragmentManager()
                 .beginTransaction()
+                .setCustomAnimations(R.anim.enter_from_right,R.anim.exit_to_right,
+                        R.anim.enter_from_right,R.anim.exit_to_right)
                 .addToBackStack(null)
                 .replace(R.id.container,CashBoxItemFragment.newInstance())
                 .commit();

@@ -37,7 +37,7 @@ public class CashBox implements Parcelable {
     };
 
     @Embedded
-    private final InfoWithCash infoWithCash;
+    private InfoWithCash infoWithCash;
     @Relation(parentColumn = "id", entityColumn = "cashBoxId")
     private List<Entry> entries;
 
@@ -98,8 +98,16 @@ public class CashBox implements Parcelable {
         return entries.get(index);
     }
 
+    public void setInfoWithCash(InfoWithCash infoWithCash) {
+        this.infoWithCash = infoWithCash;
+    }
+
     void setName(String name) throws IllegalArgumentException {
         infoWithCash.getCashBoxInfo().setName(name);
+    }
+
+    public void setEntries(List<Entry> entries) {
+        this.entries = entries;
     }
 
 //    /**

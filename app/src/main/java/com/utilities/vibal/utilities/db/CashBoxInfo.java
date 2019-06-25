@@ -1,12 +1,15 @@
 package com.utilities.vibal.utilities.db;
 
 import androidx.annotation.NonNull;
+import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
 import com.utilities.vibal.utilities.util.LogUtil;
+
+import static androidx.room.ColumnInfo.NOCASE;
 
 @Entity(tableName = "cashBoxesInfo_table", indices = {@Index(value = "name", unique = true)})
 public class CashBoxInfo implements Cloneable {
@@ -16,9 +19,10 @@ public class CashBoxInfo implements Cloneable {
     @PrimaryKey(autoGenerate = true)
     private int id;
     @NonNull
+    @ColumnInfo(collate = NOCASE)
     private String name;
 
-    public CashBoxInfo(String name) throws IllegalArgumentException {
+    public CashBoxInfo(@NonNull String name) throws IllegalArgumentException {
         setName(name);
     }
 

@@ -109,10 +109,7 @@ public class CashBoxItemFragment extends Fragment {
         // Initialize data
         viewModel = ViewModelProviders.of(Objects.requireNonNull(getActivity())).get(CashBoxViewModel.class);
         viewModel.getCurrentCashBox().observe(getViewLifecycleOwner(), cashBox -> {
-            if(cashBox==null) {
-                LogUtil.debug("Prueba","CashBox is null");
-                return;
-            }
+            LogUtil.debug("Prueba","On change data");
 
             //TODO: separacion info y entries
 

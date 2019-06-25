@@ -43,11 +43,16 @@ public class CashBoxViewModel extends AndroidViewModel {
     }
 
     public Completable addCashBoxInfo(CashBox.InfoWithCash cashBoxInfo) {
-        LogUtil.debug("Prueba",""+cashBoxInfo.getCashBoxInfo().getId());
-        return repository.insertCashBoxInfo(cashBoxInfo);
+        return repository.insertCashBoxInfo(cashBoxInfo).ignoreElement();
     }
 
     public Completable addCashBox(CashBox cashBox) { // TODO: does not work right
+        return repository.insertCashBoxInfo(cashBox.getInfoWithCash())
+                .flatMapCompletable(id -> {
+                   return addAllEntries(id,cashBox.getEntries());
+                });
+
+
         CashBox.InfoWithCash cashBoxInfo = cashBox.getInfoWithCash();
         Completable completable = addCashBoxInfo(cashBoxInfo);
         for(CashBox.Entry entry:cashBox.getEntries())

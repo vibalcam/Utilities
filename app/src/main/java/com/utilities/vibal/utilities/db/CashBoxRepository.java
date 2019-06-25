@@ -3,6 +3,7 @@ package com.utilities.vibal.utilities.db;
 import android.app.Application;
 
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MediatorLiveData;
 
 import com.utilities.vibal.utilities.models.CashBox;
 
@@ -28,10 +29,23 @@ public class CashBoxRepository {
     }
 
     public LiveData<CashBox> getCashBox(int id) {
-        return cashBoxDao.getCashBoxById(id);
+//        return cashBoxDao.getCashBoxById(id);
+
+        LiveData<CashBox.InfoWithCash> cashBoxInfoWithCashLiveData = cashBoxDao.getCashBoxInfoWithCashById(id);
+        LiveData<List<CashBox.Entry>> entriesLiveData = cashBoxDao.getEntriesByCashBoxId(id);
+
+        MediatorLiveData<CashBox> liveDataMerger = new MediatorLiveData<>();
+        liveDataMerger.setValue(new CashBox(""));
+
+        liveDataMerger.addSource(cashBoxInfoWithCashLiveData,
+                infoWithCash -> liveDataMerger.getValue().setInfoWithCash(infoWithCash));
+        liveDataMerger.addSource(entriesLiveData,
+                entries -> liveDataMerger.getValue().setEntries(entries));
+
+        return liveDataMerger;
     }
 
-    public Completable insertCashBoxInfo(CashBox.InfoWithCash cashBoxInfo) {
+    public Single<Long> insertCashBoxInfo(CashBox.InfoWithCash cashBoxInfo) {
         return cashBoxDao.insert(cashBoxInfo.getCashBoxInfo());
     }
 
