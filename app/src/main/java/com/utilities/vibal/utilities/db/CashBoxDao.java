@@ -46,10 +46,12 @@ public interface CashBoxDao {
             "LEFT JOIN entries_table AS E ON C.id=E.cashBoxId " +
             "WHERE C.id=:id " +
             "GROUP BY C.id,C.name")
-    LiveData<CashBox.InfoWithCash> getCashBoxInfoWithCashById(int id);
+    LiveData<CashBox.InfoWithCash> getCashBoxInfoWithCashById(long id);
 
     @Query("SELECT * FROM entries_table WHERE cashBoxId=:cashBoxId ORDER BY date DESC")
-    LiveData<List<CashBox.Entry>> getEntriesByCashBoxId(int cashBoxId);
+    LiveData<List<CashBox.Entry>> getEntriesByCashBoxId(long cashBoxId);
+
+
 
 //    @Transaction
 //    MediatorLiveData<CashBox> getCashBoxById(int id) {

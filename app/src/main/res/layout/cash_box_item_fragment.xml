@@ -24,19 +24,18 @@
             app:titleTextColor="@android:color/white" />
     </com.google.android.material.appbar.AppBarLayout>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvCashBoxItem"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior" >
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvCashBoxItem"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/dividerRVItem"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="fill_horizontal|bottom"
+        app:layout_dodgeInsetEdges="bottom">
         <View
             android:id="@+id/dividerRVItem"
             android:layout_width="0dp"
@@ -44,10 +43,10 @@
             android:background="@color/colorDivider"
             android:layout_marginStart="@dimen/main_marginHorizontal"
             android:layout_marginEnd="@dimen/main_marginHorizontal"
-            app:layout_constraintTop_toBottomOf="@id/rvCashBoxItem"
+            app:layout_constraintTop_toBottomOf="parent"
             app:layout_constraintBottom_toTopOf="@id/itemCash"
-            app:layout_constraintStart_toStartOf="@id/rvCashBoxItem"
-            app:layout_constraintEnd_toEndOf="@id/rvCashBoxItem"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="5dp"
             android:layout_marginBottom="5dp" />
 

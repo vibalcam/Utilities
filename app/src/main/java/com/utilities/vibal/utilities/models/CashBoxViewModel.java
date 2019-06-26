@@ -9,6 +9,9 @@ import androidx.lifecycle.LiveData;
 import com.utilities.vibal.utilities.db.CashBoxRepository;
 import com.utilities.vibal.utilities.util.LogUtil;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import io.reactivex.Completable;
@@ -21,7 +24,7 @@ import static com.utilities.vibal.utilities.models.CashBox.Entry.NO_CASHBOX;
 public class CashBoxViewModel extends AndroidViewModel {
     private CashBoxRepository repository;
     private LiveData<List<CashBox.InfoWithCash>> cashBoxesInfo;
-    private int currentCashBoxId = NO_CASHBOX;
+    private long currentCashBoxId = NO_CASHBOX;
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     public CashBoxViewModel(@NonNull Application application) {
@@ -38,7 +41,7 @@ public class CashBoxViewModel extends AndroidViewModel {
         return repository.getCashBox(currentCashBoxId);
     }
 
-    public void setCurrentCashBoxId(int currentCashBoxId) {
+    public void setCurrentCashBoxId(long currentCashBoxId) {
         this.currentCashBoxId = currentCashBoxId;
     }
 
@@ -48,16 +51,14 @@ public class CashBoxViewModel extends AndroidViewModel {
 
     public Completable addCashBox(CashBox cashBox) { // TODO: does not work right
         return repository.insertCashBoxInfo(cashBox.getInfoWithCash())
-                .flatMapCompletable(id -> {
-                   return addAllEntries(id,cashBox.getEntries());
-                });
+                .flatMapCompletable(id -> addAllEntries(id,cashBox.getEntries()));
 
 
-        CashBox.InfoWithCash cashBoxInfo = cashBox.getInfoWithCash();
-        Completable completable = addCashBoxInfo(cashBoxInfo);
-        for(CashBox.Entry entry:cashBox.getEntries())
-            completable = completable.andThen(addEntry(cashBoxInfo.getCashBoxInfo().getId(),entry));
-        return completable;
+//        CashBox.InfoWithCash cashBoxInfo = cashBox.getInfoWithCash();
+//        Completable completable = addCashBoxInfo(cashBoxInfo);
+//        for(CashBox.Entry entry:cashBox.getEntries())
+//            completable = completable.andThen(addEntry(cashBoxInfo.getCashBoxInfo().getId(),entry));
+//        return completable;
     }
 
     public Completable changeCashBoxName(CashBox.InfoWithCash cashBoxInfo, String newName) throws IllegalArgumentException {
@@ -81,19 +82,23 @@ public class CashBoxViewModel extends AndroidViewModel {
     }
 
     public Completable moveCashBox(CashBox cashBox, int index) {
-        //TODO
+        //TODO move cashBox
+
         List<CashBox.InfoWithCash> cashBoxInfoList = cashBoxesInfo.getValue();
-//        if(cashBoxList==null)
-            return Completable.complete();
+        if(cashBoxInfoList==null)
+            return Completable.error(new IllegalArgumentException("Null list of CashBoxes"));
+        else if (index<0 || index>cashBoxInfoList.size())
+            return Completable.error(new IndexOutOfBoundsException("Cannot move to index in list"));
 
-
+        long currentPos = cashBox.getInfoWithCash().getCashBoxInfo().getId();
+        return Completable.complete();
     }
 
     public Completable addEntryToCurrentCashBox(CashBox.Entry entry) {
         return addEntry(currentCashBoxId,entry);
     }
 
-    private Completable addEntry(int cashBoxId, CashBox.Entry entry) {
+    private Completable addEntry(long cashBoxId, CashBox.Entry entry) {
         return repository.insertEntry(entry.getEntryWithCashBoxId(cashBoxId));
     }
 
@@ -101,9 +106,11 @@ public class CashBoxViewModel extends AndroidViewModel {
         return addAllEntries(currentCashBoxId,entries);
     }
 
-    private Completable addAllEntries(int cashBoxId, List<CashBox.Entry> entries) {
-//        return repository.in TODO
-        return Completable.complete();
+    private Completable addAllEntries(long cashBoxId, Collection<CashBox.Entry> entries) { // TODO
+        ArrayList<CashBox.Entry> entryArrayList = new ArrayList<>();
+        for(CashBox.Entry entry:entries)
+            entryArrayList.add(entry.getEntryWithCashBoxId(cashBoxId));
+        return repository.insertAllEntries(entryArrayList);
     }
 
     public Completable updateEntry(CashBox.Entry entry) {

@@ -274,7 +274,7 @@ public class CashBox implements Parcelable {
         @Ignore
         private InfoWithCash(Parcel parcel) {
             cashBoxInfo = new CashBoxInfo(parcel.readString());
-            cashBoxInfo.setId(parcel.readInt());
+            cashBoxInfo.setId(parcel.readLong());
             cash = parcel.readDouble();
         }
 
@@ -313,7 +313,7 @@ public class CashBox implements Parcelable {
         @Override
         public void writeToParcel(Parcel dest, int flags) {
             dest.writeString(cashBoxInfo.getName());
-            dest.writeInt(cashBoxInfo.getId());
+            dest.writeLong(cashBoxInfo.getId());
             dest.writeDouble(cash);
         }
     }
@@ -338,11 +338,11 @@ public class CashBox implements Parcelable {
         };
 
         @PrimaryKey(autoGenerate = true)
-        private int id;
+        private long id;
         @ForeignKey(entity = InfoWithCash.class,
                 parentColumns = "id", childColumns = "cashBoxId",
                 onDelete = CASCADE, onUpdate = CASCADE)
-        private int cashBoxId;
+        private long cashBoxId;
         private final String info;
         private final Calendar date;
         private final double amount;
@@ -350,7 +350,7 @@ public class CashBox implements Parcelable {
         /**
          * Constructor for Room
          */
-        public Entry(int cashBoxId, double amount, @NonNull String info, Calendar date) {
+        public Entry(long cashBoxId, double amount, @NonNull String info, Calendar date) {
             this.info = info.trim();
             this.date = date;
             this.amount = amount;
@@ -364,18 +364,18 @@ public class CashBox implements Parcelable {
 
         @Ignore
         private Entry(@NonNull Parcel parcel) {
-            id = parcel.readInt();
-            cashBoxId = parcel.readInt();
+            id = parcel.readLong();
+            cashBoxId = parcel.readLong();
             info = parcel.readString();
             date = Converters.fromTimestamp(parcel.readLong());
             amount = parcel.readDouble();
         }
 
-        public int getId() {
+        public long getId() {
             return id;
         }
 
-        public int getCashBoxId() {
+        public long getCashBoxId() {
             return cashBoxId;
         }
 
@@ -391,11 +391,11 @@ public class CashBox implements Parcelable {
             return amount;
         }
 
-        public void setId(int id) {
+        public void setId(long id) {
             this.id = id;
         }
 
-        public Entry getEntryWithCashBoxId(int cashBoxId) {
+        public Entry getEntryWithCashBoxId(long cashBoxId) {
             if(this.cashBoxId==cashBoxId)
                 return this;
 
@@ -437,8 +437,8 @@ public class CashBox implements Parcelable {
 
         @Override
         public void writeToParcel(Parcel dest, int flags) {
-            dest.writeInt(id);
-            dest.writeInt(cashBoxId);
+            dest.writeLong(id);
+            dest.writeLong(cashBoxId);
             dest.writeString(info);
             dest.writeLong(Converters.calendarToTimestamp(date));
             dest.writeDouble(amount);

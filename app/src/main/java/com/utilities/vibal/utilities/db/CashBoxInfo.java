@@ -17,7 +17,7 @@ public class CashBoxInfo implements Cloneable {
     public static final int MAX_LENGTH_NAME = 15;
 
     @PrimaryKey(autoGenerate = true)
-    private int id;
+    private long id;
     @NonNull
     @ColumnInfo(collate = NOCASE)
     private String name;
@@ -26,7 +26,7 @@ public class CashBoxInfo implements Cloneable {
         setName(name);
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
@@ -35,7 +35,7 @@ public class CashBoxInfo implements Cloneable {
         return name;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 

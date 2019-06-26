@@ -141,7 +141,7 @@ public class CashBoxManagerFragment extends Fragment {
             swapToItemFragment(intent.getIntExtra(EXTRA_CASHBOX_ID, CashBox.Entry.NO_CASHBOX));
     }
 
-    private void swapToItemFragment(int cashBoxId) {
+    private void swapToItemFragment(long cashBoxId) {
         LogUtil.debug("Prueba",""+cashBoxId);
         viewModel.setCurrentCashBoxId(cashBoxId);
 

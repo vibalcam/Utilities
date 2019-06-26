@@ -7,6 +7,7 @@ import androidx.lifecycle.MediatorLiveData;
 
 import com.utilities.vibal.utilities.models.CashBox;
 
+import java.util.Collection;
 import java.util.List;
 
 import io.reactivex.Completable;
@@ -28,14 +29,14 @@ public class CashBoxRepository {
         return cashBoxesInfo;
     }
 
-    public LiveData<CashBox> getCashBox(int id) {
+    public LiveData<CashBox> getCashBox(long id) {
 //        return cashBoxDao.getCashBoxById(id);
 
         LiveData<CashBox.InfoWithCash> cashBoxInfoWithCashLiveData = cashBoxDao.getCashBoxInfoWithCashById(id);
         LiveData<List<CashBox.Entry>> entriesLiveData = cashBoxDao.getEntriesByCashBoxId(id);
 
         MediatorLiveData<CashBox> liveDataMerger = new MediatorLiveData<>();
-        liveDataMerger.setValue(new CashBox(""));
+        liveDataMerger.setValue(new CashBox("Loading..."));
 
         liveDataMerger.addSource(cashBoxInfoWithCashLiveData,
                 infoWithCash -> liveDataMerger.getValue().setInfoWithCash(infoWithCash));
@@ -65,7 +66,7 @@ public class CashBoxRepository {
         return cashBoxEntryDao.insert(entry);
     }
 
-    public Completable insertAllEntries(List<CashBox.Entry> entries) {
+    public Completable insertAllEntries(Collection<CashBox.Entry> entries) {
         return cashBoxEntryDao.insertAll(entries);
     }
 
@@ -77,7 +78,7 @@ public class CashBoxRepository {
         return  cashBoxEntryDao.delete(entry);
     }
 
-    public Single<Integer> deleteAllEntries(int cashBoxId) {
+    public Single<Integer> deleteAllEntries(long cashBoxId) {
         return cashBoxEntryDao.deleteAll(cashBoxId);
     }
 
