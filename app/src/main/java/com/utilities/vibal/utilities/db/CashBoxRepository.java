@@ -12,6 +12,8 @@ import java.util.List;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
+import io.reactivex.SingleEmitter;
+import io.reactivex.SingleOnSubscribe;
 
 public class CashBoxRepository {
     private CashBoxDao cashBoxDao;
@@ -29,11 +31,11 @@ public class CashBoxRepository {
         return cashBoxesInfo;
     }
 
-    public LiveData<CashBox> getCashBox(long id) {
+    public LiveData<CashBox> getOrderedCashBox(long id) {
 //        return cashBoxDao.getCashBoxById(id);
 
         LiveData<CashBox.InfoWithCash> cashBoxInfoWithCashLiveData = cashBoxDao.getCashBoxInfoWithCashById(id);
-        LiveData<List<CashBox.Entry>> entriesLiveData = cashBoxDao.getEntriesByCashBoxId(id);
+        LiveData<List<CashBox.Entry>> entriesLiveData = cashBoxEntryDao.getEntriesByCashBoxId(id);
 
         MediatorLiveData<CashBox> liveDataMerger = new MediatorLiveData<>();
         liveDataMerger.setValue(new CashBox("Loading..."));
@@ -46,12 +48,25 @@ public class CashBoxRepository {
         return liveDataMerger;
     }
 
-    public Single<Long> insertCashBoxInfo(CashBox.InfoWithCash cashBoxInfo) {
-        return cashBoxDao.insert(cashBoxInfo.getCashBoxInfo());
+    public Single<CashBox> getCashBox(long id) {
+        return cashBoxDao.getCashBoxById(id);
+    }
+
+    public Single<Long> insertCashBoxInfo(CashBox.InfoWithCash infoWithCash) {
+        // Get CashBox orderId and increment by one
+        List<CashBox.InfoWithCash> temp = cashBoxesInfo.getValue();
+        infoWithCash.getCashBoxInfo().setOrderId(temp.get(0).getCashBoxInfo().getOrderId()+1);
+
+        return cashBoxDao.insert(infoWithCash.getCashBoxInfo());
     }
 
     public Completable updateCashBoxInfo(CashBox.InfoWithCash cashBoxInfo) {
         return cashBoxDao.update(cashBoxInfo.getCashBoxInfo());
+    }
+
+    public Completable moveCashBoxInfo(CashBox.InfoWithCash infoWithCash, long toOrderPos) {
+        return cashBoxDao.moveCashBoxToOrderPos(infoWithCash.getCashBoxInfo().getId(),
+                infoWithCash.getCashBoxInfo().getOrderId(), toOrderPos);
     }
 
     public Completable deleteCashBox(CashBox.InfoWithCash cashBoxInfo) {

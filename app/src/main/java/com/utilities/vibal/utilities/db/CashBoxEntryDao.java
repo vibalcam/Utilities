@@ -1,5 +1,6 @@
 package com.utilities.vibal.utilities.db;
 
+import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
@@ -16,6 +17,9 @@ import io.reactivex.Single;
 
 @Dao
 public interface CashBoxEntryDao {
+    @Query("SELECT * FROM entries_table WHERE cashBoxId=:cashBoxId ORDER BY date DESC")
+    LiveData<List<CashBox.Entry>> getEntriesByCashBoxId(long cashBoxId);
+
     @Insert
     Completable insert(CashBox.Entry entry);
 

@@ -111,8 +111,6 @@ public class CashBoxItemFragment extends Fragment {
         viewModel.getCurrentCashBox().observe(getViewLifecycleOwner(), cashBox -> {
             LogUtil.debug("Prueba","On change data");
 
-            //TODO: separacion info y entries
-
             // Set Title TODO
 //            ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
 //            if(actionBar!=null)
@@ -333,16 +331,15 @@ public class CashBoxItemFragment extends Fragment {
                 positive.setOnClickListener((View v) -> {
                     try {
                         LogUtil.debug(TAG, "showAddDialog: cause" + (inputInfo.getText() == null) + (inputInfo.getText().toString().isEmpty()));
-                        String input = inputAmount.getText().toString();
-                        if (input.trim().isEmpty()) {
+                        String input = inputAmount.getText().toString().trim();
+                        if (input.isEmpty()) {
                             layoutAmount.setError(getString(R.string.required));
                             inputAmount.setText("");
                             Util.showKeyboard(getContext(), inputAmount);
                         } else {
-                            double amount = Util.parseDouble(inputAmount.getText().toString());
-                            CashBox.Entry entry = new CashBox.Entry(
-                                    amount, inputInfo.getText().toString(),modifiedEntry.getDate());
-                            entry.setId(modifiedEntry.getId());
+                            double amount = Util.parseDouble(input);
+                            CashBox.Entry entry = modifiedEntry.clone();
+
                             viewModel.addDisposable(viewModel.updateEntry(entry)
                                     .subscribeOn(Schedulers.io())
                                     .observeOn(AndroidSchedulers.mainThread())

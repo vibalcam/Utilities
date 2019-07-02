@@ -28,10 +28,8 @@ import butterknife.OnClick;
 import butterknife.OnEditorAction;
 
 public class RandomChooserActivity extends AppCompatActivity {
-    @BindView(R.id.rvRandomChooser)
-    RecyclerView rvRandomChooser;
-    @BindView(R.id.inputText)
-    EditText inputText;
+    @BindView(R.id.rvRandomChooser) RecyclerView rvRandomChooser;
+    @BindView(R.id.inputText) EditText inputText;
 
     private List<String> contestants;
 
@@ -60,8 +58,9 @@ public class RandomChooserActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
         getMenuInflater().inflate(R.menu.menu_toolbar_random_chooser, menu);
-        return super.onCreateOptionsMenu(menu);
+        return true;
     }
 
     @Override

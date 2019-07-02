@@ -5,6 +5,7 @@ import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
+import androidx.room.Transaction;
 import androidx.room.Update;
 
 import com.utilities.vibal.utilities.models.CashBox;
@@ -28,30 +29,50 @@ public interface CashBoxDao {
 //    abstract LiveData<List<CashBox>> getAllCashBoxes();
 
 //    @Query("SELECT * FROM cashBoxesInfo_table ORDER BY id DESC")
-    @Query("SELECT C.id,C.name,SUM(amount) AS cash FROM cashBoxesInfo_table AS C " +
+    @Query("SELECT C.id,C.name,C.orderId,SUM(amount) AS cash FROM cashBoxesInfo_table AS C " +
             "LEFT JOIN entries_table AS E ON C.id=E.cashBoxId " +
-            "GROUP BY C.id,C.name " +
-            "ORDER BY C.id DESC")
+            "GROUP BY C.id,C.name,C.orderId " +
+            "ORDER BY C.orderId DESC")
     LiveData<List<CashBox.InfoWithCash>> getAllCashBoxesInfo();
 
-//    @Transaction
-////    @Query("SELECT * FROM cashBoxesInfo_table WHERE id=:id")
-//    @Query("SELECT C.id,C.name,SUM(amount) AS cash FROM cashBoxesInfo_table AS C " +
-//            "LEFT JOIN entries_table AS E ON C.id=E.cashBoxId " +
-//            "WHERE C.id=:id " +
-//            "GROUP BY C.id,C.name")
-//    abstract LiveData<CashBox> getCashBoxById(int id);
+    @Query("SELECT C.id,C.name,C.orderId,SUM(amount) AS cash FROM cashBoxesInfo_table AS C " +
+            "LEFT JOIN entries_table AS E ON C.id=E.cashBoxId " +
+            "WHERE C.id=:id " +
+            "GROUP BY C.id,C.name,C.orderId")
+    LiveData<CashBox.InfoWithCash> getCashBoxInfoWithCashById(long id);
 
+    @Transaction
     @Query("SELECT C.id,C.name,SUM(amount) AS cash FROM cashBoxesInfo_table AS C " +
             "LEFT JOIN entries_table AS E ON C.id=E.cashBoxId " +
             "WHERE C.id=:id " +
             "GROUP BY C.id,C.name")
-    LiveData<CashBox.InfoWithCash> getCashBoxInfoWithCashById(long id);
+    Single<CashBox> getCashBoxById(long id);
 
-    @Query("SELECT * FROM entries_table WHERE cashBoxId=:cashBoxId ORDER BY date DESC")
-    LiveData<List<CashBox.Entry>> getEntriesByCashBoxId(long cashBoxId);
+    //TODO: complete methods
+//    @Query("UPDATE cashBoxesInfo_table " +
+//            "SET orderId=CASE WHEN EXISTS(" +
+//            "SELECT * FROM cashBoxesInfo_table WHERE orderId=:minOrderPos) " +
+//            "THEN orderId+1 ELSE orderId END")
+//    @Query("UPDATE cashBoxesInfo_table " +
+//            "SET orderId=CASE " +
+//            "WHEN EXISTS(" +
+//            "SELECT * FROM cashBoxesInfo_table WHERE orderId=:minOrderPos) " +
+//            "THEN orderId+1 ELSE orderId END")
+//    Completable incrementOrderPos(long minOrderPos);
 
-
+//    @Query("UPDATE cashBoxesInfo_table " +
+//            "SET orderId=CASE " +
+//            "WHEN EXISTS(SELECT * FROM cashBoxesInfo_table WHERE orderId=:fromOrderPos) " +
+//            "THEN orderId ELSE (CASE " +
+//            "WHEN id=:cashBoxId THEN :toOrderPos " +
+//            "WHEN orderId BETWEEN :fromOrderPos AND :toOrderPos THEN )")
+    @Query("UPDATE cashBoxesInfo_table " +
+            "SET orderId=CASE " +
+            "WHEN id=:cashBoxId THEN :toOrderPos " +
+            "WHEN orderId BETWEEN :fromOrderPos AND :toOrderPos THEN orderId-1 " +
+            "WHEN orderId BETWEEN :toOrderPos AND :fromOrderPos THEN orderId+1 " +
+            "ELSE orderId END")
+    Completable moveCashBoxToOrderPos(long cashBoxId, long fromOrderPos, long toOrderPos);
 
 //    @Transaction
 //    MediatorLiveData<CashBox> getCashBoxById(int id) {
@@ -69,10 +90,10 @@ public interface CashBoxDao {
 
     // Get all CashBoxInfo to supply the widget
 //    @Query("SELECT * FROM cashBoxesInfo_table ORDER BY id DESC")
-    @Query("SELECT C.id,C.name,SUM(amount) AS cash FROM cashBoxesInfo_table AS C " +
+    @Query("SELECT C.id,C.name,C.orderId,SUM(amount) AS cash FROM cashBoxesInfo_table AS C " +
             "LEFT JOIN entries_table AS E ON C.id=E.cashBoxId " +
-            "GROUP BY C.id,C.name " +
-            "ORDER BY C.id DESC")
+            "GROUP BY C.id,C.name,C.orderId " +
+            "ORDER BY C.orderId DESC")
     List<CashBox.InfoWithCash> getAllCashBoxInfoForWidget();
 
     @Insert

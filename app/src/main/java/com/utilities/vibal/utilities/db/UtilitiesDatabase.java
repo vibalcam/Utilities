@@ -18,27 +18,27 @@ import io.reactivex.schedulers.Schedulers;
 @Database(entities = {CashBoxInfo.class,CashBox.Entry.class},version = 1,exportSchema = false)
 @TypeConverters(Converters.class)
 public abstract class UtilitiesDatabase extends RoomDatabase {
-    private static UtilitiesDatabase instance;
+    private static UtilitiesDatabase INSTANCE = null;
 
     public abstract CashBoxEntryDao cashBoxEntryDao();
     public abstract CashBoxDao cashBoxDao();
 
     public static synchronized UtilitiesDatabase getInstance(Context context) {
-        if(instance==null) {
-            instance = Room.databaseBuilder(context.getApplicationContext(), UtilitiesDatabase.class,
+        if(INSTANCE == null) {
+            INSTANCE = Room.databaseBuilder(context.getApplicationContext(), UtilitiesDatabase.class,
                     "utilities_database")
                     .fallbackToDestructiveMigration()
                     .addCallback(roomCallback)
                     .build();
         }
-        return instance;
+        return INSTANCE;
     }
 
     private static RoomDatabase.Callback roomCallback = new RoomDatabase.Callback() {
         @Override
         public void onCreate(@NonNull SupportSQLiteDatabase db) {
             super.onCreate(db);
-            Completable.create(emitter -> instance.cashBoxDao().
+            Completable.create(emitter -> INSTANCE.cashBoxDao().
                     insert(new CashBoxInfo("Example")))
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.single())

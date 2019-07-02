@@ -110,91 +110,12 @@ public class CashBox implements Parcelable {
         this.entries = entries;
     }
 
-//    /**
-//     * Adds a new entry to the CashBox. It adds it to the top of the list.
-//     *
-//     * @param amount Amount to be added
-//     * @param cause  Explanation of the addition (can be empty)
-//     * @param date   Date in which it was added
-//     * @return Total cash after the addition
-//     */
-//    public double add(double amount, String cause, Calendar date) {
-//        return add(0, amount, cause, date);
-//    }
-//
-//    public double add(int index, double amount, String cause, Calendar date) {
-//        infoWithCash.cash += amount;
-//        entries.add(index, new Entry(infoWithCash.getCashBoxInfo().getId(),amount,cause,date));
-//        return getCash();
-//    }
-//
-//    public double add(int index, Entry entry) {
-//        return add(index, entry.amount, entry.info, entry.date);
-//    }
-//
-//    public double addAll(List<Entry> entries) {
-//        int size = entries.size()-1;
-//        for(Entry entry: entries)
-//            add(size++, entry);
-//
-//        return getCash();
-//    }
-//
     private int calculateCash(@NonNull List<Entry> entries) {
         int sum = 0;
         for (Entry entry : entries)
             sum += entry.getAmount();
         return sum;
     }
-//
-//    /**
-//     * Removes an entry of the CashBox
-//     *
-//     * @param index Index to be removed
-//     * @return Total cash after removing
-//     */
-//    public Entry remove(int index) {
-//        Entry removedEntry = entries.remove(index);
-//        infoWithCash.cash -= removedEntry.getAmount();
-//        return removedEntry;
-//    }
-//
-//    /**
-//     * Clears all entries in the CashBox
-//     */
-//    public List<Entry> clear() {
-//        infoWithCash.cash = 0;
-//        List<Entry> entriesRemoved = entries;
-//        entries = new ArrayList<>();
-//        return entriesRemoved;
-//    }
-//
-//    /**
-//     * Modifies an entry of the CashBox
-//     *
-//     * @param amount Amount to be added
-//     * @param cause  Explanation of the addition (can be empty)
-//     * @param date   Date in which it was added
-//     * @param index  Index to be modified
-//     * @return Total cash after the modification
-//     */
-//    public Entry modify(int index, double amount, String cause, Calendar date) {
-//        Entry modifiedEntry = entries.set(index, new Entry(infoWithCash.getCashBoxInfo().getId(), amount, cause, date));
-//        infoWithCash.cash += amount - modifiedEntry.getAmount();
-//        return modifiedEntry;
-//    }
-//
-//    public Entry modify(int index, Entry entry) throws IllegalArgumentException {
-//        return modify(index, entry.amount, entry.info, entry.date);
-//    }
-//
-//    public int sizeEntries() {
-//        return entries.size();
-//    }
-//
-//    public boolean isEmpty() {
-//        return entries.isEmpty();
-//    }
 
     @Override
     public boolean equals(Object obj) {

@@ -11,7 +11,6 @@ import com.utilities.vibal.utilities.util.LogUtil;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import io.reactivex.Completable;
@@ -38,11 +37,15 @@ public class CashBoxViewModel extends AndroidViewModel {
     }
 
     public LiveData<CashBox> getCurrentCashBox() {
-        return repository.getCashBox(currentCashBoxId);
+        return repository.getOrderedCashBox(currentCashBoxId);
     }
 
     public void setCurrentCashBoxId(long currentCashBoxId) {
         this.currentCashBoxId = currentCashBoxId;
+    }
+
+    public Single<CashBox> getCashBox(long id) {
+        return repository.getCashBox(id);
     }
 
     public Completable addCashBoxInfo(CashBox.InfoWithCash cashBoxInfo) {
@@ -61,7 +64,8 @@ public class CashBoxViewModel extends AndroidViewModel {
 //        return completable;
     }
 
-    public Completable changeCashBoxName(CashBox.InfoWithCash cashBoxInfo, String newName) throws IllegalArgumentException {
+    public Completable changeCashBoxName(CashBox.InfoWithCash cashBoxInfo, String newName)
+            throws IllegalArgumentException {
         CashBox.InfoWithCash changedCashBoxInfo = cashBoxInfo.clone();
         changedCashBoxInfo.getCashBoxInfo().setName(newName);
         return repository.updateCashBoxInfo(changedCashBoxInfo);
@@ -76,22 +80,22 @@ public class CashBoxViewModel extends AndroidViewModel {
     }
 
     public Completable duplicateCashBox(CashBox cashBox, String newName) {
-        CashBox cashBoxDup = cashBox.clone();
-        cashBoxDup.setName(newName);
-        return addCashBox(cashBoxDup);
+        CashBox cashBoxClone = cashBox.clone();
+        cashBoxClone.setName(newName);
+        return addCashBox(cashBoxClone);
     }
 
-    public Completable moveCashBox(CashBox cashBox, int index) {
-        //TODO move cashBox
+    public Completable moveCashBox(CashBox.InfoWithCash infoWithCash, int toIndex) {
+        //TODO move infoWithCash
 
         List<CashBox.InfoWithCash> cashBoxInfoList = cashBoxesInfo.getValue();
         if(cashBoxInfoList==null)
             return Completable.error(new IllegalArgumentException("Null list of CashBoxes"));
-        else if (index<0 || index>cashBoxInfoList.size())
+        else if (toIndex<0 || toIndex>=cashBoxInfoList.size())
             return Completable.error(new IndexOutOfBoundsException("Cannot move to index in list"));
 
-        long currentPos = cashBox.getInfoWithCash().getCashBoxInfo().getId();
-        return Completable.complete();
+        return repository.moveCashBoxInfo(infoWithCash,
+                cashBoxInfoList.get(toIndex).getCashBoxInfo().getOrderId());
     }
 
     public Completable addEntryToCurrentCashBox(CashBox.Entry entry) {
