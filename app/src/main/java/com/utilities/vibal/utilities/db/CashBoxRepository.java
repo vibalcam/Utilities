@@ -2,18 +2,20 @@ package com.utilities.vibal.utilities.db;
 
 import android.app.Application;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 
 import com.utilities.vibal.utilities.models.CashBox;
+import com.utilities.vibal.utilities.util.LogUtil;
 
 import java.util.Collection;
 import java.util.List;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
-import io.reactivex.SingleEmitter;
-import io.reactivex.SingleOnSubscribe;
+
+import static com.utilities.vibal.utilities.db.CashBoxInfo.NO_ORDER_ID;
 
 public class CashBoxRepository {
     private CashBoxDao cashBoxDao;
@@ -32,18 +34,28 @@ public class CashBoxRepository {
     }
 
     public LiveData<CashBox> getOrderedCashBox(long id) {
-//        return cashBoxDao.getCashBoxById(id);
-
-        LiveData<CashBox.InfoWithCash> cashBoxInfoWithCashLiveData = cashBoxDao.getCashBoxInfoWithCashById(id);
-        LiveData<List<CashBox.Entry>> entriesLiveData = cashBoxEntryDao.getEntriesByCashBoxId(id);
-
         MediatorLiveData<CashBox> liveDataMerger = new MediatorLiveData<>();
         liveDataMerger.setValue(new CashBox("Loading..."));
 
-        liveDataMerger.addSource(cashBoxInfoWithCashLiveData,
-                infoWithCash -> liveDataMerger.getValue().setInfoWithCash(infoWithCash));
-        liveDataMerger.addSource(entriesLiveData,
-                entries -> liveDataMerger.getValue().setEntries(entries));
+        liveDataMerger.addSource(cashBoxDao.getCashBoxInfoWithCashById(id),
+                infoWithCash -> {
+                    LogUtil.debug("Prueba","Change in info with cash: " + infoWithCash.toString());
+                    CashBox cashBox = liveDataMerger.getValue();
+                    cashBox.setInfoWithCash(infoWithCash);
+                    liveDataMerger.setValue(cashBox);
+                });
+        liveDataMerger.addSource(cashBoxEntryDao.getEntriesByCashBoxId(id),
+                entries -> {
+                    LogUtil.debug("Prueba","Change in entries: " + entries.toString());
+                    CashBox cashBox = liveDataMerger.getValue();
+                    cashBox.setEntries(entries);
+                    liveDataMerger.setValue(cashBox);
+                });
+
+//        CashBox cashBox = liveDataMerger.getValue();
+//        cashBox.setInfoWithCash(new CashBox.InfoWithCash("probando",10));
+//        liveDataMerger.postValue(cashBox);
+//        cashBoxInfoWithCashLiveData.postValue(new CashBox.InfoWithCash("probando",10));
 
         return liveDataMerger;
     }
@@ -52,12 +64,27 @@ public class CashBoxRepository {
         return cashBoxDao.getCashBoxById(id);
     }
 
-    public Single<Long> insertCashBoxInfo(CashBox.InfoWithCash infoWithCash) {
-        // Get CashBox orderId and increment by one
-        List<CashBox.InfoWithCash> temp = cashBoxesInfo.getValue();
-        infoWithCash.getCashBoxInfo().setOrderId(temp.get(0).getCashBoxInfo().getOrderId()+1);
+    public Completable insertCashBox(CashBox cashBox) {
+        configureOrderId(cashBox.getInfoWithCash().getCashBoxInfo());
+        return cashBoxDao.insert(cashBox,cashBoxEntryDao);
+    }
 
+    public Single<Long> insertCashBoxInfo(CashBox.InfoWithCash infoWithCash) { //TODO insert in index
+        configureOrderId(infoWithCash.getCashBoxInfo());
         return cashBoxDao.insert(infoWithCash.getCashBoxInfo());
+    }
+
+    /**
+     * Configures the orderId by getting CashBox orderId and incrementing it by one
+     * @param cashBoxInfo the cashBoxInfo which orderId is going to be configured
+     */
+    private void configureOrderId(@NonNull CashBoxInfo cashBoxInfo) {
+        List<CashBox.InfoWithCash> temp = cashBoxesInfo.getValue();
+        if(cashBoxInfo.getOrderId()==NO_ORDER_ID) {
+            long orderId = temp == null || temp.isEmpty() ? NO_ORDER_ID + 1 :
+                    temp.get(0).getCashBoxInfo().getOrderId() + 1;
+            cashBoxInfo.setOrderId(orderId);
+        }
     }
 
     public Completable updateCashBoxInfo(CashBox.InfoWithCash cashBoxInfo) {

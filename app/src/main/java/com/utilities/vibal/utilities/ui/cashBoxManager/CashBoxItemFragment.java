@@ -1,8 +1,12 @@
 package com.utilities.vibal.utilities.ui.cashBoxManager;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -11,8 +15,11 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.ShareActionProvider;
+import androidx.core.view.MenuItemCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.preference.PreferenceManager;
@@ -29,6 +36,7 @@ import com.google.android.material.textfield.TextInputLayout;
 import com.utilities.vibal.utilities.R;
 import com.utilities.vibal.utilities.models.CashBox;
 import com.utilities.vibal.utilities.models.CashBoxViewModel;
+import com.utilities.vibal.utilities.ui.settings.SettingsActivity;
 import com.utilities.vibal.utilities.ui.swipeController.CashBoxAdapterSwipable;
 import com.utilities.vibal.utilities.ui.swipeController.CashBoxSwipeController;
 import com.utilities.vibal.utilities.util.LogUtil;
@@ -79,6 +87,13 @@ public class CashBoxItemFragment extends Fragment {
         return new CashBoxItemFragment();
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // Fragment has options menu
+        setHasOptionsMenu(true);
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -106,15 +121,23 @@ public class CashBoxItemFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+
+        AppCompatActivity activity = (AppCompatActivity) getActivity();
+
+        //Set Toolbar as ActionBar
+        activity.setSupportActionBar(getView().findViewById(R.id.toolbarCBItem));
+        ActionBar actionBar = activity.getSupportActionBar();
+        if(actionBar!=null)
+            actionBar.setDisplayHomeAsUpEnabled(true);
+
         // Initialize data
-        viewModel = ViewModelProviders.of(Objects.requireNonNull(getActivity())).get(CashBoxViewModel.class);
+        viewModel = ViewModelProviders.of(Objects.requireNonNull(activity)).get(CashBoxViewModel.class);
         viewModel.getCurrentCashBox().observe(getViewLifecycleOwner(), cashBox -> {
             LogUtil.debug("Prueba","On change data");
 
-            // Set Title TODO
-//            ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
-//            if(actionBar!=null)
-//                actionBar.setTitle(cashBox.getName());
+            // Set Title
+            if(actionBar!=null)
+                actionBar.setTitle(cashBox.getName());
 
             adapter.submitList(cashBox.getEntries());
             updateCash(cashBox.getCash());
@@ -123,12 +146,6 @@ public class CashBoxItemFragment extends Fragment {
             if (shareActionProvider != null)
                 shareActionProvider.setShareIntent(Util.getShareIntent(cashBox));
         });
-
-//        //Set Toolbar as ActionBar
-//        setSupportActionBar(findViewById(R.id.toolbarCBItem));
-//        ActionBar actionBar = getSupportActionBar();
-//        if(actionBar!=null)
-//            actionBar.setDisplayHomeAsUpEnabled(true);
     }
 
     private void updateCash(double cash) {
@@ -145,7 +162,32 @@ public class CashBoxItemFragment extends Fragment {
         }
     }
 
-//    @Override
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.menu_toolbar_cash_box_item,menu);
+
+        // Set up ShareActionProvider
+        shareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menu.findItem(R.id.action_item_share));
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home: //TODO arreglar para back
+                getActivity().onBackPressed();
+            case R.id.action_item_deleteAll:
+                deleteAll();
+                return true;
+            case R.id.action_item_settings:
+                startActivity(new Intent(getContext(), SettingsActivity.class));
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    //    @Override
 //    public boolean onCreateOptionsMenu(Menu menu) {
 //        getMenuInflater().inflate(R.menu.menu_toolbar_cash_box_item, menu);
 //

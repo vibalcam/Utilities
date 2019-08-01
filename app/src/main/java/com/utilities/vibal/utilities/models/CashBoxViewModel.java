@@ -18,9 +18,11 @@ import io.reactivex.Single;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 
-import static com.utilities.vibal.utilities.models.CashBox.Entry.NO_CASHBOX;
+import static com.utilities.vibal.utilities.db.CashBoxInfo.NO_CASHBOX;
 
 public class CashBoxViewModel extends AndroidViewModel {
+    private static final String TAG = "PruebaViewModel";
+
     private CashBoxRepository repository;
     private LiveData<List<CashBox.InfoWithCash>> cashBoxesInfo;
     private long currentCashBoxId = NO_CASHBOX;
@@ -37,6 +39,7 @@ public class CashBoxViewModel extends AndroidViewModel {
     }
 
     public LiveData<CashBox> getCurrentCashBox() {
+        LogUtil.debug(TAG,"Id cashBox: " + currentCashBoxId);
         return repository.getOrderedCashBox(currentCashBoxId);
     }
 
@@ -52,9 +55,13 @@ public class CashBoxViewModel extends AndroidViewModel {
         return repository.insertCashBoxInfo(cashBoxInfo).ignoreElement();
     }
 
-    public Completable addCashBox(CashBox cashBox) { // TODO: does not work right
-        return repository.insertCashBoxInfo(cashBox.getInfoWithCash())
-                .flatMapCompletable(id -> addAllEntries(id,cashBox.getEntries()));
+    public Completable addCashBox(CashBox cashBox) {
+//        return repository.insertCashBoxInfo(cashBox.getInfoWithCash())
+//                .flatMapCompletable(id -> {
+//                    LogUtil.debug("Prueba","Id: " + id);
+//                    return addAllEntries(id,cashBox.getEntries());
+//                });
+        return repository.insertCashBox(cashBox);
 
 
 //        CashBox.InfoWithCash cashBoxInfo = cashBox.getInfoWithCash();
@@ -83,6 +90,18 @@ public class CashBoxViewModel extends AndroidViewModel {
         CashBox cashBoxClone = cashBox.clone();
         cashBoxClone.setName(newName);
         return addCashBox(cashBoxClone);
+    }
+
+    public Completable duplicateCashBox(long cashBoxId, String newName) {
+        return repository.getCashBox(cashBoxId).flatMapCompletable(cashBox -> {
+            CashBox cashBoxClone = cashBox.clone();
+            cashBoxClone.setName(newName);
+            return addCashBox(cashBoxClone);
+        });
+
+//        CashBox cashBoxClone = cashBox.clone();
+//        cashBoxClone.setName(newName);
+//        return addCashBox(cashBoxClone);
     }
 
     public Completable moveCashBox(CashBox.InfoWithCash infoWithCash, int toIndex) {

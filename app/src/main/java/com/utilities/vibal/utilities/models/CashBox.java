@@ -8,6 +8,7 @@ import androidx.room.Embedded;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
 import androidx.room.Ignore;
+import androidx.room.Index;
 import androidx.room.PrimaryKey;
 import androidx.room.Relation;
 
@@ -102,7 +103,8 @@ public class CashBox implements Parcelable {
         this.infoWithCash = infoWithCash;
     }
 
-    void setName(String name) throws IllegalArgumentException {
+    //TODO hacer private
+    public void setName(String name) throws IllegalArgumentException {
         infoWithCash.getCashBoxInfo().setName(name);
     }
 
@@ -220,6 +222,14 @@ public class CashBox implements Parcelable {
         }
 
         @Override
+        public String toString() {
+            return "InfoWithCash{" +
+                    "cashBoxInfo=" + cashBoxInfo.toString() +
+                    ", cash=" + cash +
+                    '}';
+        }
+
+        @Override
         //@SuppressWarnings("CloneDoesntCallSuperClone")
         public InfoWithCash clone() {
             return new InfoWithCash(cashBoxInfo.clone(),cash);
@@ -241,10 +251,10 @@ public class CashBox implements Parcelable {
 
     // Immutable object in orderPos for clone to be easier
     // When modifying directly, watch out, since an entry can be in cloned cashBoxes (no set methods)
-    @Entity(tableName = "entries_table")
+    @Entity(tableName = "entries_table", foreignKeys = @ForeignKey(entity = CashBoxInfo.class,
+            parentColumns = "id", childColumns = "cashBoxId",onDelete = CASCADE, onUpdate = CASCADE),
+            indices = {@Index(value = "cashBoxId")})
     public static class Entry implements Parcelable, Cloneable {
-        @Ignore
-        public static final int NO_CASHBOX = 0;
         @Ignore
         public static final Parcelable.Creator<Entry> CREATOR = new Parcelable.Creator<Entry>() {
             @Override
@@ -260,9 +270,6 @@ public class CashBox implements Parcelable {
 
         @PrimaryKey(autoGenerate = true)
         private long id;
-        @ForeignKey(entity = InfoWithCash.class,
-                parentColumns = "id", childColumns = "cashBoxId",
-                onDelete = CASCADE, onUpdate = CASCADE)
         private long cashBoxId;
         private final String info;
         private final Calendar date;
@@ -280,7 +287,7 @@ public class CashBox implements Parcelable {
 
         @Ignore
         public Entry(double amount, @NonNull String info, Calendar date) {
-            this(NO_CASHBOX,amount,info,date);
+            this(CashBoxInfo.NO_CASHBOX,amount,info,date);
         }
 
         @Ignore
@@ -320,7 +327,7 @@ public class CashBox implements Parcelable {
             if(this.cashBoxId==cashBoxId)
                 return this;
 
-            Entry entry = this.cashBoxId!=NO_CASHBOX ? this.clone() : this;
+            Entry entry = this.cashBoxId!= CashBoxInfo.NO_CASHBOX ? this.clone() : this;
             entry.cashBoxId = cashBoxId;
             return entry;
         }
@@ -340,10 +347,16 @@ public class CashBox implements Parcelable {
                     info;
         }
 
+        /**
+         * Clones the object without conserving the id
+         * @return the new object, product of the cloning
+         */
         @Override
         public Entry clone() {
             try {
-                return (Entry) super.clone();
+                Entry entry = (Entry) super.clone();
+                entry.id = 0;
+                return entry;
             } catch (CloneNotSupportedException e) { // won't happen
                 LogUtil.error("PruebaCashBoxInfo","Cloning error",e);
                 return null;

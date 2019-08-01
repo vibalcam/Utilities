@@ -9,14 +9,16 @@ import androidx.room.Transaction;
 import androidx.room.Update;
 
 import com.utilities.vibal.utilities.models.CashBox;
+import com.utilities.vibal.utilities.util.LogUtil;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
 
 @Dao
-public interface CashBoxDao {
+public abstract class CashBoxDao {
 //    @Query("SELECT COUNT(*) FROM cashBoxesInfo_table WHERE name=:name")
 //    abstract int countCashBoxByName(String name);
 
@@ -33,20 +35,20 @@ public interface CashBoxDao {
             "LEFT JOIN entries_table AS E ON C.id=E.cashBoxId " +
             "GROUP BY C.id,C.name,C.orderId " +
             "ORDER BY C.orderId DESC")
-    LiveData<List<CashBox.InfoWithCash>> getAllCashBoxesInfo();
+    abstract LiveData<List<CashBox.InfoWithCash>> getAllCashBoxesInfo();
 
     @Query("SELECT C.id,C.name,C.orderId,SUM(amount) AS cash FROM cashBoxesInfo_table AS C " +
             "LEFT JOIN entries_table AS E ON C.id=E.cashBoxId " +
             "WHERE C.id=:id " +
             "GROUP BY C.id,C.name,C.orderId")
-    LiveData<CashBox.InfoWithCash> getCashBoxInfoWithCashById(long id);
+    abstract LiveData<CashBox.InfoWithCash> getCashBoxInfoWithCashById(long id);
 
     @Transaction
-    @Query("SELECT C.id,C.name,SUM(amount) AS cash FROM cashBoxesInfo_table AS C " +
+    @Query("SELECT C.id,C.name,C.orderId,SUM(amount) AS cash FROM cashBoxesInfo_table AS C " +
             "LEFT JOIN entries_table AS E ON C.id=E.cashBoxId " +
             "WHERE C.id=:id " +
-            "GROUP BY C.id,C.name")
-    Single<CashBox> getCashBoxById(long id);
+            "GROUP BY C.id,C.name,C.orderId")
+    abstract Single<CashBox> getCashBoxById(long id);
 
     //TODO: complete methods
 //    @Query("UPDATE cashBoxesInfo_table " +
@@ -72,7 +74,7 @@ public interface CashBoxDao {
             "WHEN orderId BETWEEN :fromOrderPos AND :toOrderPos THEN orderId-1 " +
             "WHEN orderId BETWEEN :toOrderPos AND :fromOrderPos THEN orderId+1 " +
             "ELSE orderId END")
-    Completable moveCashBoxToOrderPos(long cashBoxId, long fromOrderPos, long toOrderPos);
+    abstract Completable moveCashBoxToOrderPos(long cashBoxId, long fromOrderPos, long toOrderPos);
 
 //    @Transaction
 //    MediatorLiveData<CashBox> getCashBoxById(int id) {
@@ -94,19 +96,33 @@ public interface CashBoxDao {
             "LEFT JOIN entries_table AS E ON C.id=E.cashBoxId " +
             "GROUP BY C.id,C.name,C.orderId " +
             "ORDER BY C.orderId DESC")
-    List<CashBox.InfoWithCash> getAllCashBoxInfoForWidget();
+    public abstract List<CashBox.InfoWithCash> getAllCashBoxInfoForWidget();
+
+    Completable insert(CashBox cashBox, CashBoxEntryDao cashBoxEntryDao){
+        if(cashBox.getEntries().isEmpty())
+            return insert(cashBox.getInfoWithCash().getCashBoxInfo()).ignoreElement();
+        else {
+            return insert(cashBox.getInfoWithCash().getCashBoxInfo()).flatMapCompletable(id -> {
+                LogUtil.debug("Prueba", "Id: " + id);
+                ArrayList<CashBox.Entry> entryArrayList = new ArrayList<>();
+                for (CashBox.Entry entry : cashBox.getEntries())
+                    entryArrayList.add(entry.getEntryWithCashBoxId(id));
+                return cashBoxEntryDao.insertAll(entryArrayList);
+            });
+        }
+    }
 
     @Insert
-    Single<Long> insert(CashBoxInfo cashBoxInfo);
+    abstract Single<Long> insert(CashBoxInfo cashBoxInfo);
 
     @Update
-    Completable update(CashBoxInfo cashBoxInfo);
+    abstract Completable update(CashBoxInfo cashBoxInfo);
 
     @Delete
-    Completable delete(CashBoxInfo cashBoxInfo);
+    abstract Completable delete(CashBoxInfo cashBoxInfo);
 
     @Query("DELETE FROM cashBoxesInfo_table")
-    Single<Integer> deleteAll();
+    abstract Single<Integer> deleteAll();
 
 //    @Query("UPDATE cashBoxesInfo_table SET orderPos=:newPos WHERE name=:name")
 //    abstract void updateOrder(String name, int newPos);

@@ -14,6 +14,10 @@ import static androidx.room.ColumnInfo.NOCASE;
 @Entity(tableName = "cashBoxesInfo_table", indices = {@Index(value = "name", unique = true)})
 public class CashBoxInfo implements Cloneable {
     @Ignore
+    public static final int NO_CASHBOX = 0;
+    @Ignore
+    public static final long NO_ORDER_ID = 0;
+    @Ignore
     public static final int MAX_LENGTH_NAME = 15;
 
     @PrimaryKey(autoGenerate = true)
@@ -77,9 +81,25 @@ public class CashBoxInfo implements Cloneable {
     }
 
     @Override
+    public String toString() {
+        return "CashBoxInfo{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", orderId=" + orderId +
+                '}';
+    }
+
+    /**
+     * Clones the object without conserving the id
+     * @return the new object, product of the cloning
+     */
+    @Override
     public CashBoxInfo clone() {
         try {
-            return (CashBoxInfo) super.clone();
+            CashBoxInfo cashBoxInfo = (CashBoxInfo) super.clone();
+            cashBoxInfo.id = 0;
+            cashBoxInfo.orderId = NO_ORDER_ID;
+            return cashBoxInfo;
         } catch (CloneNotSupportedException e) { // won't happen
             LogUtil.error("PruebaCashBoxInfo","Cloning error",e);
             return null;

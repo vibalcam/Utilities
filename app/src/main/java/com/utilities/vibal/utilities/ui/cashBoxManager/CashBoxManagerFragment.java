@@ -2,6 +2,7 @@ package com.utilities.vibal.utilities.ui.cashBoxManager;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.sqlite.SQLiteConstraintException;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -22,9 +23,7 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.ActionMode;
-import androidx.appcompat.widget.ShareActionProvider;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
-import androidx.core.view.MenuItemCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.preference.PreferenceManager;
@@ -34,7 +33,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.utilities.vibal.utilities.R;
@@ -56,7 +54,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.OnTouch;
-import io.reactivex.Scheduler;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
@@ -129,10 +126,10 @@ public class CashBoxManagerFragment extends Fragment {
         viewModel = ViewModelProviders.of(Objects.requireNonNull(activity)).get(CashBoxViewModel.class);
         viewModel.getCashBoxesInfo().observe(getViewLifecycleOwner(), infoWithCashes -> {
             adapter.submitList(infoWithCashes);
-            Toast.makeText(getContext(), "on changed", Toast.LENGTH_LONG).show(); //TODO
+            LogUtil.debug(TAG, "on changed");
         });
 
-        //Set Toolbar as ActionBar TODO
+        //Set Toolbar as ActionBar
         activity.setSupportActionBar(getView().findViewById(R.id.toolbarCBManager));
         ActionBar actionBar = activity.getSupportActionBar();
         if(actionBar!=null) {
@@ -177,13 +174,15 @@ public class CashBoxManagerFragment extends Fragment {
         if (action == ACTION_ADD_CASHBOX)
             showAddDialog();
         else if(action== ACTION_DETAILS)
-            swapToItemFragment(intent.getIntExtra(EXTRA_CASHBOX_ID, CashBox.Entry.NO_CASHBOX));
+            swapToItemFragment(intent.getIntExtra(EXTRA_CASHBOX_ID, CashBoxInfo.NO_CASHBOX));
     }
 
     private void swapToItemFragment(long cashBoxId) {
         LogUtil.debug("Prueba",""+cashBoxId);
-        viewModel.setCurrentCashBoxId(cashBoxId);
+        if(cashBoxId== CashBoxInfo.NO_CASHBOX)
+            return;
 
+        viewModel.setCurrentCashBoxId(cashBoxId);
         getFragmentManager()
                 .beginTransaction()
                 .setCustomAnimations(R.anim.enter_from_right,R.anim.exit_to_right,
@@ -191,11 +190,6 @@ public class CashBoxManagerFragment extends Fragment {
                 .addToBackStack(null)
                 .replace(R.id.container,CashBoxItemFragment.newInstance())
                 .commit();
-    }
-
-    @OnClick(R.id.fabCBManager)
-    void onFabClicked() {
-        showAddDialog();
     }
 
     private void deleteAll() {
@@ -216,7 +210,8 @@ public class CashBoxManagerFragment extends Fragment {
                 .show();
     }
 
-    private void showAddDialog() {
+    @OnClick(R.id.fabCBManager)
+    void showAddDialog() {
         if (adapter.actionMode != null)
             adapter.actionMode.finish();
 
@@ -277,7 +272,7 @@ public class CashBoxManagerFragment extends Fragment {
 
         private final NumberFormat currencyFormat = NumberFormat.getCurrencyInstance();
         private OnStartDragListener onStartDragListener;
-        private ShareActionProvider shareActionProvider;
+//        private ShareActionProvider shareActionProvider;
         private CashBoxManagerRecyclerAdapter.ViewHolder selectedViewHolder = null;
 
         // Contextual toolbar
@@ -290,14 +285,14 @@ public class CashBoxManagerFragment extends Fragment {
                 // Notify adapter to show images for dragging
                 notifyItemRangeChanged(0, CashBoxManagerRecyclerAdapter.this.getItemCount());
 
-                // Set up ShareActionProvider
-                shareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menu.findItem(R.id.action_manager_share));
-                shareActionProvider.setOnShareTargetSelectedListener((ShareActionProvider source, Intent intent) -> {
-                    mode.finish();
-                    return false;
-                });
-                if (selectedViewHolder != null)
-                    updateShareIntent(selectedViewHolder.getAdapterPosition());
+//                // Set up ShareActionProvider
+//                shareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menu.findItem(R.id.action_manager_share));
+//                shareActionProvider.setOnShareTargetSelectedListener((ShareActionProvider source, Intent intent) -> {
+//                    mode.finish();
+//                    return false;
+//                });
+//                if (selectedViewHolder != null)
+//                    updateShareIntent(selectedViewHolder.getAdapterPosition());
                 return true;
             }
 
@@ -322,7 +317,7 @@ public class CashBoxManagerFragment extends Fragment {
             @Override
             public void onDestroyActionMode(ActionMode mode) {
                 actionMode = null;
-                shareActionProvider = null;
+//                shareActionProvider = null;
                 setSelectedViewHolder(null);
                 // Notify adapter to hide images for dragging
                 notifyItemRangeChanged(0, CashBoxManagerRecyclerAdapter.this.getItemCount());
@@ -394,23 +389,47 @@ public class CashBoxManagerFragment extends Fragment {
         }
 
         @Override
-        public void onItemDelete(int position) {
+        public void onItemDelete(int position) { //TODO
             if (actionMode != null)
                 actionMode.finish();
-            CashBox.InfoWithCash deletedCashBoxInfo = getItem(position);
-            viewModel.addDisposable(viewModel.deleteCashBoxInfo(deletedCashBoxInfo)
-                            .subscribeOn(Schedulers.io())
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .subscribe(() -> Snackbar.make(coordinatorLayout,
-                                    getString(R.string.snackbarEntriesDeleted, 1),
-                                    Snackbar.LENGTH_LONG)
-                                    .setAction(R.string.undo,v ->
-                                            viewModel.addDisposable(
-                                                    viewModel.addCashBoxInfo(deletedCashBoxInfo)
-                                                            .subscribeOn(Schedulers.io())
-                                                            .observeOn(AndroidSchedulers.mainThread())
-                                                            .subscribe()))
-                                    .show()));
+            getCurrentList().add(getCurrentList().get(0));
+//            CashBox.InfoWithCash deletedCashBoxInfo = getCurrentList().remove(position);
+//            submitList(getCurrentList());
+//            Snackbar.make(coordinatorLayout,
+//                    getString(R.string.snackbarEntriesDeleted, 1), Snackbar.LENGTH_LONG)
+//                    .setAction(R.string.undo, v -> {
+//                        getCurrentList().add(deletedCashBoxInfo);
+//                        submitList(getCurrentList());
+//                    })
+//                    .addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
+//                        @Override
+//                        public void onDismissed(Snackbar transientBottomBar, int event) {
+//                            super.onDismissed(transientBottomBar, event);
+//
+//                            LogUtil.debug(TAG, "Delete CashBox");
+////                            if (event != DISMISS_EVENT_ACTION)
+////                                viewModel.addDisposable(viewModel.deleteCashBoxInfo(deletedCashBoxInfo)
+////                                        .subscribeOn(Schedulers.io())
+////                                        .observeOn(AndroidSchedulers.mainThread())
+////                                        .subscribe());
+//                        }
+//                    }).show();
+
+
+//            CashBox.InfoWithCash deletedCashBoxInfo = getItem(position);
+//            viewModel.addDisposable(viewModel.deleteCashBoxInfo(deletedCashBoxInfo)
+//                            .subscribeOn(Schedulers.io())
+//                            .observeOn(AndroidSchedulers.mainThread())
+//                            .subscribe(() -> Snackbar.make(coordinatorLayout,
+//                                    getString(R.string.snackbarEntriesDeleted, 1),
+//                                    Snackbar.LENGTH_LONG)
+//                                    .setAction(R.string.undo,v ->
+//                                            viewModel.addDisposable(
+//                                                    viewModel.addCashBoxInfo(deletedCashBoxInfo)
+//                                                            .subscribeOn(Schedulers.io())
+//                                                            .observeOn(AndroidSchedulers.mainThread())
+//                                                            .subscribe()))
+//                                    .show()));
         }
 
         @Override
@@ -469,63 +488,99 @@ public class CashBoxManagerFragment extends Fragment {
         }
 
         private void showCloneDialog(int position) {
-            viewModel.addDisposable(viewModel.getCashBox(getItem(position).getCashBoxInfo().getId())
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(cashBox -> {
-                        AlertDialog dialogClone = inputNameDialog("Clone CashBox", R.string.cashBox_cloneButton);
-                        dialogClone.setOnShowListener(dialog -> {
-                            Button positive = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
-                            TextInputEditText inputName = ((AlertDialog) dialog).findViewById(R.id.inputTextChangeName);
-                            TextInputLayout layoutName = ((AlertDialog) dialog).findViewById(R.id.inputLayoutChangeName);
+            CashBoxInfo cashBoxInfo = getItem(position).getCashBoxInfo();
 
-                            Util.showKeyboard(getContext(), inputName);
-                            inputName.setMaxLines(CashBoxInfo.MAX_LENGTH_NAME);
-                            inputName.setText(cashBox.getInfoWithCash().getCashBoxInfo().getName());
-                            layoutName.setCounterMaxLength(CashBoxInfo.MAX_LENGTH_NAME);
+            AlertDialog dialogClone = inputNameDialog("Clone CashBox", R.string.cashBox_cloneButton);
+            dialogClone.setOnShowListener(dialog -> {
+                Button positive = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
+                TextInputEditText inputName = ((AlertDialog) dialog).findViewById(R.id.inputTextChangeName);
+                TextInputLayout layoutName = ((AlertDialog) dialog).findViewById(R.id.inputLayoutChangeName);
 
-                            positive.setOnClickListener((View v1) -> { //TODO
-                                try {
-                                    viewModel.addDisposable(viewModel.duplicateCashBox(
-                                            cashBox,inputName.getText().toString())
-                                            .subscribeOn(Schedulers.io())
-                                            .observeOn(AndroidSchedulers.mainThread())
-                                            .subscribe(() -> {
-                                                dialog.dismiss();
-                                                Toast.makeText(getContext(), "Entry cloned",
-                                                        Toast.LENGTH_SHORT).show();
-                                            },throwable -> {
-                                                layoutName.setError(getString(R.string.nameInUse));
-                                                inputName.selectAll();
-                                                Util.showKeyboard(getContext(), inputName);
-                                            }));
-                                } catch (IllegalArgumentException e) {
-                                    layoutName.setError(e.getMessage());
-                                    inputName.selectAll();
-                                    Util.showKeyboard(getContext(), inputName);
-                                }
+                Util.showKeyboard(getContext(), inputName);
+                inputName.setMaxLines(CashBoxInfo.MAX_LENGTH_NAME);
+                inputName.setText(cashBoxInfo.getName());
+                layoutName.setCounterMaxLength(CashBoxInfo.MAX_LENGTH_NAME);
+
+                positive.setOnClickListener((View v1) -> { //TODO
+                    viewModel.addDisposable(viewModel.duplicateCashBox(cashBoxInfo.getId(),
+                            inputName.getText().toString())
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(() -> {
+                                dialog.dismiss();
+                                Toast.makeText(getContext(), "Entry Cloned",
+                                        Toast.LENGTH_SHORT).show();
+                            },throwable -> {
+                                LogUtil.error(TAG,"Clone: ",throwable);
+                                if(throwable instanceof SQLiteConstraintException)
+                                    layoutName.setError("Name in use");
+                                else
+                                    layoutName.setError(throwable.getMessage());
+                                inputName.selectAll();
+                                Util.showKeyboard(getContext(), inputName);
+                            }));
+                });
+            });
+            dialogClone.show();
+
+
+//            viewModel.addDisposable(viewModel.getCashBox(getItem(position).getCashBoxInfo().getId())
+//                    .subscribeOn(Schedulers.io())
+//                    .observeOn(AndroidSchedulers.mainThread())
+//                    .subscribe(cashBox -> {
+//                        AlertDialog dialogClone = inputNameDialog("Clone CashBox", R.string.cashBox_cloneButton);
+//                        dialogClone.setOnShowListener(dialog -> {
+//                            Button positive = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
+//                            TextInputEditText inputName = ((AlertDialog) dialog).findViewById(R.id.inputTextChangeName);
+//                            TextInputLayout layoutName = ((AlertDialog) dialog).findViewById(R.id.inputLayoutChangeName);
 //
+//                            Util.showKeyboard(getContext(), inputName);
+//                            inputName.setMaxLines(CashBoxInfo.MAX_LENGTH_NAME);
+//                            inputName.setText(cashBox.getInfoWithCash().getCashBoxInfo().getName());
+//                            layoutName.setCounterMaxLength(CashBoxInfo.MAX_LENGTH_NAME);
+//
+//                            positive.setOnClickListener((View v1) -> { //TODO
 //                                try {
-//                                    if(true) {
-////                        notifyItemInserted(position + 1);
-//                                        dialog.dismiss();
-//                                        Toast.makeText(getContext(), "Entry cloned", Toast.LENGTH_SHORT).show();
-//                                    } else {
-//                                        layoutName.setError(getString(R.string.nameInUse));
-//                                        inputName.selectAll();
-//                                        Util.showKeyboard(getContext(), inputName);
-//                                    }
+//                                    viewModel.addDisposable(viewModel.duplicateCashBox(
+//                                            cashBox,inputName.getText().toString())
+//                                            .subscribeOn(Schedulers.io())
+//                                            .observeOn(AndroidSchedulers.mainThread())
+//                                            .subscribe(() -> {
+//                                                dialog.dismiss();
+//                                                Toast.makeText(getContext(), "Entry cloned",
+//                                                        Toast.LENGTH_SHORT).show();
+//                                            },throwable -> {
+//                                                layoutName.setError(getString(R.string.nameInUse));
+//                                                inputName.selectAll();
+//                                                Util.showKeyboard(getContext(), inputName);
+//                                            }));
 //                                } catch (IllegalArgumentException e) {
 //                                    layoutName.setError(e.getMessage());
 //                                    inputName.selectAll();
 //                                    Util.showKeyboard(getContext(), inputName);
 //                                }
-                            });
-                        });
-                        dialogClone.show();
-                    }, throwable ->
-                            Toast.makeText(getContext(), "Error while loading CashBox",
-                                    Toast.LENGTH_SHORT).show()));
+////
+////                                try {
+////                                    if(true) {
+//////                        notifyItemInserted(position + 1);
+////                                        dialog.dismiss();
+////                                        Toast.makeText(getContext(), "Entry cloned", Toast.LENGTH_SHORT).show();
+////                                    } else {
+////                                        layoutName.setError(getString(R.string.nameInUse));
+////                                        inputName.selectAll();
+////                                        Util.showKeyboard(getContext(), inputName);
+////                                    }
+////                                } catch (IllegalArgumentException e) {
+////                                    layoutName.setError(e.getMessage());
+////                                    inputName.selectAll();
+////                                    Util.showKeyboard(getContext(), inputName);
+////                                }
+//                            });
+//                        });
+//                        dialogClone.show();
+//                    }, throwable ->
+//                            Toast.makeText(getContext(), "Error while loading CashBox",
+//                                    Toast.LENGTH_SHORT).show()));
         }
 
         private void setSelectedViewHolder(CashBoxManagerRecyclerAdapter.ViewHolder viewHolder) {
@@ -533,15 +588,15 @@ public class CashBoxManagerFragment extends Fragment {
                 selectedViewHolder.itemView.setBackgroundResource(R.color.colorRVBackgroundCashBox);
             if (viewHolder != null) {
                 viewHolder.itemView.setBackgroundResource(R.color.colorRVSelectedCashBox);
-                updateShareIntent(viewHolder.getAdapterPosition());
+//                updateShareIntent(viewHolder.getAdapterPosition());
             }
             selectedViewHolder = viewHolder;
         }
 
-        private void updateShareIntent(int index) { //TODO
+//        private void updateShareIntent(int index) {
 //            if (shareActionProvider != null)
 //                shareActionProvider.setShareIntent(Util.getShareIntent(getItem(index)));
-        }
+//        }
 
         boolean showActionMode() {
             if (actionMode != null)
