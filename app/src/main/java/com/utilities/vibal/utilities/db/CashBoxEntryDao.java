@@ -32,6 +32,11 @@ public interface CashBoxEntryDao {
     @Update
     Completable update(CashBox.Entry entry);
 
+    @Query("UPDATE entries_table " +
+            "SET amount=:amount,info=:info " +
+            "WHERE id=:id")
+    Completable modify(long id, double amount, String info);
+
     @Query("DELETE FROM entries_table WHERE cashBoxId=:id")
     Single<Integer> deleteAll(long id);
 }

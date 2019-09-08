@@ -10,6 +10,7 @@ import com.utilities.vibal.utilities.R;
 public class CashBoxManagerActivity extends AppCompatActivity {
     public static final String EXTRA_CASHBOX_ID = "com.utilities.vibal.utilities.ui.cashBoxManager.cashBoxIndex";
     public static final String EXTRA_ACTION = "com.utilities.vibal.utilities.ui.cashBoxManager.action";
+    public static final int NO_ACTION = 0;
     public static final int ACTION_ADD_CASHBOX = 1;
     public static final int ACTION_DETAILS = 2;
     private static final String TAG = "PruebaCBMActivity";

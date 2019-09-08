@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 
+import com.utilities.vibal.utilities.db.CashBoxInfo;
 import com.utilities.vibal.utilities.db.CashBoxRepository;
 import com.utilities.vibal.utilities.util.LogUtil;
 
@@ -73,8 +74,8 @@ public class CashBoxViewModel extends AndroidViewModel {
 
     public Completable changeCashBoxName(CashBox.InfoWithCash cashBoxInfo, String newName)
             throws IllegalArgumentException {
-        CashBox.InfoWithCash changedCashBoxInfo = cashBoxInfo.clone();
-        changedCashBoxInfo.getCashBoxInfo().setName(newName);
+        CashBoxInfo changedCashBoxInfo = cashBoxInfo.getCashBoxInfo().clone();
+        changedCashBoxInfo.setName(newName);
         return repository.updateCashBoxInfo(changedCashBoxInfo);
     }
 
@@ -87,19 +88,19 @@ public class CashBoxViewModel extends AndroidViewModel {
     }
 
     public Completable duplicateCashBox(CashBox cashBox, String newName) {
-        CashBox cashBoxClone = cashBox.clone();
+        CashBox cashBoxClone = cashBox.cloneContents();
         cashBoxClone.setName(newName);
         return addCashBox(cashBoxClone);
     }
 
     public Completable duplicateCashBox(long cashBoxId, String newName) {
         return repository.getCashBox(cashBoxId).flatMapCompletable(cashBox -> {
-            CashBox cashBoxClone = cashBox.clone();
+            CashBox cashBoxClone = cashBox.cloneContents();
             cashBoxClone.setName(newName);
             return addCashBox(cashBoxClone);
         });
 
-//        CashBox cashBoxClone = cashBox.clone();
+//        CashBox cashBoxClone = cashBox.cloneContents();
 //        cashBoxClone.setName(newName);
 //        return addCashBox(cashBoxClone);
     }
@@ -138,6 +139,10 @@ public class CashBoxViewModel extends AndroidViewModel {
 
     public Completable updateEntry(CashBox.Entry entry) {
         return repository.updateEntry(entry);
+    }
+
+    public Completable modifyEntry(CashBox.Entry entry, double amount, String info) {
+        return repository.modifyEntry(entry.getId(), amount, info);
     }
 
     public  Completable deleteEntry(CashBox.Entry entry) {

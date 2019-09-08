@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.utilities.vibal.utilities.R;
+import com.utilities.vibal.utilities.util.LogUtil;
 
 import static androidx.recyclerview.widget.ItemTouchHelper.ACTION_STATE_SWIPE;
 import static androidx.recyclerview.widget.ItemTouchHelper.DOWN;
@@ -19,6 +20,7 @@ import static androidx.recyclerview.widget.ItemTouchHelper.RIGHT;
 import static androidx.recyclerview.widget.ItemTouchHelper.UP;
 
 public class CashBoxSwipeController extends ItemTouchHelper.Callback {
+    private static final String TAG = "PruebaSwipeController";
     private static final float SWIPE_THRESHOLD = 0.4f;
 
     private final boolean swipeLeftDelete;
@@ -53,7 +55,8 @@ public class CashBoxSwipeController extends ItemTouchHelper.Callback {
             fromIndex = source.getAdapterPosition();
         toIndex = target.getAdapterPosition();
 
-        adapter.onItemMove(source.getAdapterPosition(), target.getAdapterPosition());
+        LogUtil.debug(TAG, "Move from " + source.getAdapterPosition() + " to " + toIndex);
+        adapter.onItemMove(source.getAdapterPosition(), toIndex);
         return true;
     }
 
@@ -109,8 +112,10 @@ public class CashBoxSwipeController extends ItemTouchHelper.Callback {
     public void clearView(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
         super.clearView(recyclerView, viewHolder);
 
-        if (fromIndex != -1 && toIndex != -1) // if there has been a move motion
+        if (fromIndex != -1 && toIndex != -1) { // if there has been a move motion
             adapter.onItemDrop(fromIndex, toIndex);
+            LogUtil.debug(TAG, "Drop from " + fromIndex + " to " + toIndex);
+        }
         fromIndex = -1;
         toIndex = -1;
     }

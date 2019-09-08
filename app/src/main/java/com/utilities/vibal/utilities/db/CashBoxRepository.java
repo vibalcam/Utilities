@@ -52,11 +52,6 @@ public class CashBoxRepository {
                     liveDataMerger.setValue(cashBox);
                 });
 
-//        CashBox cashBox = liveDataMerger.getValue();
-//        cashBox.setInfoWithCash(new CashBox.InfoWithCash("probando",10));
-//        liveDataMerger.postValue(cashBox);
-//        cashBoxInfoWithCashLiveData.postValue(new CashBox.InfoWithCash("probando",10));
-
         return liveDataMerger;
     }
 
@@ -79,16 +74,16 @@ public class CashBoxRepository {
      * @param cashBoxInfo the cashBoxInfo which orderId is going to be configured
      */
     private void configureOrderId(@NonNull CashBoxInfo cashBoxInfo) {
-        List<CashBox.InfoWithCash> temp = cashBoxesInfo.getValue();
         if(cashBoxInfo.getOrderId()==NO_ORDER_ID) {
+            List<CashBox.InfoWithCash> temp = cashBoxesInfo.getValue();
             long orderId = temp == null || temp.isEmpty() ? NO_ORDER_ID + 1 :
                     temp.get(0).getCashBoxInfo().getOrderId() + 1;
             cashBoxInfo.setOrderId(orderId);
         }
     }
 
-    public Completable updateCashBoxInfo(CashBox.InfoWithCash cashBoxInfo) {
-        return cashBoxDao.update(cashBoxInfo.getCashBoxInfo());
+    public Completable updateCashBoxInfo(CashBoxInfo cashBoxInfo) {
+        return cashBoxDao.update(cashBoxInfo);
     }
 
     public Completable moveCashBoxInfo(CashBox.InfoWithCash infoWithCash, long toOrderPos) {
@@ -114,6 +109,10 @@ public class CashBoxRepository {
 
     public Completable updateEntry(CashBox.Entry entry) {
         return cashBoxEntryDao.update(entry);
+    }
+
+    public Completable modifyEntry(long id, double amount, String info) {
+        return cashBoxEntryDao.modify(id,amount,info);
     }
 
     public Completable deleteEntry(CashBox.Entry entry) {

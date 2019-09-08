@@ -90,16 +90,25 @@ public class CashBoxInfo implements Cloneable {
     }
 
     /**
-     * Clones the object without conserving the id
+     * Clones the object without conserving the id and the orderId
      * @return the new object, product of the cloning
      */
+    public CashBoxInfo cloneContents() {
+            CashBoxInfo cashBoxInfo = clone();
+            cashBoxInfo.id = NO_CASHBOX;
+            cashBoxInfo.orderId = NO_ORDER_ID;
+            return cashBoxInfo;
+    }
+
+    /**
+     * Clones the object
+     * @return the new object, product of the cloning
+     */
+    @NonNull
     @Override
     public CashBoxInfo clone() {
         try {
-            CashBoxInfo cashBoxInfo = (CashBoxInfo) super.clone();
-            cashBoxInfo.id = 0;
-            cashBoxInfo.orderId = NO_ORDER_ID;
-            return cashBoxInfo;
+            return (CashBoxInfo) super.clone();
         } catch (CloneNotSupportedException e) { // won't happen
             LogUtil.error("PruebaCashBoxInfo","Cloning error",e);
             return null;

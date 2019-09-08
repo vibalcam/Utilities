@@ -1,5 +1,6 @@
 package com.utilities.vibal.utilities.models;
 
+import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -14,6 +15,7 @@ import androidx.room.Relation;
 
 import com.utilities.vibal.utilities.db.CashBoxInfo;
 import com.utilities.vibal.utilities.util.Converters;
+import com.utilities.vibal.utilities.util.DiffDbUsable;
 import com.utilities.vibal.utilities.util.LogUtil;
 
 import java.text.DateFormat;
@@ -95,10 +97,6 @@ public class CashBox implements Parcelable {
         return entries;
     }
 
-    public Entry getEntry(int index) {
-        return entries.get(index);
-    }
-
     public void setInfoWithCash(InfoWithCash infoWithCash) {
         this.infoWithCash = infoWithCash;
     }
@@ -127,15 +125,14 @@ public class CashBox implements Parcelable {
     }
 
     /**
-     * Deep clone of CashBox
+     * Deep cloneContents of CashBox
      */
-    @Override
     @SuppressWarnings("CloneDoesntCallSuperClone")
-    public CashBox clone() {
+    public CashBox cloneContents() {
         List<Entry> entryList = new ArrayList<>();
         for(Entry entry:entries)
-            entryList.add(entry.clone());
-        return new CashBox(infoWithCash.clone(),entryList);
+            entryList.add(entry.cloneContents());
+        return new CashBox(infoWithCash.cloneContents(),entryList);
     }
 
     @Override
@@ -162,7 +159,9 @@ public class CashBox implements Parcelable {
         return infoWithCash.hashCode();
     }
 
-    public static class InfoWithCash implements Parcelable, Cloneable {
+    public static class InfoWithCash implements Parcelable, Cloneable, DiffDbUsable<InfoWithCash> {
+        private static final String DIFF_CASH = "cash";
+        private static final String DIFF_NAME = "name";
         public static final Parcelable.Creator<InfoWithCash> CREATOR = new Parcelable.Creator<InfoWithCash>() {
             @Override
             public InfoWithCash createFromParcel(Parcel source) {
@@ -229,10 +228,8 @@ public class CashBox implements Parcelable {
                     '}';
         }
 
-        @Override
-        //@SuppressWarnings("CloneDoesntCallSuperClone")
-        public InfoWithCash clone() {
-            return new InfoWithCash(cashBoxInfo.clone(),cash);
+        public InfoWithCash cloneContents() {
+            return new InfoWithCash(cashBoxInfo.cloneContents(),cash);
         }
 
         // Implementation of Parcelable
@@ -247,14 +244,45 @@ public class CashBox implements Parcelable {
             dest.writeLong(cashBoxInfo.getId());
             dest.writeDouble(cash);
         }
+
+        //Implement DiffDbUsable
+        @Override
+        public long getId() {
+            return cashBoxInfo.getId();
+        }
+
+        @Override
+        public boolean areContentsTheSame(InfoWithCash newItem) {
+            return this.cash==newItem.cash && this.equals(newItem);
+        }
+
+        @Override
+        public Bundle getChangePayload(InfoWithCash newItem) {
+            Bundle diff = new Bundle();
+            if(this.cash!=newItem.cash)
+                diff.putDouble(DIFF_CASH,newItem.cash);
+            if(!this.equals(newItem))
+                diff.putString(DIFF_NAME,newItem.cashBoxInfo.getName());
+
+            if(diff.size()==0)
+                return null;
+            else
+                return diff;
+        }
     }
 
-    // Immutable object in orderPos for clone to be easier
+    // Immutable object in orderPos for cloneContents to be easier
     // When modifying directly, watch out, since an entry can be in cloned cashBoxes (no set methods)
     @Entity(tableName = "entries_table", foreignKeys = @ForeignKey(entity = CashBoxInfo.class,
             parentColumns = "id", childColumns = "cashBoxId",onDelete = CASCADE, onUpdate = CASCADE),
             indices = {@Index(value = "cashBoxId")})
-    public static class Entry implements Parcelable, Cloneable {
+    public static class Entry implements Parcelable, Cloneable, DiffDbUsable<Entry> {
+        @Ignore
+        private static final String DIFF_AMOUNT = "amount";
+        @Ignore
+        private static final String DIFF_DATE = "date";
+        @Ignore
+        private static final String DIFF_INFO = "info";
         @Ignore
         public static final Parcelable.Creator<Entry> CREATOR = new Parcelable.Creator<Entry>() {
             @Override
@@ -327,7 +355,7 @@ public class CashBox implements Parcelable {
             if(this.cashBoxId==cashBoxId)
                 return this;
 
-            Entry entry = this.cashBoxId!= CashBoxInfo.NO_CASHBOX ? this.clone() : this;
+            Entry entry = this.cashBoxId!= CashBoxInfo.NO_CASHBOX ? this.cloneContents() : this;
             entry.cashBoxId = cashBoxId;
             return entry;
         }
@@ -348,15 +376,25 @@ public class CashBox implements Parcelable {
         }
 
         /**
-         * Clones the object without conserving the id
+         * Clones the object without conserving the id and the cashBoxId
          * @return the new object, product of the cloning
          */
+        public Entry cloneContents() {
+                Entry entry = clone();
+                entry.id = 0;
+                entry.cashBoxId = CashBoxInfo.NO_CASHBOX;
+                return entry;
+        }
+
+        /**
+         * Clones the object conserving the id
+         * @return the new object, product of the cloning
+         */
+        @NonNull
         @Override
         public Entry clone() {
             try {
-                Entry entry = (Entry) super.clone();
-                entry.id = 0;
-                return entry;
+                return (Entry) super.clone();
             } catch (CloneNotSupportedException e) { // won't happen
                 LogUtil.error("PruebaCashBoxInfo","Cloning error",e);
                 return null;
@@ -376,6 +414,29 @@ public class CashBox implements Parcelable {
             dest.writeString(info);
             dest.writeLong(Converters.calendarToTimestamp(date));
             dest.writeDouble(amount);
+        }
+
+        //Implements DiffDbUsable
+        @Override
+        public boolean areContentsTheSame(Entry newItem) {
+            return this.amount==newItem.amount && this.date.equals(newItem.date)
+                    && this.info.equals(newItem.info);
+        }
+
+        @Override
+        public Bundle getChangePayload(Entry newItem) {
+            Bundle diff = new Bundle();
+            if(this.amount!=newItem.amount)
+                diff.putDouble(DIFF_AMOUNT,newItem.amount);
+            if(!this.date.equals(newItem.date))
+                diff.putLong(DIFF_DATE, Converters.calendarToTimestamp(newItem.date));
+            if(!this.info.equals(newItem.info))
+                diff.putString(DIFF_INFO,newItem.info);
+
+            if(diff.size()==0)
+                return null;
+            else
+                return diff;
         }
     }
 }

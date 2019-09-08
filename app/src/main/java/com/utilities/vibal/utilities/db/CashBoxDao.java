@@ -73,7 +73,9 @@ public abstract class CashBoxDao {
             "WHEN id=:cashBoxId THEN :toOrderPos " +
             "WHEN orderId BETWEEN :fromOrderPos AND :toOrderPos THEN orderId-1 " +
             "WHEN orderId BETWEEN :toOrderPos AND :fromOrderPos THEN orderId+1 " +
-            "ELSE orderId END")
+            "ELSE orderId END " +
+            "WHERE orderId BETWEEN :fromOrderPos AND :toOrderPos " +
+            "OR orderId BETWEEN :toOrderPos AND :fromOrderPos")
     abstract Completable moveCashBoxToOrderPos(long cashBoxId, long fromOrderPos, long toOrderPos);
 
 //    @Transaction

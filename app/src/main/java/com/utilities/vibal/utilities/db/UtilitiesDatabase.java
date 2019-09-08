@@ -34,6 +34,7 @@ public abstract class UtilitiesDatabase extends RoomDatabase {
         return INSTANCE;
     }
 
+    //TODO change from past to actual version
     private static RoomDatabase.Callback roomCallback = new RoomDatabase.Callback() {
         @Override
         public void onCreate(@NonNull SupportSQLiteDatabase db) {

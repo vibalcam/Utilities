@@ -7,7 +7,7 @@
         app:showAsAction="ifRoom"
         android:title="@string/action_reset"/>
     <item
-        android:id="@+id/action_manager_reorder"
+        android:id="@+id/action_manager_edit"
         android:title="@string/menu_contextualToolbar"
         android:icon="@drawable/ic_edit_white_24dp"
         app:showAsAction="ifRoom" />

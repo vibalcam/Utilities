@@ -30,9 +30,10 @@ import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.snackbar.BaseTransientBottomBar;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.utilities.vibal.utilities.R;
@@ -43,17 +44,21 @@ import com.utilities.vibal.utilities.ui.settings.SettingsActivity;
 import com.utilities.vibal.utilities.ui.swipeController.CashBoxAdapterSwipable;
 import com.utilities.vibal.utilities.ui.swipeController.CashBoxSwipeController;
 import com.utilities.vibal.utilities.ui.swipeController.OnStartDragListener;
+import com.utilities.vibal.utilities.util.DiffCallback;
 import com.utilities.vibal.utilities.util.LogUtil;
 import com.utilities.vibal.utilities.util.Util;
 
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Objects;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.OnTouch;
+import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
@@ -61,21 +66,9 @@ import static com.utilities.vibal.utilities.ui.cashBoxManager.CashBoxManagerActi
 import static com.utilities.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity.ACTION_DETAILS;
 import static com.utilities.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity.EXTRA_ACTION;
 import static com.utilities.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity.EXTRA_CASHBOX_ID;
+import static com.utilities.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity.NO_ACTION;
 
 public class CashBoxManagerFragment extends Fragment {
-    //DiffUtil Callback
-    private static final DiffUtil.ItemCallback<CashBox.InfoWithCash> DIFF_CALLBACK = new DiffUtil.ItemCallback<CashBox.InfoWithCash>() {
-        @Override
-        public boolean areItemsTheSame(@NonNull CashBox.InfoWithCash oldItem, @NonNull CashBox.InfoWithCash newItem) {
-            return oldItem.getCashBoxInfo().getId()==newItem.getCashBoxInfo().getId();
-        }
-
-        @Override
-        public boolean areContentsTheSame(@NonNull CashBox.InfoWithCash oldItem, @NonNull CashBox.InfoWithCash newItem) {
-            return oldItem.getCash() == newItem.getCash() &&
-                    oldItem.equals(newItem);
-        }
-    };
     private static final String TAG = "PruebaManagerFragment";
 
     @BindView(R.id.lyCBM) CoordinatorLayout coordinatorLayout;
@@ -83,7 +76,7 @@ public class CashBoxManagerFragment extends Fragment {
     private CashBoxViewModel viewModel;
     private CashBoxManagerRecyclerAdapter adapter;
 
-    public static CashBoxManagerFragment newInstance() {
+    static CashBoxManagerFragment newInstance() {
         return new CashBoxManagerFragment();
     }
 
@@ -121,13 +114,12 @@ public class CashBoxManagerFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        AppCompatActivity activity = (AppCompatActivity) getActivity();
+        AppCompatActivity activity = (AppCompatActivity) Objects.requireNonNull(getActivity());
         // Initialize data
-        viewModel = ViewModelProviders.of(Objects.requireNonNull(activity)).get(CashBoxViewModel.class);
-        viewModel.getCashBoxesInfo().observe(getViewLifecycleOwner(), infoWithCashes -> {
-            adapter.submitList(infoWithCashes);
-            LogUtil.debug(TAG, "on changed");
-        });
+        //Todo deprecated
+        viewModel = ViewModelProviders.of(activity).get(CashBoxViewModel.class);
+        viewModel.getCashBoxesInfo().observe(getViewLifecycleOwner(), infoWithCashes ->
+            adapter.submitList(infoWithCashes));
 
         //Set Toolbar as ActionBar
         activity.setSupportActionBar(getView().findViewById(R.id.toolbarCBManager));
@@ -157,8 +149,9 @@ public class CashBoxManagerFragment extends Fragment {
                 Util.getHelpDialog(getContext(), R.string.cashBoxManager_helpTitle,
                         R.string.cashBoxManager_help).show();
                 return true;
-            case R.id.action_manager_reorder:
-                return adapter.showActionMode();
+            case R.id.action_manager_edit:
+                adapter.showActionMode();
+                return true;
             case R.id.action_manager_settings:
                 startActivity(new Intent(getContext(), SettingsActivity.class));
                 return true;
@@ -169,7 +162,7 @@ public class CashBoxManagerFragment extends Fragment {
 
     private void doIntentAction() {
         Intent intent = getActivity().getIntent();
-        int action = intent==null ? 0 : intent.getIntExtra(EXTRA_ACTION,0);
+        int action = intent==null ? NO_ACTION : intent.getIntExtra(EXTRA_ACTION,NO_ACTION);
 
         if (action == ACTION_ADD_CASHBOX)
             showAddDialog();
@@ -178,8 +171,8 @@ public class CashBoxManagerFragment extends Fragment {
     }
 
     private void swapToItemFragment(long cashBoxId) {
-        LogUtil.debug("Prueba",""+cashBoxId);
-        if(cashBoxId== CashBoxInfo.NO_CASHBOX)
+        LogUtil.debug(TAG,"Selected "+cashBoxId);
+        if(cashBoxId==CashBoxInfo.NO_CASHBOX)
             return;
 
         viewModel.setCurrentCashBoxId(cashBoxId);
@@ -266,7 +259,7 @@ public class CashBoxManagerFragment extends Fragment {
         dialog.show();
     }
 
-    public class CashBoxManagerRecyclerAdapter extends ListAdapter<CashBox.InfoWithCash, CashBoxManagerRecyclerAdapter.ViewHolder> implements CashBoxAdapterSwipable {
+    public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxManagerRecyclerAdapter.ViewHolder> implements CashBoxAdapterSwipable {
         private static final boolean SWIPE_ENABLED = true;
         private static final String TAG = "PruebaManagerActivity";
 
@@ -274,6 +267,7 @@ public class CashBoxManagerFragment extends Fragment {
         private OnStartDragListener onStartDragListener;
 //        private ShareActionProvider shareActionProvider;
         private CashBoxManagerRecyclerAdapter.ViewHolder selectedViewHolder = null;
+        private List<CashBox.InfoWithCash> currentList = new ArrayList<>();
 
         // Contextual toolbar
         private ActionMode actionMode;
@@ -324,12 +318,22 @@ public class CashBoxManagerFragment extends Fragment {
             }
         };
 
-        CashBoxManagerRecyclerAdapter() {
-            super(DIFF_CALLBACK);
-        }
-
         void setOnStartDragListener(OnStartDragListener onStartDragListener) {
             this.onStartDragListener = onStartDragListener;
+        }
+
+        void submitList(@NonNull List<CashBox.InfoWithCash> newList) {
+            LogUtil.debug(TAG,"New list submitted: " + newList.toString());
+            viewModel.addDisposable(Single.just(DiffUtil.calculateDiff(
+                    new DiffCallback<CashBox.InfoWithCash>(currentList,newList), false))
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(diffResult -> {
+                        LogUtil.debug(TAG,"DiffResult calculated");
+                        currentList.clear();
+                        currentList.addAll(newList);
+                        diffResult.dispatchUpdatesTo(CashBoxManagerRecyclerAdapter.this);
+                    }));
         }
 
         @NonNull
@@ -341,7 +345,7 @@ public class CashBoxManagerFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(@NonNull ViewHolder viewHolder, int index) {
-            CashBox.InfoWithCash cashBoxInfo = getItem(index);
+            CashBox.InfoWithCash cashBoxInfo = currentList.get(index);
             viewHolder.rvName.setText(cashBoxInfo.getCashBoxInfo().getName());
 
             // Enable or disable dragging
@@ -379,61 +383,51 @@ public class CashBoxManagerFragment extends Fragment {
             notifyItemMoved(fromPosition, toPosition);
         }
 
-        //TODO
         @Override
         public void onItemDrop(int fromPosition, int toPosition) {
-            viewModel.addDisposable(viewModel.moveCashBox(getItem(fromPosition),toPosition)
+            // In order for the animations to not occur, oldList and newList have to be the same
+            CashBox.InfoWithCash infoWithCash = currentList.remove(fromPosition);
+            currentList.add(toPosition,infoWithCash);
+            viewModel.addDisposable(viewModel.moveCashBox(infoWithCash,toPosition)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe());
         }
 
         @Override
-        public void onItemDelete(int position) { //TODO
-            if (actionMode != null)
-                actionMode.finish();
-            getCurrentList().add(getCurrentList().get(0));
-//            CashBox.InfoWithCash deletedCashBoxInfo = getCurrentList().remove(position);
-//            submitList(getCurrentList());
-//            Snackbar.make(coordinatorLayout,
-//                    getString(R.string.snackbarEntriesDeleted, 1), Snackbar.LENGTH_LONG)
-//                    .setAction(R.string.undo, v -> {
-//                        getCurrentList().add(deletedCashBoxInfo);
-//                        submitList(getCurrentList());
-//                    })
-//                    .addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
-//                        @Override
-//                        public void onDismissed(Snackbar transientBottomBar, int event) {
-//                            super.onDismissed(transientBottomBar, event);
-//
-//                            LogUtil.debug(TAG, "Delete CashBox");
-////                            if (event != DISMISS_EVENT_ACTION)
-////                                viewModel.addDisposable(viewModel.deleteCashBoxInfo(deletedCashBoxInfo)
-////                                        .subscribeOn(Schedulers.io())
-////                                        .observeOn(AndroidSchedulers.mainThread())
-////                                        .subscribe());
-//                        }
-//                    }).show();
-
-
-//            CashBox.InfoWithCash deletedCashBoxInfo = getItem(position);
-//            viewModel.addDisposable(viewModel.deleteCashBoxInfo(deletedCashBoxInfo)
-//                            .subscribeOn(Schedulers.io())
-//                            .observeOn(AndroidSchedulers.mainThread())
-//                            .subscribe(() -> Snackbar.make(coordinatorLayout,
-//                                    getString(R.string.snackbarEntriesDeleted, 1),
-//                                    Snackbar.LENGTH_LONG)
-//                                    .setAction(R.string.undo,v ->
-//                                            viewModel.addDisposable(
-//                                                    viewModel.addCashBoxInfo(deletedCashBoxInfo)
-//                                                            .subscribeOn(Schedulers.io())
-//                                                            .observeOn(AndroidSchedulers.mainThread())
-//                                                            .subscribe()))
-//                                    .show()));
+        public int getItemCount() {
+            return currentList.size();
         }
 
         @Override
-        public void onItemModify(int position) {//TODO
+        public void onItemDelete(int position) {
+            if (actionMode != null)
+                actionMode.finish();
+            CashBox.InfoWithCash deletedCashBoxInfo = currentList.remove(position);
+            notifyItemRemoved(position);
+            Snackbar.make(coordinatorLayout,
+                    getString(R.string.snackbarEntriesDeleted, 1), Snackbar.LENGTH_LONG)
+                    .setAction(R.string.undo, v -> {
+                        currentList.add(position,deletedCashBoxInfo);
+                        notifyItemInserted(position);
+                    })
+                    .addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
+                        @Override
+                        public void onDismissed(Snackbar transientBottomBar, int event) {
+                            super.onDismissed(transientBottomBar, event);
+
+                            LogUtil.debug(TAG, "Delete CashBox");
+                            if (event != DISMISS_EVENT_ACTION)
+                                viewModel.addDisposable(viewModel.deleteCashBoxInfo(deletedCashBoxInfo)
+                                        .subscribeOn(Schedulers.io())
+                                        .observeOn(AndroidSchedulers.mainThread())
+                                        .subscribe());
+                        }
+                    }).show();
+        }
+
+        @Override
+        public void onItemModify(int position) {
             if (actionMode != null)
                 actionMode.finish();
 
@@ -442,11 +436,10 @@ public class CashBoxManagerFragment extends Fragment {
                 Button positive = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
                 TextInputEditText inputName = ((AlertDialog) dialog).findViewById(R.id.inputTextChangeName);
                 TextInputLayout layoutName = ((AlertDialog) dialog).findViewById(R.id.inputLayoutChangeName);
-                CashBox.InfoWithCash infoWithCash = getItem(position);
+                CashBox.InfoWithCash infoWithCash = currentList.get(position);
 
                 inputName.setText(infoWithCash.getCashBoxInfo().getName());
                 layoutName.setCounterMaxLength(CashBoxInfo.MAX_LENGTH_NAME);
-
                 // Show keyboard and select the whole text
                 inputName.selectAll();
                 Util.showKeyboard(getContext(), inputName);
@@ -455,7 +448,7 @@ public class CashBoxManagerFragment extends Fragment {
                     String newName = inputName.getText().toString();
                     try {
                         viewModel.addDisposable(
-                                viewModel.changeCashBoxName(getItem(position), newName)
+                                viewModel.changeCashBoxName(infoWithCash, newName)
                                         .subscribeOn(Schedulers.io())
                                         .observeOn(AndroidSchedulers.mainThread())
                                         .subscribe(dialog::dismiss,throwable -> {
@@ -471,8 +464,7 @@ public class CashBoxManagerFragment extends Fragment {
                 });
             });
             dialogChangeName.show();
-
-            notifyDataSetChanged(); // since the item is deleted from swipping we have to show it back again
+            notifyItemChanged(position); // since the item is deleted from swipping we have to show it back again
         }
 
         private AlertDialog inputNameDialog(String title, int resPositiveButton) {
@@ -488,7 +480,7 @@ public class CashBoxManagerFragment extends Fragment {
         }
 
         private void showCloneDialog(int position) {
-            CashBoxInfo cashBoxInfo = getItem(position).getCashBoxInfo();
+            CashBoxInfo cashBoxInfo = currentList.get(position).getCashBoxInfo();
 
             AlertDialog dialogClone = inputNameDialog("Clone CashBox", R.string.cashBox_cloneButton);
             dialogClone.setOnShowListener(dialog -> {
@@ -501,7 +493,7 @@ public class CashBoxManagerFragment extends Fragment {
                 inputName.setText(cashBoxInfo.getName());
                 layoutName.setCounterMaxLength(CashBoxInfo.MAX_LENGTH_NAME);
 
-                positive.setOnClickListener((View v1) -> { //TODO
+                positive.setOnClickListener((View v1) ->
                     viewModel.addDisposable(viewModel.duplicateCashBox(cashBoxInfo.getId(),
                             inputName.getText().toString())
                             .subscribeOn(Schedulers.io())
@@ -518,69 +510,9 @@ public class CashBoxManagerFragment extends Fragment {
                                     layoutName.setError(throwable.getMessage());
                                 inputName.selectAll();
                                 Util.showKeyboard(getContext(), inputName);
-                            }));
-                });
+                            })));
             });
             dialogClone.show();
-
-
-//            viewModel.addDisposable(viewModel.getCashBox(getItem(position).getCashBoxInfo().getId())
-//                    .subscribeOn(Schedulers.io())
-//                    .observeOn(AndroidSchedulers.mainThread())
-//                    .subscribe(cashBox -> {
-//                        AlertDialog dialogClone = inputNameDialog("Clone CashBox", R.string.cashBox_cloneButton);
-//                        dialogClone.setOnShowListener(dialog -> {
-//                            Button positive = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
-//                            TextInputEditText inputName = ((AlertDialog) dialog).findViewById(R.id.inputTextChangeName);
-//                            TextInputLayout layoutName = ((AlertDialog) dialog).findViewById(R.id.inputLayoutChangeName);
-//
-//                            Util.showKeyboard(getContext(), inputName);
-//                            inputName.setMaxLines(CashBoxInfo.MAX_LENGTH_NAME);
-//                            inputName.setText(cashBox.getInfoWithCash().getCashBoxInfo().getName());
-//                            layoutName.setCounterMaxLength(CashBoxInfo.MAX_LENGTH_NAME);
-//
-//                            positive.setOnClickListener((View v1) -> { //TODO
-//                                try {
-//                                    viewModel.addDisposable(viewModel.duplicateCashBox(
-//                                            cashBox,inputName.getText().toString())
-//                                            .subscribeOn(Schedulers.io())
-//                                            .observeOn(AndroidSchedulers.mainThread())
-//                                            .subscribe(() -> {
-//                                                dialog.dismiss();
-//                                                Toast.makeText(getContext(), "Entry cloned",
-//                                                        Toast.LENGTH_SHORT).show();
-//                                            },throwable -> {
-//                                                layoutName.setError(getString(R.string.nameInUse));
-//                                                inputName.selectAll();
-//                                                Util.showKeyboard(getContext(), inputName);
-//                                            }));
-//                                } catch (IllegalArgumentException e) {
-//                                    layoutName.setError(e.getMessage());
-//                                    inputName.selectAll();
-//                                    Util.showKeyboard(getContext(), inputName);
-//                                }
-////
-////                                try {
-////                                    if(true) {
-//////                        notifyItemInserted(position + 1);
-////                                        dialog.dismiss();
-////                                        Toast.makeText(getContext(), "Entry cloned", Toast.LENGTH_SHORT).show();
-////                                    } else {
-////                                        layoutName.setError(getString(R.string.nameInUse));
-////                                        inputName.selectAll();
-////                                        Util.showKeyboard(getContext(), inputName);
-////                                    }
-////                                } catch (IllegalArgumentException e) {
-////                                    layoutName.setError(e.getMessage());
-////                                    inputName.selectAll();
-////                                    Util.showKeyboard(getContext(), inputName);
-////                                }
-//                            });
-//                        });
-//                        dialogClone.show();
-//                    }, throwable ->
-//                            Toast.makeText(getContext(), "Error while loading CashBox",
-//                                    Toast.LENGTH_SHORT).show()));
         }
 
         private void setSelectedViewHolder(CashBoxManagerRecyclerAdapter.ViewHolder viewHolder) {
@@ -601,10 +533,8 @@ public class CashBoxManagerFragment extends Fragment {
         boolean showActionMode() {
             if (actionMode != null)
                 return false;
-            else {
-                actionMode = ((AppCompatActivity) getActivity()).startSupportActionMode(actionModeCallback);
-                return true;
-            }
+            actionMode = ((AppCompatActivity) getActivity()).startSupportActionMode(actionModeCallback);
+            return true;
         }
 
         public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
@@ -637,7 +567,7 @@ public class CashBoxManagerFragment extends Fragment {
                 setSelectedViewHolder(this);
 
                 if (actionMode == null) {
-                    swapToItemFragment(getItem(getAdapterPosition()).getCashBoxInfo().getId());
+                    swapToItemFragment(currentList.get(getAdapterPosition()).getCashBoxInfo().getId());
 
                     //Erase highlighting element
                     setSelectedViewHolder(null);
@@ -647,7 +577,8 @@ public class CashBoxManagerFragment extends Fragment {
             @Override
             public boolean onLongClick(View v) {
                 setSelectedViewHolder(this);
-                return showActionMode();
+                showActionMode();
+                return true;
             }
         }
     }
