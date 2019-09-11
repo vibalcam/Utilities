@@ -48,9 +48,8 @@ public abstract class CashBoxDao {
             "LEFT JOIN entries_table AS E ON C.id=E.cashBoxId " +
             "WHERE C.id=:id " +
             "GROUP BY C.id,C.name,C.orderId")
-    abstract Single<CashBox> getCashBoxById(long id);
+    public abstract Single<CashBox> getCashBoxById(long id);
 
-    //TODO: complete methods
 //    @Query("UPDATE cashBoxesInfo_table " +
 //            "SET orderId=CASE WHEN EXISTS(" +
 //            "SELECT * FROM cashBoxesInfo_table WHERE orderId=:minOrderPos) " +

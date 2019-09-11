@@ -25,6 +25,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.ActionMode;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DiffUtil;
@@ -116,8 +117,7 @@ public class CashBoxManagerFragment extends Fragment {
 
         AppCompatActivity activity = (AppCompatActivity) Objects.requireNonNull(getActivity());
         // Initialize data
-        //Todo deprecated
-        viewModel = ViewModelProviders.of(activity).get(CashBoxViewModel.class);
+        viewModel = new ViewModelProvider(activity).get(CashBoxViewModel.class);
         viewModel.getCashBoxesInfo().observe(getViewLifecycleOwner(), infoWithCashes ->
             adapter.submitList(infoWithCashes));
 
@@ -230,9 +230,12 @@ public class CashBoxManagerFragment extends Fragment {
                 try {
                     CashBox cashBox = new CashBox(inputTextName.getText().toString());
                     String strInitCash = inputTextInitCash.getText().toString().trim();
-                    if (!strInitCash.isEmpty() && Util.parseDouble(strInitCash) != 0)
-                        cashBox.getEntries().add(new CashBox.Entry(Util.parseDouble(strInitCash),
-                                "Initial Amount", Calendar.getInstance()));
+                    if (!strInitCash.isEmpty()) {
+                        double initCash = Util.parseExpression(strInitCash);
+                        if (initCash != 0)
+                            cashBox.getEntries().add(new CashBox.Entry(initCash,
+                                    "Initial Amount", Calendar.getInstance()));
+                    }
 
                     viewModel.addDisposable(viewModel.addCashBox(cashBox)
                             .subscribeOn(Schedulers.io())

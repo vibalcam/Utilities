@@ -48,6 +48,10 @@ public class CashBoxViewModel extends AndroidViewModel {
         this.currentCashBoxId = currentCashBoxId;
     }
 
+    public long getCurrentCashBoxId() {
+        return currentCashBoxId;
+    }
+
     public Single<CashBox> getCashBox(long id) {
         return repository.getCashBox(id);
     }
@@ -106,8 +110,6 @@ public class CashBoxViewModel extends AndroidViewModel {
     }
 
     public Completable moveCashBox(CashBox.InfoWithCash infoWithCash, int toIndex) {
-        //TODO move infoWithCash
-
         List<CashBox.InfoWithCash> cashBoxInfoList = cashBoxesInfo.getValue();
         if(cashBoxInfoList==null)
             return Completable.error(new IllegalArgumentException("Null list of CashBoxes"));
@@ -130,7 +132,7 @@ public class CashBoxViewModel extends AndroidViewModel {
         return addAllEntries(currentCashBoxId,entries);
     }
 
-    private Completable addAllEntries(long cashBoxId, Collection<CashBox.Entry> entries) { // TODO
+    private Completable addAllEntries(long cashBoxId, Collection<CashBox.Entry> entries) {
         ArrayList<CashBox.Entry> entryArrayList = new ArrayList<>();
         for(CashBox.Entry entry:entries)
             entryArrayList.add(entry.getEntryWithCashBoxId(cashBoxId));

@@ -1,7 +1,15 @@
 package com.utilities.vibal.utilities.ui.cashBoxManager;
 
+import android.app.AlarmManager;
+import android.app.DatePickerDialog;
+import android.app.PendingIntent;
+import android.app.TimePickerDialog;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -21,7 +29,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.ShareActionProvider;
 import androidx.core.view.MenuItemCompat;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.DividerItemDecoration;
@@ -33,6 +41,7 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.utilities.vibal.utilities.R;
+import com.utilities.vibal.utilities.broadcastReceivers.ReminderReceiver;
 import com.utilities.vibal.utilities.models.CashBox;
 import com.utilities.vibal.utilities.models.CashBoxViewModel;
 import com.utilities.vibal.utilities.ui.settings.SettingsActivity;
@@ -46,6 +55,7 @@ import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -58,6 +68,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
 public class CashBoxItemFragment extends Fragment {
+    public static final int REMINDER_ID = 1;
     private static final double MAX_SHOW_CASH = 99999999;
     private static final String TAG = "PruebaItemFragment";
 
@@ -69,8 +80,11 @@ public class CashBoxItemFragment extends Fragment {
     private NumberFormat formatCurrency = NumberFormat.getCurrencyInstance();
     private CashBoxViewModel viewModel;
     private ShareActionProvider shareActionProvider;
+    private SharedPreferences sharedPrefNot;
+    private boolean notificationEnabled = false; //By default, the icon is set to alarm off
+    private MenuItem menuItemNotification;
 
-    public static CashBoxItemFragment newInstance() {
+    static CashBoxItemFragment newInstance() {
         return new CashBoxItemFragment();
     }
 
@@ -79,6 +93,9 @@ public class CashBoxItemFragment extends Fragment {
         super.onCreate(savedInstanceState);
         // Fragment has options menu
         setHasOptionsMenu(true);
+        //Set up SharedPreferences for notifications
+        sharedPrefNot = getContext().getSharedPreferences(ReminderReceiver.PREFERENCE_KEY,
+                Context.MODE_PRIVATE);
     }
 
     @Nullable
@@ -118,7 +135,7 @@ public class CashBoxItemFragment extends Fragment {
             actionBar.setDisplayHomeAsUpEnabled(true);
 
         // Initialize data
-        viewModel = ViewModelProviders.of(Objects.requireNonNull(activity)).get(CashBoxViewModel.class);
+        viewModel = new ViewModelProvider(Objects.requireNonNull(activity)).get(CashBoxViewModel.class);
         viewModel.getCurrentCashBox().observe(getViewLifecycleOwner(), cashBox -> {
             LogUtil.debug("Prueba","On change data");
 
@@ -154,9 +171,23 @@ public class CashBoxItemFragment extends Fragment {
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.menu_toolbar_cash_box_item,menu);
-
+        //Prepare alarm icon
+        menuItemNotification = menu.findItem(R.id.action_item_reminder);
+        setIconNotification(sharedPrefNot.contains(Long.toString(viewModel.getCurrentCashBoxId())));
         // Set up ShareActionProvider
         shareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menu.findItem(R.id.action_item_share));
+    }
+
+    private void setIconNotification(boolean enabled) {
+        if(enabled==notificationEnabled)
+            return;
+        if (enabled) {
+            menuItemNotification.setIcon(R.drawable.ic_alarm_on_white_24dp);
+            menuItemNotification.setTitle(R.string.action_reminder_on);
+        } else {
+            menuItemNotification.setIcon(R.drawable.ic_alarm_off_white_24dp);
+            menuItemNotification.setTitle(R.string.action_reminder_off);
+        }
     }
 
     @Override
@@ -168,6 +199,9 @@ public class CashBoxItemFragment extends Fragment {
             case R.id.action_item_deleteAll:
                 deleteAll();
                 return true;
+            case R.id.action_item_reminder:
+                showReminderDialog();
+                return true;
             case R.id.action_item_settings:
                 startActivity(new Intent(getContext(), SettingsActivity.class));
                 return true;
@@ -176,36 +210,120 @@ public class CashBoxItemFragment extends Fragment {
         }
     }
 
-    //    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        getMenuInflater().inflate(R.menu.menu_toolbar_cash_box_item, menu);
-//
-//        // Set up ShareActionProvider
-//        shareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menu.findItem(R.id.action_item_share));
-//        updateShareIntent();
-//        return true;
-//    }
+    private void showReminderDialog() {
+        //Check if alarm has been already set
+        long timeInMillis = sharedPrefNot.getLong(Long.toString(viewModel.getCurrentCashBoxId()),0);
+        if(timeInMillis==0) { //Set reminder dialog
+            //Choose the date and time for the reminder
+            Calendar calendar = Calendar.getInstance();
+            new DatePickerDialog(getContext(),
+                    (datePicker, year, month, dayOfMonth) -> {
+                        calendar.set(year, month, dayOfMonth);
+                        new TimePickerDialog(getContext(), (timePicker, hourOfDay, minute) -> {
+                            calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                            calendar.set(Calendar.MINUTE, minute);
+                            calendar.set(Calendar.SECOND, 0);
 
-//    @Override
-//    public boolean onOptionsItemSelected(MenuItem item) {
-//        switch (item.getItemId()) {
-//            case R.id.action_item_deleteAll:
-//                deleteAll();
-//                return true;
-//            case R.id.action_item_settings:
-//                startActivity(new Intent(getContext(), SettingsActivity.class));
-//                return true;
-//            default:
-//                return super.onOptionsItemSelected(item);
-//        }
-//    }
-
-    @OnClick(R.id.fabCBItem)
-    void onFabClicked() {
-        showAddDialog();
+                            if (calendar.before(Calendar.getInstance()))
+                                Toast.makeText(getContext(), "Trying to go back in time, uh?", Toast.LENGTH_SHORT).show();
+                            else
+                                scheduleReminder(calendar);
+                        }, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE),
+                                android.text.format.DateFormat.is24HourFormat(getContext()))
+                                .show();
+                    }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
+                    calendar.get(Calendar.DAY_OF_MONTH))
+                    .show();
+            //todo title and message for date and time dialogs
+        } else { //Cancel reminder dialog
+//            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+//            AlertDialog dialog = builder.setTitle(R.string.newEntry)
+//                    .setView(R.layout.cash_box_item_entry_input)
+//                    .setNegativeButton(R.string.cancelDialog, null)
+//                    .setPositiveButton(R.string.addEntryDialog, null)
+//                    .create();
+//            dialog.setCanceledOnTouchOutside(false);
+            AlertDialog dialog = new AlertDialog.Builder(getContext())
+                    .setTitle(R.string.reminder_dialog_cancel_title)
+                    .setMessage(getString(R.string.reminder_dialog_cancel_message,
+                            DateFormat.getDateTimeInstance().format(new Date(timeInMillis))))
+                    .setNegativeButton(R.string.reminder_dialog_cancel_keep,null)
+                    .setPositiveButton(R.string.reminder_dialog_cancel_cancel,
+                            (dialogInterface, i) -> cancelReminder())
+                    .create();
+            dialog.setCanceledOnTouchOutside(false);
+            dialog.show();
+        }
     }
 
-    private void showAddDialog() {
+    private void scheduleReminder(@NonNull Calendar c) {
+        //Enable boot receiver
+        if(sharedPrefNot.getAll().isEmpty()) {
+            ComponentName receiver = new ComponentName(getContext(), ReminderReceiver.class);
+            PackageManager pm = getContext().getPackageManager();
+            pm.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                    PackageManager.DONT_KILL_APP);
+        }
+
+        //Set up the alarm manager for the notification
+        long cashBoxId = viewModel.getCurrentCashBoxId();
+        long timeInMillis = c.getTimeInMillis();
+//        AlarmManager alarmManager = (AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE);
+//        Intent intentAlarm = new Intent(getContext(), ReminderReceiver.class);
+//        intentAlarm.putExtra(CashBoxManagerActivity.EXTRA_CASHBOX_ID, cashBoxId);
+//        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, c.getTimeInMillis(),
+//                PendingIntent.getBroadcast(getContext(), REMINDER_ID, intentAlarm,0));
+        ReminderReceiver.setAlarm((AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE),
+                getContext(), cashBoxId, timeInMillis);
+        Toast.makeText(getContext(), "New Reminder Set", Toast.LENGTH_SHORT).show();
+
+        //Add reminder to Notification SharedPreferences
+        sharedPrefNot.edit().putLong(Long.toString(cashBoxId),timeInMillis).apply();
+        setIconNotification(true);
+
+//        //Set up the notification to be shown
+//        Intent intent = new Intent(getContext(), CashBoxManagerActivity.class);
+//        intent.putExtra(CashBoxManagerActivity.EXTRA_ACTION,CashBoxManagerActivity.ACTION_DETAILS);
+//        intent.putExtra(CashBoxManagerActivity.EXTRA_CASHBOX_ID,viewModel.getCurrentCashBoxId());
+//
+//        Notification notification = new NotificationCompat.Builder(getContext(),
+//                App.CHANNEL_REMINDER_ID)
+//                .setSmallIcon(R.drawable.logo)
+//                .setContentTitle(((AppCompatActivity) getActivity()).getSupportActionBar().getTitle())
+//                .setContentText("Total cash: " + itemCash.getText())
+//                .setPriority(NotificationCompat.PRIORITY_HIGH)
+//                .setCategory(NotificationCompat.CATEGORY_REMINDER)
+//                .setContentIntent(PendingIntent.getActivity(getContext(),0,intent,0))
+//                .setAutoCancel(true)
+//                .setOnlyAlertOnce(true)
+//                .setGroup(CashBoxManagerActivity.GROUP_KEY_CASHBOX)
+//                .build();
+//
+//        notificationManager.notify(REMINDER_ID,notification);
+    }
+
+    private void cancelReminder() {
+        //Delete reminder from Notifications SharedPreference
+        sharedPrefNot.edit().remove(Long.toString(viewModel.getCurrentCashBoxId())).apply();
+        setIconNotification(false);
+
+        //Cancel alarm
+        AlarmManager alarmManager = (AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE);
+        Intent intentAlarm = new Intent(getContext(), ReminderReceiver.class);
+        alarmManager.cancel(PendingIntent.getBroadcast(getContext(), REMINDER_ID, intentAlarm,0));
+        Toast.makeText(getContext(), "Reminder Cancelled", Toast.LENGTH_SHORT).show();
+
+        //Disable boot receiver
+        if(sharedPrefNot.getAll().isEmpty()) {
+            ComponentName receiver = new ComponentName(getContext(), ReminderReceiver.class);
+            PackageManager pm = getContext().getPackageManager();
+            pm.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                    PackageManager.DONT_KILL_APP);
+        }
+    }
+
+    @OnClick(R.id.fabCBItem)
+    void showAddDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         AlertDialog dialog = builder.setTitle(R.string.newEntry)
                 .setView(R.layout.cash_box_item_entry_input)
@@ -228,7 +346,7 @@ public class CashBoxItemFragment extends Fragment {
                         layoutAmount.setError(getString(R.string.required));
                         Util.showKeyboard(getContext(), inputAmount);
                     } else {
-                        double amount = Util.parseDouble(inputAmount.getText().toString());
+                        double amount = Util.parseExpression(inputAmount.getText().toString());
                         viewModel.addDisposable(viewModel.addEntryToCurrentCashBox(new CashBox.Entry(
                                 amount,inputInfo.getText().toString(),Calendar.getInstance()))
                                 .subscribeOn(Schedulers.io())
@@ -381,7 +499,7 @@ public class CashBoxItemFragment extends Fragment {
                             Util.showKeyboard(getContext(), inputAmount);
                         } else {
                             viewModel.addDisposable(viewModel.modifyEntry(modifiedEntry,
-                                    Util.parseDouble(input),inputInfo.getText().toString().trim())
+                                    Util.parseExpression(input),inputInfo.getText().toString().trim())
                                     .subscribeOn(Schedulers.io())
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .subscribe(() -> {

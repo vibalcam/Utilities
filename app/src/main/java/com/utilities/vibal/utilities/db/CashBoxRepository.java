@@ -64,7 +64,7 @@ public class CashBoxRepository {
         return cashBoxDao.insert(cashBox,cashBoxEntryDao);
     }
 
-    public Single<Long> insertCashBoxInfo(CashBox.InfoWithCash infoWithCash) { //TODO insert in index
+    public Single<Long> insertCashBoxInfo(CashBox.InfoWithCash infoWithCash) {
         configureOrderId(infoWithCash.getCashBoxInfo());
         return cashBoxDao.insert(infoWithCash.getCashBoxInfo());
     }

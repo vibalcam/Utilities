@@ -7,6 +7,11 @@
         app:showAsAction="ifRoom"
         android:title="@string/action_reset" />
     <item
+        android:id="@+id/action_item_reminder"
+        android:icon="@drawable/ic_alarm_off_white_24dp"
+        app:showAsAction="ifRoom"
+        android:title="@string/action_reminder_off" />
+    <item
         android:id="@+id/action_item_share"
         android:title="@string/popupCBMShare"
         app:showAsAction="never"

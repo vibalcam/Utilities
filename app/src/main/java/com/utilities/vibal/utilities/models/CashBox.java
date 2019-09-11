@@ -101,7 +101,6 @@ public class CashBox implements Parcelable {
         this.infoWithCash = infoWithCash;
     }
 
-    //TODO hacer private
     public void setName(String name) throws IllegalArgumentException {
         infoWithCash.getCashBoxInfo().setName(name);
     }

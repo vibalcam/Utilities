@@ -49,6 +49,16 @@
     <string name="contentDescriptionLogoMain">App\'s logo</string>
     <string name="title_activity_settings">Settings</string>
 
+    <!--CashBoxReminder-->
+    <string name="action_reminder_on">Cancel Reminder</string>
+    <string name="action_reminder_off">Set Reminder</string>
+<!--    <string name="reminder_dialog_date_title">Choose the date</string>-->
+<!--    <string name="reminder_dialog_time_title">Choose the time</string>-->
+    <string name="reminder_dialog_cancel_title">Scheduled reminder</string>
+    <string name="reminder_dialog_cancel_cancel">Cancel</string>
+    <string name="reminder_dialog_cancel_keep">Keep</string>
+    <string name="reminder_dialog_cancel_message">You will be reminded on\n%s</string>
+
     <!--About and help-->
     <string name="appHelpTitle">Available Utilities</string>
     <string name="appHelpMessage"><b>Random Chooser:</b> perfect for when you need to get a randomly ordered list or flip a coin.
