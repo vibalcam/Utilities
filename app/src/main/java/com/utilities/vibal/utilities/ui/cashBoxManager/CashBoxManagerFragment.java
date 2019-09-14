@@ -13,7 +13,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,18 +25,22 @@ import androidx.appcompat.view.ActionMode;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.lifecycle.ViewModelProviders;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.work.Constraints;
+import androidx.work.Data;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
 
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.utilities.vibal.utilities.R;
+import com.utilities.vibal.utilities.backgroundTasks.RxPeriodicAddWorker;
 import com.utilities.vibal.utilities.db.CashBoxInfo;
 import com.utilities.vibal.utilities.models.CashBox;
 import com.utilities.vibal.utilities.models.CashBoxViewModel;
@@ -54,6 +57,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -262,6 +266,27 @@ public class CashBoxManagerFragment extends Fragment {
         dialog.show();
     }
 
+    private void addPeriodic(CashBox.Entry entry, long repeatIntervalDays) {
+        //todo dialog for periodic tasks
+
+        //Create the periodic task
+        Constraints constraints = new Constraints.Builder()
+                .setRequiresBatteryNotLow(true)
+                .build();
+        Data entryData = new Data.Builder()
+                .putLong(EXTRA_CASHBOX_ID, entry.getCashBoxId())
+                .putString(RxPeriodicAddWorker.KEY_INFO, entry.getInfo())
+                .putDouble(RxPeriodicAddWorker.KEY_AMOUNT, entry.getAmount())
+                .build();
+        PeriodicWorkRequest saveRequest = new PeriodicWorkRequest.Builder(RxPeriodicAddWorker.class,
+                repeatIntervalDays, TimeUnit.DAYS)
+                .setConstraints(constraints)
+                .setInputData(entryData)
+                .addTag(RxPeriodicAddWorker.TAG)
+                .build();
+        WorkManager.getInstance(getContext()).enqueue(saveRequest);
+    }
+
     public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxManagerRecyclerAdapter.ViewHolder> implements CashBoxAdapterSwipable {
         private static final boolean SWIPE_ENABLED = true;
         private static final String TAG = "PruebaManagerActivity";
@@ -353,10 +378,12 @@ public class CashBoxManagerFragment extends Fragment {
 
             // Enable or disable dragging
             if (isDragEnabled()) {
-                viewHolder.reorderImage.setVisibility(View.VISIBLE);
+//                viewHolder.reorderImage.setVisibility(View.VISIBLE);
+                viewHolder.reorderImage.setImageResource(R.drawable.reorder_horizontal_gray_24dp);
                 viewHolder.rvAmount.setVisibility(View.GONE);
             } else {
-                viewHolder.reorderImage.setVisibility(View.GONE);
+//                viewHolder.reorderImage.setVisibility(View.GONE);
+                viewHolder.reorderImage.setImageResource(R.drawable.ic_add);
                 viewHolder.rvAmount.setVisibility(View.VISIBLE);
                 viewHolder.rvAmount.setText(currencyFormat.format(cashBoxInfo.getCash()));
                 if(cashBoxInfo.getCash()<0)
@@ -543,7 +570,6 @@ public class CashBoxManagerFragment extends Fragment {
         public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
             @BindView(R.id.rvName) TextView rvName;
             @BindView(R.id.rvAmount) TextView rvAmount;
-            @BindView(R.id.rvItemLayout) LinearLayout rvItemLayout;
             @BindView(R.id.reorderImage) ImageView reorderImage;
 
             ViewHolder(View view) {
@@ -555,13 +581,26 @@ public class CashBoxManagerFragment extends Fragment {
             }
 
             @OnTouch(R.id.reorderImage)
-            boolean onTouch(MotionEvent event) {
+            boolean onImageTouch(MotionEvent event) {
+                if(!isDragEnabled())
+                    return false;
+
                 setSelectedViewHolder(this);
                 if (onStartDragListener != null && event.getActionMasked() == MotionEvent.ACTION_DOWN) {
                     onStartDragListener.onStartDrag(this);
                     return true;
                 } else
                     return false;
+            }
+
+            @OnClick(R.id.reorderImage)
+            boolean onImageClick() {
+                if(isDragEnabled())
+                    return false;
+                CashBoxItemFragment.getAddEntryDialog(currentList.get(getAdapterPosition()).getId(),
+                        getContext(),viewModel,null)
+                        .show();
+                return true;
             }
 
             @Override

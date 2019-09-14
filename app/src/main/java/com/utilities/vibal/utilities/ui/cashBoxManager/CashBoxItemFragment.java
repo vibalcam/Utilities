@@ -41,7 +41,7 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.utilities.vibal.utilities.R;
-import com.utilities.vibal.utilities.broadcastReceivers.ReminderReceiver;
+import com.utilities.vibal.utilities.backgroundTasks.ReminderReceiver;
 import com.utilities.vibal.utilities.models.CashBox;
 import com.utilities.vibal.utilities.models.CashBoxViewModel;
 import com.utilities.vibal.utilities.ui.settings.SettingsActivity;
@@ -236,13 +236,6 @@ public class CashBoxItemFragment extends Fragment {
                     .show();
             //todo title and message for date and time dialogs
         } else { //Cancel reminder dialog
-//            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-//            AlertDialog dialog = builder.setTitle(R.string.newEntry)
-//                    .setView(R.layout.cash_box_item_entry_input)
-//                    .setNegativeButton(R.string.cancelDialog, null)
-//                    .setPositiveButton(R.string.addEntryDialog, null)
-//                    .create();
-//            dialog.setCanceledOnTouchOutside(false);
             AlertDialog dialog = new AlertDialog.Builder(getContext())
                     .setTitle(R.string.reminder_dialog_cancel_title)
                     .setMessage(getString(R.string.reminder_dialog_cancel_message,
@@ -323,12 +316,20 @@ public class CashBoxItemFragment extends Fragment {
     }
 
     @OnClick(R.id.fabCBItem)
-    void showAddDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+    void onFabClicked() {
+        getAddEntryDialog(viewModel.getCurrentCashBoxId(),getContext(),viewModel,
+                (dialogInterface, i) -> rvCashBoxItem.scrollToPosition(0))
+                .show();
+    }
+
+
+    static AlertDialog getAddEntryDialog(long cashBoxId, Context context, CashBoxViewModel viewModel,
+                                         DialogInterface.OnClickListener onPositiveClick) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
         AlertDialog dialog = builder.setTitle(R.string.newEntry)
                 .setView(R.layout.cash_box_item_entry_input)
                 .setNegativeButton(R.string.cancelDialog, null)
-                .setPositiveButton(R.string.addEntryDialog, null)
+                .setPositiveButton(R.string.addEntryDialog, onPositiveClick)
                 .create();
         dialog.setCanceledOnTouchOutside(false);
 
@@ -338,30 +339,29 @@ public class CashBoxItemFragment extends Fragment {
             TextInputEditText inputAmount = ((AlertDialog) dialog1).findViewById(R.id.inputTextAmount);
             TextInputLayout layoutAmount = ((AlertDialog) dialog1).findViewById(R.id.inputLayoutAmount);
 
-            Util.showKeyboard(getContext(), inputAmount);
+            Util.showKeyboard(context, inputAmount);
             positive.setOnClickListener((View v) -> {
                 try {
                     String input = inputAmount.getText().toString().trim();
                     if (input.isEmpty()) {
-                        layoutAmount.setError(getString(R.string.required));
-                        Util.showKeyboard(getContext(), inputAmount);
+                        layoutAmount.setError(context.getString(R.string.required));
+                        Util.showKeyboard(context, inputAmount);
                     } else {
                         double amount = Util.parseExpression(inputAmount.getText().toString());
-                        viewModel.addDisposable(viewModel.addEntryToCurrentCashBox(new CashBox.Entry(
+                        viewModel.addDisposable(viewModel.addEntry(cashBoxId,new CashBox.Entry(
                                 amount,inputInfo.getText().toString(),Calendar.getInstance()))
                                 .subscribeOn(Schedulers.io())
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(dialog1::dismiss));
-                        rvCashBoxItem.scrollToPosition(0);
                     }
                 } catch (NumberFormatException e) {
-                    layoutAmount.setError(getString(R.string.errorMessageAmount));
+                    layoutAmount.setError(context.getString(R.string.errorMessageAmount));
                     inputAmount.selectAll();
-                    Util.showKeyboard(getContext(), inputAmount);
+                    Util.showKeyboard(context, inputAmount);
                 }
             });
         });
-        dialog.show();
+        return dialog;
     }
 
     private void deleteAll() {

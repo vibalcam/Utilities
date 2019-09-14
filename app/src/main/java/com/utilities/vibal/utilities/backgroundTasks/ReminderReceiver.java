@@ -1,4 +1,4 @@
-package com.utilities.vibal.utilities.broadcastReceivers;
+package com.utilities.vibal.utilities.backgroundTasks;
 
 import android.app.AlarmManager;
 import android.app.Notification;
@@ -15,7 +15,6 @@ import com.utilities.vibal.utilities.App;
 import com.utilities.vibal.utilities.R;
 import com.utilities.vibal.utilities.db.CashBoxInfo;
 import com.utilities.vibal.utilities.db.UtilitiesDatabase;
-import com.utilities.vibal.utilities.models.CashBox;
 import com.utilities.vibal.utilities.ui.cashBoxManager.CashBoxItemFragment;
 import com.utilities.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity;
 

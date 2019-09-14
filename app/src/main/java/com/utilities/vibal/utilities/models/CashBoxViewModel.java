@@ -124,7 +124,7 @@ public class CashBoxViewModel extends AndroidViewModel {
         return addEntry(currentCashBoxId,entry);
     }
 
-    private Completable addEntry(long cashBoxId, CashBox.Entry entry) {
+    public Completable addEntry(long cashBoxId, CashBox.Entry entry) {
         return repository.insertEntry(entry.getEntryWithCashBoxId(cashBoxId));
     }
 
