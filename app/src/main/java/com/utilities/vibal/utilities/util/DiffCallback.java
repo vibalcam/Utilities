@@ -28,7 +28,7 @@ public class DiffCallback<T extends DiffDbUsable<T>> extends DiffUtil.Callback {
 
     @Override
     public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
-        return newList.get(newItemPosition).getId()==oldList.get(oldItemPosition).getId();
+        return oldList.get(oldItemPosition).areItemsTheSame(newList.get(newItemPosition));
     }
 
     @Override

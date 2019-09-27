@@ -4,9 +4,11 @@ import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
@@ -17,6 +19,7 @@ import com.utilities.vibal.utilities.db.CashBoxInfo;
 import com.utilities.vibal.utilities.db.UtilitiesDatabase;
 import com.utilities.vibal.utilities.ui.cashBoxManager.CashBoxItemFragment;
 import com.utilities.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity;
+import com.utilities.vibal.utilities.util.LogUtil;
 
 import java.util.Map;
 
@@ -27,6 +30,7 @@ import io.reactivex.schedulers.Schedulers;
 import static com.utilities.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity.EXTRA_CASHBOX_ID;
 
 public class ReminderReceiver extends BroadcastReceiver {
+    private static final String TAG = "PruebaReminderReceiver";
     public static final String PREFERENCE_KEY = "com.utilities.vibal.utilities.NOTIFICATION_PREFERENCE";
 
     public static void setAlarm(AlarmManager alarmManager, Context context, long cashBoxId, long timeInMillis) {
@@ -37,13 +41,25 @@ public class ReminderReceiver extends BroadcastReceiver {
                         intentAlarm, 0));
     }
 
+    public static void setBootReceiverEnabled(Context context, boolean enable) {
+        ComponentName receiver = new ComponentName(context, ReminderReceiver.class);
+        PackageManager pm = context.getPackageManager();
+        if(enable)
+            pm.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                    PackageManager.DONT_KILL_APP);
+        else
+            pm.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                    PackageManager.DONT_KILL_APP);
+    }
+
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
+        SharedPreferences sharedPref = context.getSharedPreferences(PREFERENCE_KEY,
+                Context.MODE_PRIVATE);
         //If reboot completed, reset the alarms
         if(action!=null && action.equals(Intent.ACTION_BOOT_COMPLETED)) {
-            SharedPreferences sharedPref = context.getSharedPreferences(PREFERENCE_KEY,
-                    Context.MODE_PRIVATE);
+            LogUtil.debug(TAG, "Rescheduling alarms");
             AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
             //Intent intentAlarm;
             for (Map.Entry<String, ?> entry : sharedPref.getAll().entrySet()) {
@@ -89,6 +105,9 @@ public class ReminderReceiver extends BroadcastReceiver {
                         //Show notification
                         NotificationManagerCompat.from(context).notify(CashBoxItemFragment.REMINDER_ID,notification);
                     });
+
+            //Remove reminder from SharedPreferences
+            sharedPref.edit().remove(Long.toString(cashBoxId)).apply();
         }
     }
 }

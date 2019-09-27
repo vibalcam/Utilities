@@ -10,10 +10,10 @@
         android:id="@+id/action_item_reminder"
         android:icon="@drawable/ic_alarm_off_white_24dp"
         app:showAsAction="ifRoom"
-        android:title="@string/action_reminder_off" />
+        android:title="@string/menu_item_reminderOff" />
     <item
         android:id="@+id/action_item_share"
-        android:title="@string/popupCBMShare"
+        android:title="@string/menu_item_Share"
         app:showAsAction="never"
         app:actionProviderClass="androidx.appcompat.widget.ShareActionProvider" />
     <item

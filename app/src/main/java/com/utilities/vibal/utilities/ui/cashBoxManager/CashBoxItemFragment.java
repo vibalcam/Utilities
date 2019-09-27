@@ -4,12 +4,10 @@ import android.app.AlarmManager;
 import android.app.DatePickerDialog;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -73,7 +71,6 @@ public class CashBoxItemFragment extends Fragment {
     private static final String TAG = "PruebaItemFragment";
 
     @BindView(R.id.itemCash) TextView itemCash;
-//    @BindView(R.id.itemCBCoordinatorLayout) CoordinatorLayout itemCBCoordinatorLayout;
     @BindView(R.id.rvCashBoxItem) RecyclerView rvCashBoxItem;
 
     private CashBoxItemRecyclerAdapter adapter;
@@ -183,11 +180,12 @@ public class CashBoxItemFragment extends Fragment {
             return;
         if (enabled) {
             menuItemNotification.setIcon(R.drawable.ic_alarm_on_white_24dp);
-            menuItemNotification.setTitle(R.string.action_reminder_on);
+            menuItemNotification.setTitle(R.string.menu_item_reminderOn);
         } else {
             menuItemNotification.setIcon(R.drawable.ic_alarm_off_white_24dp);
-            menuItemNotification.setTitle(R.string.action_reminder_off);
+            menuItemNotification.setTitle(R.string.menu_item_reminderOff);
         }
+        notificationEnabled = enabled;
     }
 
     @Override
@@ -216,16 +214,22 @@ public class CashBoxItemFragment extends Fragment {
         if(timeInMillis==0) { //Set reminder dialog
             //Choose the date and time for the reminder
             Calendar calendar = Calendar.getInstance();
+            Calendar currentCalendar = Calendar.getInstance();
             new DatePickerDialog(getContext(),
                     (datePicker, year, month, dayOfMonth) -> {
+                //todo before dias sin horas ni nada
                         calendar.set(year, month, dayOfMonth);
+                        if (calendar.before(currentCalendar)) {
+                            Toast.makeText(getContext(), R.string.reminder_dialog_invalid_date, Toast.LENGTH_SHORT).show();
+                            return;
+                        }
                         new TimePickerDialog(getContext(), (timePicker, hourOfDay, minute) -> {
                             calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
                             calendar.set(Calendar.MINUTE, minute);
                             calendar.set(Calendar.SECOND, 0);
 
-                            if (calendar.before(Calendar.getInstance()))
-                                Toast.makeText(getContext(), "Trying to go back in time, uh?", Toast.LENGTH_SHORT).show();
+                            if (calendar.before(currentCalendar))
+                                Toast.makeText(getContext(), R.string.reminder_dialog_invalid_date, Toast.LENGTH_SHORT).show();
                             else
                                 scheduleReminder(calendar);
                         }, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE),
@@ -234,14 +238,13 @@ public class CashBoxItemFragment extends Fragment {
                     }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
                     calendar.get(Calendar.DAY_OF_MONTH))
                     .show();
-            //todo title and message for date and time dialogs
         } else { //Cancel reminder dialog
             AlertDialog dialog = new AlertDialog.Builder(getContext())
                     .setTitle(R.string.reminder_dialog_cancel_title)
                     .setMessage(getString(R.string.reminder_dialog_cancel_message,
                             DateFormat.getDateTimeInstance().format(new Date(timeInMillis))))
-                    .setNegativeButton(R.string.reminder_dialog_cancel_keep,null)
-                    .setPositiveButton(R.string.reminder_dialog_cancel_cancel,
+                    .setPositiveButton(R.string.reminder_dialog_cancel_keep,null)
+                    .setNegativeButton(R.string.reminder_dialog_cancel_cancel,
                             (dialogInterface, i) -> cancelReminder())
                     .create();
             dialog.setCanceledOnTouchOutside(false);
@@ -252,10 +255,11 @@ public class CashBoxItemFragment extends Fragment {
     private void scheduleReminder(@NonNull Calendar c) {
         //Enable boot receiver
         if(sharedPrefNot.getAll().isEmpty()) {
-            ComponentName receiver = new ComponentName(getContext(), ReminderReceiver.class);
-            PackageManager pm = getContext().getPackageManager();
-            pm.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-                    PackageManager.DONT_KILL_APP);
+//            ComponentName receiver = new ComponentName(getContext(), ReminderReceiver.class);
+//            PackageManager pm = getContext().getPackageManager();
+//            pm.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+//                    PackageManager.DONT_KILL_APP);
+            ReminderReceiver.setBootReceiverEnabled(getContext(),true);
         }
 
         //Set up the alarm manager for the notification
@@ -308,10 +312,11 @@ public class CashBoxItemFragment extends Fragment {
 
         //Disable boot receiver
         if(sharedPrefNot.getAll().isEmpty()) {
-            ComponentName receiver = new ComponentName(getContext(), ReminderReceiver.class);
-            PackageManager pm = getContext().getPackageManager();
-            pm.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-                    PackageManager.DONT_KILL_APP);
+//            ComponentName receiver = new ComponentName(getContext(), ReminderReceiver.class);
+//            PackageManager pm = getContext().getPackageManager();
+//            pm.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+//                    PackageManager.DONT_KILL_APP);
+            ReminderReceiver.setBootReceiverEnabled(getContext(),false);
         }
     }
 
@@ -485,7 +490,7 @@ public class CashBoxItemFragment extends Fragment {
                 CashBox.Entry modifiedEntry = currentList.get(position);
 
                 inputInfo.setText(modifiedEntry.getInfo());
-                inputAmount.setText(String.format(Locale.getDefault(), "%.2f", modifiedEntry.getAmount()));
+                inputAmount.setText(String.format(Locale.US, "%.2f", modifiedEntry.getAmount()));
                 // Show keyboard and select the whole text
                 inputAmount.selectAll();
                 Util.showKeyboard(getContext(), inputAmount);
@@ -540,7 +545,7 @@ public class CashBoxItemFragment extends Fragment {
 //
 //                positive.setOnClickListener((View v) -> {
 //                    try {
-//                        LogUtil.debug(TAG, "showAddDialog: cause" + (inputInfo.getText() == null) + (inputInfo.getText().toString().isEmpty()));
+//                        LogUtil.debug(TAG_PERIODIC, "showAddDialog: cause" + (inputInfo.getText() == null) + (inputInfo.getText().toString().isEmpty()));
 //                        String input = inputAmount.getText().toString().trim();
 //                        if (input.isEmpty()) {
 //                            layoutAmount.setError(getString(R.string.required));

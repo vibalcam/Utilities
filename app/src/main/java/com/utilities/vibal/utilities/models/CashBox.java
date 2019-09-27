@@ -199,6 +199,10 @@ public class CashBox implements Parcelable {
             cash = parcel.readDouble();
         }
 
+        public long getId() {
+            return cashBoxInfo.getId();
+        }
+
         public double getCash() {
             return cash;
         }
@@ -244,10 +248,10 @@ public class CashBox implements Parcelable {
             dest.writeDouble(cash);
         }
 
-        //Implement DiffDbUsable
+        //Implements DiffDbUsable
         @Override
-        public long getId() {
-            return cashBoxInfo.getId();
+        public boolean areItemsTheSame(InfoWithCash newItem) {
+            return this.getId()==newItem.getId();
         }
 
         @Override
@@ -272,8 +276,9 @@ public class CashBox implements Parcelable {
 
     // Immutable object in orderPos for cloneContents to be easier
     // When modifying directly, watch out, since an entry can be in cloned cashBoxes (no set methods)
-    @Entity(tableName = "entries_table", foreignKeys = @ForeignKey(entity = CashBoxInfo.class,
-            parentColumns = "id", childColumns = "cashBoxId",onDelete = CASCADE, onUpdate = CASCADE),
+    @Entity(tableName = "entries_table",
+            foreignKeys = @ForeignKey(entity = CashBoxInfo.class, parentColumns = "id",
+                    childColumns = "cashBoxId",onDelete = CASCADE, onUpdate = CASCADE),
             indices = {@Index(value = "cashBoxId")})
     public static class Entry implements Parcelable, Cloneable, DiffDbUsable<Entry> {
         @Ignore
@@ -298,9 +303,9 @@ public class CashBox implements Parcelable {
         @PrimaryKey(autoGenerate = true)
         private long id;
         private long cashBoxId;
-        private final String info;
-        private final Calendar date;
-        private final double amount;
+        private String info;
+        private Calendar date;
+        private double amount;
 
         /**
          * Constructor for Room
@@ -416,6 +421,11 @@ public class CashBox implements Parcelable {
         }
 
         //Implements DiffDbUsable
+        @Override
+        public boolean areItemsTheSame(Entry newItem) {
+            return this.id==newItem.id;
+        }
+
         @Override
         public boolean areContentsTheSame(Entry newItem) {
             return this.amount==newItem.amount && this.date.equals(newItem.date)

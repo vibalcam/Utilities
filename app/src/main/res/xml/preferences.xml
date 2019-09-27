@@ -14,8 +14,14 @@
         <SwitchPreference
             app:key="swipeLeftDelete"
             app:title="@string/pref_swipeDelete"
-            app:summaryOn="@string/summaryOn_swipeDelete"
-            app:summaryOff="@string/summaryOff_swipeDelete"
+            app:summaryOn="@string/pref_summaryOn_swipeDelete"
+            app:summaryOff="@string/pref_summaryOff_swipeDelete"
+            app:defaultValue="true" />
+        <SwitchPreference
+            app:key="notifyPeriodic"
+            app:title="@string/pref_notifyPeriodic"
+            app:summaryOn="@string/pref_summaryOn_notifyPeriodic"
+            app:summaryOff="@string/pref_summaryOff_notifyPeriodic"
             app:defaultValue="true" />
     </PreferenceCategory>
 </androidx.preference.PreferenceScreen>

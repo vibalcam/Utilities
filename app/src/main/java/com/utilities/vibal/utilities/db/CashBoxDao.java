@@ -31,21 +31,21 @@ public abstract class CashBoxDao {
 //    abstract LiveData<List<CashBox>> getAllCashBoxes();
 
 //    @Query("SELECT * FROM cashBoxesInfo_table ORDER BY id DESC")
-    @Query("SELECT C.id,C.name,C.orderId,SUM(amount) AS cash FROM cashBoxesInfo_table AS C " +
-            "LEFT JOIN entries_table AS E ON C.id=E.cashBoxId " +
+    @Query("SELECT C.id,C.name,C.orderId,SUM(amount) AS cash " +
+            "FROM cashBoxesInfo_table AS C LEFT JOIN entries_table AS E ON C.id=E.cashBoxId " +
             "GROUP BY C.id,C.name,C.orderId " +
             "ORDER BY C.orderId DESC")
     abstract LiveData<List<CashBox.InfoWithCash>> getAllCashBoxesInfo();
 
-    @Query("SELECT C.id,C.name,C.orderId,SUM(amount) AS cash FROM cashBoxesInfo_table AS C " +
-            "LEFT JOIN entries_table AS E ON C.id=E.cashBoxId " +
+    @Query("SELECT C.id,C.name,C.orderId,SUM(amount) AS cash " +
+            "FROM cashBoxesInfo_table AS C LEFT JOIN entries_table AS E ON C.id=E.cashBoxId " +
             "WHERE C.id=:id " +
             "GROUP BY C.id,C.name,C.orderId")
     abstract LiveData<CashBox.InfoWithCash> getCashBoxInfoWithCashById(long id);
 
     @Transaction
-    @Query("SELECT C.id,C.name,C.orderId,SUM(amount) AS cash FROM cashBoxesInfo_table AS C " +
-            "LEFT JOIN entries_table AS E ON C.id=E.cashBoxId " +
+    @Query("SELECT C.id,C.name,C.orderId,SUM(amount) AS cash " +
+            "FROM cashBoxesInfo_table AS C LEFT JOIN entries_table AS E ON C.id=E.cashBoxId " +
             "WHERE C.id=:id " +
             "GROUP BY C.id,C.name,C.orderId")
     public abstract Single<CashBox> getCashBoxById(long id);
@@ -93,8 +93,8 @@ public abstract class CashBoxDao {
 
     // Get all CashBoxInfo to supply the widget
 //    @Query("SELECT * FROM cashBoxesInfo_table ORDER BY id DESC")
-    @Query("SELECT C.id,C.name,C.orderId,SUM(amount) AS cash FROM cashBoxesInfo_table AS C " +
-            "LEFT JOIN entries_table AS E ON C.id=E.cashBoxId " +
+    @Query("SELECT C.id,C.name,C.orderId,SUM(amount) AS cash " +
+            "FROM cashBoxesInfo_table AS C LEFT JOIN entries_table AS E ON C.id=E.cashBoxId " +
             "GROUP BY C.id,C.name,C.orderId " +
             "ORDER BY C.orderId DESC")
     public abstract List<CashBox.InfoWithCash> getAllCashBoxInfoForWidget();

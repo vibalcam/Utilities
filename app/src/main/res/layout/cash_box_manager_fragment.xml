@@ -30,13 +30,23 @@
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
+    <View
+        android:id="@+id/bgFabMenu_CBManager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#48000000"
+        android:alpha="0"
+        android:visibility="gone"/>
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabCBManager"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
+        app:fabSize="normal"
         android:src="@drawable/ic_add"
-        app:srcCompat="@drawable/ic_add"/>
+        app:srcCompat="@drawable/ic_add"
+        android:tint="@android:color/black"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

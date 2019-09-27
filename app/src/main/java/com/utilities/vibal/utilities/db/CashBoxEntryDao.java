@@ -37,6 +37,6 @@ public interface CashBoxEntryDao {
             "WHERE id=:id")
     Completable modify(long id, double amount, String info);
 
-    @Query("DELETE FROM entries_table WHERE cashBoxId=:id")
-    Single<Integer> deleteAll(long id);
+    @Query("DELETE FROM entries_table WHERE cashBoxId=:cashBoxId")
+    Single<Integer> deleteAll(long cashBoxId);
 }

@@ -123,6 +123,8 @@ public class CashBoxRepository {
         return cashBoxEntryDao.deleteAll(cashBoxId);
     }
 
+
+
     /*public void insertCashBoxInfo(CashBox.CashBoxInfo cashBoxInfo) throws SQLiteConstraintException {
         try {
             new InsertCashBoxAsyncTask(cashBoxDao).execute(cashBoxInfo);

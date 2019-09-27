@@ -62,10 +62,13 @@ public class CashBoxSwipeController extends ItemTouchHelper.Callback {
 
     @Override
     public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-        if (direction == LEFT)
-            adapter.onItemDelete(viewHolder.getAdapterPosition());
-        else if (direction == RIGHT)
-            adapter.onItemModify(viewHolder.getAdapterPosition());
+        if(direction == LEFT || direction == RIGHT) {
+            //^ is an exclusive OR: (left and true) or (right and false)
+            if (direction == RIGHT ^ swipeLeftDelete)
+                adapter.onItemDelete(viewHolder.getAdapterPosition());
+            else
+                adapter.onItemModify(viewHolder.getAdapterPosition());
+        }
     }
 
     @Override

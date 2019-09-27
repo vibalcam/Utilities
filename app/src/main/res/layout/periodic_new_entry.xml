@@ -8,51 +8,56 @@
     android:paddingBottom="@dimen/inputTextMargin"
     android:paddingStart="@dimen/paddingDialog"
     android:paddingEnd="@dimen/paddingDialog">
+
+    <include layout="@layout/cash_box_item_entry_input"
+        android:id="@+id/entryInput"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_margin="0dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/reminder_inputLayoutPeriod" />
+
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/inputLayoutName"
+        android:id="@+id/reminder_inputLayoutPeriod"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         style="@style/AppTheme.TextInputLayout"
-        app:helperTextEnabled="true"
-        app:helperText="@string/helperEnterNameDialog"
+        android:hint="@string/periodic_dialog_periodHint"
         app:errorEnabled="true"
-        app:counterEnabled="true"
-        app:counterMaxLength="15"
-        android:hint="@string/enterNameDialog"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/inputLayoutInitCash"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="@id/entryInput"
+        app:layout_constraintEnd_toStartOf="@id/reminder_inputLayoutRepetitions"
+        app:layout_constraintTop_toBottomOf="@id/entryInput"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintHorizontal_weight="3"
-        android:layout_marginEnd="@dimen/inputTextMargin" >
+        android:layout_marginEnd="@dimen/inputTextMargin">
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/inputTextName"
+            android:id="@+id/reminder_inputTextPeriod"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:textColor="@android:color/black"
-            android:maxLength="15"
-            android:inputType="textPersonName"/>
+            android:inputType="number"
+            android:digits="0123456789" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/inputLayoutInitCash"
+        android:id="@+id/reminder_inputLayoutRepetitions"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         style="@style/AppTheme.TextInputLayout"
         app:errorEnabled="true"
-        android:hint="@string/enterInitCashDialog"
-        app:layout_constraintStart_toEndOf="@id/inputLayoutName"
+        android:hint="@string/repetitions"
+        app:layout_constraintStart_toEndOf="@id/reminder_inputLayoutPeriod"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintHorizontal_weight="2"
+        app:layout_constraintTop_toTopOf="@id/reminder_inputLayoutPeriod"
+        app:layout_constraintBottom_toBottomOf="@+id/reminder_inputLayoutPeriod"
         android:layout_marginStart="@dimen/inputTextMargin" >
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/inputTextInitCash"
+            android:id="@+id/reminder_inputTextRepetitions"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:textColor="@android:color/black"
-            android:inputType="numberSigned|numberDecimal"
-            android:digits="0123456789.-,+*/"/>
+            android:inputType="number"
+            android:digits="0123456789"/>
     </com.google.android.material.textfield.TextInputLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

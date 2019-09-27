@@ -15,13 +15,15 @@ import com.utilities.vibal.utilities.util.Converters;
 import io.reactivex.Completable;
 import io.reactivex.schedulers.Schedulers;
 
-@Database(entities = {CashBoxInfo.class,CashBox.Entry.class},version = 1,exportSchema = false)
+@Database(entities = {CashBoxInfo.class, CashBox.Entry.class,
+        PeriodicEntryPojo.PeriodicEntryWorkInfo.class},version = 1,exportSchema = false)
 @TypeConverters(Converters.class)
 public abstract class UtilitiesDatabase extends RoomDatabase {
     private static UtilitiesDatabase INSTANCE = null;
 
     public abstract CashBoxEntryDao cashBoxEntryDao();
     public abstract CashBoxDao cashBoxDao();
+    public abstract PeriodicEntryWorkDao periodicEntryWorkDao();
 
     public static synchronized UtilitiesDatabase getInstance(Context context) {
         if(INSTANCE == null) {

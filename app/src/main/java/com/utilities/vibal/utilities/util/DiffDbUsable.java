@@ -7,7 +7,7 @@ import android.os.Bundle;
  * @param <T> type of the objects to use in the {@link DiffCallback}
  */
 public interface DiffDbUsable<T> {
-    long getId();
+    boolean areItemsTheSame(T newItem);
     boolean areContentsTheSame(T newItem);
     default Bundle getChangePayload(T newItem){
         return null;

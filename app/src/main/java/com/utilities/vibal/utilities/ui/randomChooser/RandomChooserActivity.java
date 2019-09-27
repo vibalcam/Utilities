@@ -73,7 +73,7 @@ public class RandomChooserActivity extends AppCompatActivity {
                 Toast.makeText(this, "Deleted all entries", Toast.LENGTH_SHORT).show();
                 return true;
             case R.id.action_RC_help:
-                Util.getHelpDialog(this, R.string.randomChooser_helpTitle, R.string.randomChooser_help).show();
+                Util.createHelpDialog(this, R.string.randomChooser_helpTitle, R.string.randomChooser_help).show();
                 return true;
             case R.id.action_RC_settings:
                 startActivity(new Intent(this, SettingsActivity.class));

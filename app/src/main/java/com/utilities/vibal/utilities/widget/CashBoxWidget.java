@@ -49,6 +49,8 @@ public class CashBoxWidget extends AppWidgetProvider {
         }
     }
 
+    //todo update al salir de app
+
 //    @Override
 //    public void onReceive(Context context, Intent intent) {
 //        if(ACTION_DETAILS.equals(intent.getAction())) {

@@ -15,7 +15,6 @@ public class App extends Application {
         createNotificationChannels();
     }
 
-    //TODO create channel
     private void createNotificationChannels(){
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             //Reminder Channel
