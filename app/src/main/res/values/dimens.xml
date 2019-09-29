@@ -16,4 +16,5 @@
     <dimen name="marginAddButton_cbmWidget">16dp</dimen>
     <dimen name="paddingList_cbmWidget">10dp</dimen>
     <dimen name="paddingListItem_cbmWidget">10dp</dimen>
+    <dimen name="marginRV_periodic_info">2dp</dimen>
 </resources>

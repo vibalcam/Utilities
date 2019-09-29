@@ -71,6 +71,7 @@
     <!--CashBox Periodic Fragment-->
     <string name="periodic_amountPeriod">%s/%d days</string>
     <string name="repetitions">Repetitions</string>
+    <string name="periodic_repetitionsLeft">%d times left</string>
 
     <!--CashBox Periodic Entry-->
     <string name="periodic_dialog_periodHint">Period (days)</string>

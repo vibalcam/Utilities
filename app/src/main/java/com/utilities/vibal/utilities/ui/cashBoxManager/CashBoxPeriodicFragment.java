@@ -23,6 +23,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -33,7 +34,7 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.utilities.vibal.utilities.R;
 import com.utilities.vibal.utilities.db.PeriodicEntryPojo;
-import com.utilities.vibal.utilities.models.PeriodicEntryWorkViewModel;
+import com.utilities.vibal.utilities.modelsNew.PeriodicEntryWorkViewModel;
 import com.utilities.vibal.utilities.ui.settings.SettingsActivity;
 import com.utilities.vibal.utilities.ui.swipeController.CashBoxAdapterSwipable;
 import com.utilities.vibal.utilities.ui.swipeController.CashBoxSwipeController;
@@ -80,7 +81,9 @@ public class CashBoxPeriodicFragment extends Fragment {
         //Set up the RecyclerView
         RecyclerView rvPeriodicEntry = view.findViewById(R.id.rvCashBoxPeriodic);
         rvPeriodicEntry.setHasFixedSize(true);
-        rvPeriodicEntry.setLayoutManager(new LinearLayoutManager(getContext()));
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
+        rvPeriodicEntry.setLayoutManager(layoutManager);
+        rvPeriodicEntry.addItemDecoration(new DividerItemDecoration(getContext(), layoutManager.getOrientation()));
         adapter = new CashBoxPeriodicRecyclerAdapter();
         rvPeriodicEntry.setAdapter(adapter);
         new ItemTouchHelper(new CashBoxSwipeController(adapter,
@@ -186,6 +189,7 @@ public class CashBoxPeriodicFragment extends Fragment {
             holder.rvInfo.setText(workInfo.getInfo());
             holder.rvAmountPeriod.setText(getString(R.string.periodic_amountPeriod,
                     currencyFormat.format(workInfo.getAmount()),workInfo.getRepeatInterval()));
+            holder.rvRepetitions.setText(getString(R.string.periodic_repetitionsLeft, workInfo.getRepetitions()));
             int colorRes = workInfo.getAmount()<0 ? R.color.colorNegativeNumber : R.color.colorPositiveNumber;
             holder.rvAmountPeriod.setTextColor(getContext().getColor(colorRes));
         }
@@ -246,33 +250,49 @@ public class CashBoxPeriodicFragment extends Fragment {
                 TextInputEditText inputAmount = ((AlertDialog) dialogInterface).findViewById(R.id.inputTextAmount);
                 TextInputLayout layoutAmount = ((AlertDialog) dialogInterface).findViewById(R.id.inputLayoutAmount);
                 TextInputEditText inputPeriod = ((AlertDialog) dialogInterface).findViewById(R.id.reminder_inputTextPeriod);
+                TextInputEditText inputRepetitions = ((AlertDialog) dialogInterface).findViewById(R.id.reminder_inputTextRepetitions);
+                TextInputLayout layoutRepetitions = ((AlertDialog) dialogInterface).findViewById(R.id.reminder_inputLayoutRepetitions);
 
                 //Set to the current values
                 inputInfo.setText(workInfo.getInfo());
                 inputAmount.setText(String.format(Locale.US,"%.2f",workInfo.getAmount()));
                 inputPeriod.setText(String.format(Locale.US,"%d",workInfo.getRepeatInterval()));
+                inputRepetitions.setText(String.format(Locale.US,"%d",workInfo.getRepetitions()));
 
                 Util.showKeyboard(getContext(), inputAmount);
                 positive.setOnClickListener((View v) -> {
                     try {
                         String input = inputAmount.getText().toString().trim();
+                        int repetitions = Integer.parseInt(inputRepetitions.getText().toString());
                         if (input.isEmpty()) {
                             layoutAmount.setError(getString(R.string.required));
                             Util.showKeyboard(getContext(), inputAmount);
+                        } else if(repetitions<1) {
+                            layoutRepetitions.setError("Min. 1");
+                            Util.showKeyboard(getContext(),inputRepetitions);
                         } else { //Change values and do the DB change
-                            workInfo.setAmount(Util.parseExpression(inputAmount.getText().toString()));
-                            workInfo.setInfo(inputInfo.getText().toString());
-                            workInfo.setRepeatInterval(Long.parseLong(inputPeriod.getText().toString()));
+                            try {
+                                workInfo.setAmount(Util.parseExpression(inputAmount.getText().toString()));
+                                workInfo.setInfo(inputInfo.getText().toString());
+                                workInfo.setRepeatInterval(Long.parseLong(inputPeriod.getText().toString()));
+                                workInfo.setRepetitions(repetitions);
 
-                            viewModel.addDisposable(viewModel.replacePeriodicEntryWorkInfo(workInfo)
-                                    .subscribeOn(Schedulers.io())
-                                    .observeOn(AndroidSchedulers.mainThread())
-                                    .subscribe());
+                                //todo change if its currently available
+                                viewModel.addDisposable(viewModel.updatePeriodicEntryWorkInfo(workInfo)
+                                        .subscribeOn(Schedulers.io())
+                                        .observeOn(AndroidSchedulers.mainThread())
+                                        .subscribe());
+                                dialogInterface.dismiss();
+                            } catch (NumberFormatException e) {
+                                layoutAmount.setError(getString(R.string.errorMessageAmount));
+                                inputAmount.selectAll();
+                                Util.showKeyboard(getContext(), inputAmount);
+                            }
                         }
                     } catch (NumberFormatException e) {
-                        layoutAmount.setError(getString(R.string.errorMessageAmount));
-                        inputAmount.selectAll();
-                        Util.showKeyboard(getContext(), inputAmount);
+                        layoutRepetitions.setError(getString(R.string.errorMessageAmount));
+                        inputRepetitions.selectAll();
+                        Util.showKeyboard(getContext(), inputRepetitions);
                     }
                 });
             });
@@ -283,6 +303,7 @@ public class CashBoxPeriodicFragment extends Fragment {
             @BindView(R.id.periodic_rvName) TextView rvName;
             @BindView(R.id.periodic_rvAmountPeriod) TextView rvAmountPeriod;
             @BindView(R.id.periodic_rvInfo) TextView rvInfo;
+            @BindView(R.id.periodic_rvRepetitions) TextView rvRepetitions;
 
             public ViewHolder(@NonNull View itemView) {
                 super(itemView);

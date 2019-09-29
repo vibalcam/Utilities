@@ -23,13 +23,17 @@ public class CashBoxSwipeController extends ItemTouchHelper.Callback {
     private static final String TAG = "PruebaSwipeController";
     private static final float SWIPE_THRESHOLD = 0.4f;
 
-    private final boolean swipeLeftDelete;
+    private boolean swipeLeftDelete;
     private CashBoxAdapterSwipable adapter;
     private int fromIndex = -1;
     private int toIndex = -1;
 
     public CashBoxSwipeController(CashBoxAdapterSwipable adapter, boolean swipeLeftDelete) {
         this.adapter = adapter;
+        this.swipeLeftDelete = swipeLeftDelete;
+    }
+
+    public void setSwipeLeftDelete(boolean swipeLeftDelete) {
         this.swipeLeftDelete = swipeLeftDelete;
     }
 
@@ -114,6 +118,7 @@ public class CashBoxSwipeController extends ItemTouchHelper.Callback {
     @Override
     public void clearView(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
         super.clearView(recyclerView, viewHolder);
+        LogUtil.debug(TAG,"View Cleared");
 
         if (fromIndex != -1 && toIndex != -1) { // if there has been a move motion
             adapter.onItemDrop(fromIndex, toIndex);

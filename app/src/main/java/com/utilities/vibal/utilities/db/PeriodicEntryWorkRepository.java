@@ -33,41 +33,26 @@ public class PeriodicEntryWorkRepository {
     }
 
     public Completable addPeriodicEntryWorkRequest (PeriodicEntryPojo.PeriodicEntryWorkRequest workRequest) {
-//        //Create the periodic task
-//        Constraints constraints = new Constraints.Builder()
-//                .setRequiresBatteryNotLow(true)
-//                .setRequiresDeviceIdle(true)
-//                .build();
-////        Data entryData = new Data.Builder()
-////                .putLong(EXTRA_CASHBOX_ID, cashBoxId)
-////                .putString(RxPeriodicEntryWorker.KEY_INFO, info)
-////                .putDouble(RxPeriodicEntryWorker.KEY_AMOUNT, amount)
-////                .build();
-//        PeriodicWorkRequest saveRequest = new PeriodicWorkRequest.Builder(RxPeriodicEntryWorker.class,
-//                workInfo.getRepeatInterval(), PeriodicEntryPojo.TIME_UNIT)
-//                .setConstraints(constraints)
-////                .setInputData(entryData)
-//                .addTag(RxPeriodicEntryWorker.TAG_PERIODIC)
-//                .addTag(String.format(Locale.US, RxPeriodicEntryWorker.TAG_CASHBOX_ID,
-//                        workInfo.getCashBoxId()))
-//                .build();
         workManager.enqueue(workRequest.getWorkRequest()); //todo observe, calculate difference between lists
-
         //Add the data to database
         return periodicEntryWorkDao.insert(workRequest.getWorkInfo());
     }
 
-    public Completable replacePeriodicEntryWorkInfo(PeriodicEntryPojo.PeriodicEntryWorkInfo workInfo) {
-        return deletePeriodicEntryWorkInfo(workInfo)
-                .flatMapCompletable(integer -> integer==0 ?
-                        Completable.error(new IllegalArgumentException("No entry delted")) :
-                        addPeriodicEntryWorkRequest(new PeriodicEntryPojo.PeriodicEntryWorkRequest(
-                                workInfo.getCashBoxId(),workInfo.getAmount(),workInfo.getInfo(),
-                                workInfo.getRepeatInterval())));
+    public Single<Integer> updatePeriodicEntryWorkInfo(PeriodicEntryPojo.PeriodicEntryWorkInfo workInfo) {
+        return periodicEntryWorkDao.update(workInfo);
     }
 
+//    public Completable replacePeriodicEntryWorkInfo(PeriodicEntryPojo.PeriodicEntryWorkInfo workInfo) {
+//        return deletePeriodicEntryWorkInfo(workInfo)
+//                .flatMapCompletable(integer -> integer==0 ?
+//                        Completable.error(new IllegalArgumentException("No entry delted")) :
+//                        addPeriodicEntryWorkRequest(new PeriodicEntryPojo.PeriodicEntryWorkRequest(
+//                                workInfo.getCashBoxId(),workInfo.getAmount(),workInfo.getInfo(),
+//                                workInfo.getRepeatInterval())));
+//    }
+
     public Single<Integer> deletePeriodicEntryWorkInfo (PeriodicEntryPojo.PeriodicEntryWorkInfo workInfo) {
-        workManager.cancelWorkById(workInfo.getId()); //Cancel work
+        workManager.cancelWorkById(workInfo.getWorkId()); //Cancel work
         return periodicEntryWorkDao.delete(workInfo); //Delete from database
     }
 

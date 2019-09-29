@@ -9,15 +9,17 @@
     android:paddingStart="@dimen/paddingDialog"
     android:paddingEnd="@dimen/paddingDialog">
 
-    <include layout="@layout/cash_box_item_entry_input"
+    <LinearLayout
         android:id="@+id/entryInput"
-        android:layout_height="wrap_content"
         android:layout_width="match_parent"
-        android:layout_margin="0dp"
+        android:layout_height="wrap_content"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/reminder_inputLayoutPeriod" />
+        app:layout_constraintBottom_toTopOf="@+id/reminder_inputLayoutPeriod" >
+
+        <include layout="@layout/cash_box_entry_amount_info" />
+    </LinearLayout>
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/reminder_inputLayoutPeriod"

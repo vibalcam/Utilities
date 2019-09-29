@@ -7,7 +7,7 @@ import android.widget.RemoteViewsService;
 
 import com.utilities.vibal.utilities.R;
 import com.utilities.vibal.utilities.db.UtilitiesDatabase;
-import com.utilities.vibal.utilities.models.CashBox;
+import com.utilities.vibal.utilities.modelsNew.CashBox;
 import com.utilities.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity;
 
 import java.text.NumberFormat;

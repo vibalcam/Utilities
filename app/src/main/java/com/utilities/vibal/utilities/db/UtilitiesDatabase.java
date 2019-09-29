@@ -9,7 +9,7 @@ import androidx.room.RoomDatabase;
 import androidx.room.TypeConverters;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
-import com.utilities.vibal.utilities.models.CashBox;
+import com.utilities.vibal.utilities.modelsNew.CashBox;
 import com.utilities.vibal.utilities.util.Converters;
 
 import io.reactivex.Completable;
@@ -29,7 +29,7 @@ public abstract class UtilitiesDatabase extends RoomDatabase {
         if(INSTANCE == null) {
             INSTANCE = Room.databaseBuilder(context.getApplicationContext(), UtilitiesDatabase.class,
                     "utilities_database")
-                    .fallbackToDestructiveMigration()
+//                    .fallbackToDestructiveMigration()
                     .addCallback(roomCallback)
                     .build();
         }
@@ -46,24 +46,6 @@ public abstract class UtilitiesDatabase extends RoomDatabase {
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.single())
                     .subscribe();
-
-
-//            new PopulateDBAsyncTask(instance).execute();
         }
     };
-
-//    private static class PopulateDBAsyncTask extends AsyncTask<Void,Void,Void> {
-//        private CashBoxDao cashBoxDao;
-//
-//        private PopulateDBAsyncTask(UtilitiesDatabase database) {
-//            cashBoxDao = database.cashBoxDao();
-//        }
-//
-//        @Override
-//        protected Void doInBackground(Void... voids) {
-//            CashBox cashBox = new CashBox("Example");
-//            cashBoxDao.insert(cashBox.getInfoWithCash());
-//            return null;
-//        }
-//    }
 }

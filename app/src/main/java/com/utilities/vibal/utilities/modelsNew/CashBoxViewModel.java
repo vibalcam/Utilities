@@ -1,4 +1,4 @@
-package com.utilities.vibal.utilities.models;
+package com.utilities.vibal.utilities.modelsNew;
 
 import android.app.Application;
 
@@ -81,7 +81,7 @@ public class CashBoxViewModel extends AndroidViewModel {
 //        CashBox.InfoWithCash cashBoxInfo = cashBox.getInfoWithCash();
 //        Completable completable = addCashBoxInfo(cashBoxInfo);
 //        for(CashBox.Entry entry:cashBox.getEntries())
-//            completable = completable.andThen(addEntry(cashBoxInfo.getCashBoxInfo().getId(),entry));
+//            completable = completable.andThen(addEntry(cashBoxInfo.getCashBoxInfo().getWorkId(),entry));
 //        return completable;
     }
 

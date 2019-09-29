@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    tools:showIn="@layout/cash_box_item_entry_input">
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/inputLayoutAmount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="3"
+        style="@style/AppTheme.TextInputLayout"
+        android:layout_gravity="top"
+        app:errorEnabled="true"
+        android:layout_marginEnd="@dimen/inputTextMargin"
+        android:hint="@string/enterAmountDialog" >
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/inputTextAmount"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:textColor="@android:color/black"
+            android:inputType="numberSigned|numberDecimal|text"
+            android:digits="0123456789.-,+*/"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="2"
+        style="@style/AppTheme.TextInputLayout"
+        android:layout_marginStart="@dimen/inputTextMargin"
+        app:helperTextEnabled="true"
+        app:helperText="Can be blank"
+        app:endIconMode="clear_text"
+        android:hint="@string/enterInfoDialog" >
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/inputTextInfo"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:textColor="@android:color/black"
+            android:inputType="textMultiLine"
+            android:allowUndo="true" />
+    </com.google.android.material.textfield.TextInputLayout>
+</merge>

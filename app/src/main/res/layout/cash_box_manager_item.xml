@@ -40,10 +40,8 @@
         android:layout_height="match_parent"
         android:layout_gravity="center_vertical|end"
         android:scaleType="center"
-        android:visibility="visible"
         android:tint="#A5A5A5"
-        android:src="@drawable/reorder_horizontal_gray_24dp"
-        app:srcCompat="@drawable/reorder_horizontal_gray_24dp"
-        tools:visibility="visible"
+        android:src="@drawable/ic_add"
+        app:srcCompat="@drawable/ic_add"
         tools:ignore="ContentDescription" />
 </LinearLayout>

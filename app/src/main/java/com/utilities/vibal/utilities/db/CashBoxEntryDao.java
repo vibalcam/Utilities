@@ -7,7 +7,7 @@ import androidx.room.Insert;
 import androidx.room.Query;
 import androidx.room.Update;
 
-import com.utilities.vibal.utilities.models.CashBox;
+import com.utilities.vibal.utilities.modelsNew.CashBox;
 
 import java.util.Collection;
 import java.util.List;

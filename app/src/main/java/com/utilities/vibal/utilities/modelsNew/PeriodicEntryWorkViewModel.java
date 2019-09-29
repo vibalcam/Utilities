@@ -1,4 +1,4 @@
-package com.utilities.vibal.utilities.models;
+package com.utilities.vibal.utilities.modelsNew;
 
 import android.app.Application;
 
@@ -44,9 +44,13 @@ public class PeriodicEntryWorkViewModel extends AndroidViewModel {
         return repository.addPeriodicEntryWorkRequest(workRequest);
     }
 
-    public Completable replacePeriodicEntryWorkInfo(PeriodicEntryPojo.PeriodicEntryWorkInfo workInfo) {
-        return repository.replacePeriodicEntryWorkInfo(workInfo);
+    public Single<Integer> updatePeriodicEntryWorkInfo(PeriodicEntryPojo.PeriodicEntryWorkInfo workInfo) {
+        return repository.updatePeriodicEntryWorkInfo(workInfo);
     }
+
+//    public Completable replacePeriodicEntryWorkInfo(PeriodicEntryPojo.PeriodicEntryWorkInfo workInfo) {
+//        return repository.replacePeriodicEntryWorkInfo(workInfo);
+//    }
 
     public Completable deletePeriodicEntryWorkInfo(PeriodicEntryPojo.PeriodicEntryWorkInfo workInfo) {
         return repository.deletePeriodicEntryWorkInfo(workInfo)

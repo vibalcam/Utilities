@@ -23,8 +23,6 @@ public class CashBoxManagerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.cash_box_manager_activity);
 
-        //todo add the toolbar on the manager activity
-
         //Cancel reminder notifications if any
         NotificationManagerCompat.from(this).cancelAll();
 

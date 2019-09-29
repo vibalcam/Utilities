@@ -8,7 +8,7 @@ import androidx.room.Query;
 import androidx.room.Transaction;
 import androidx.room.Update;
 
-import com.utilities.vibal.utilities.models.CashBox;
+import com.utilities.vibal.utilities.modelsNew.CashBox;
 import com.utilities.vibal.utilities.util.LogUtil;
 
 import java.util.ArrayList;

@@ -40,8 +40,8 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.utilities.vibal.utilities.R;
 import com.utilities.vibal.utilities.backgroundTasks.ReminderReceiver;
-import com.utilities.vibal.utilities.models.CashBox;
-import com.utilities.vibal.utilities.models.CashBoxViewModel;
+import com.utilities.vibal.utilities.modelsNew.CashBox;
+import com.utilities.vibal.utilities.modelsNew.CashBoxViewModel;
 import com.utilities.vibal.utilities.ui.settings.SettingsActivity;
 import com.utilities.vibal.utilities.ui.swipeController.CashBoxAdapterSwipable;
 import com.utilities.vibal.utilities.ui.swipeController.CashBoxSwipeController;
@@ -214,12 +214,14 @@ public class CashBoxItemFragment extends Fragment {
         if(timeInMillis==0) { //Set reminder dialog
             //Choose the date and time for the reminder
             Calendar calendar = Calendar.getInstance();
-            Calendar currentCalendar = Calendar.getInstance();
             new DatePickerDialog(getContext(),
                     (datePicker, year, month, dayOfMonth) -> {
-                //todo before dias sin horas ni nada
+                //todo before dias sin horas ni nada arreglar
                         calendar.set(year, month, dayOfMonth);
-                        if (calendar.before(currentCalendar)) {
+                        Calendar current = Calendar.getInstance();
+                        current.add(Calendar.DAY_OF_MONTH,-1);
+                        LogUtil.debug(TAG,"Current: " + current.toString());
+                        if (calendar.before(current)) {
                             Toast.makeText(getContext(), R.string.reminder_dialog_invalid_date, Toast.LENGTH_SHORT).show();
                             return;
                         }
@@ -227,8 +229,10 @@ public class CashBoxItemFragment extends Fragment {
                             calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
                             calendar.set(Calendar.MINUTE, minute);
                             calendar.set(Calendar.SECOND, 0);
+                            Calendar current2 = Calendar.getInstance();
+                            current2.add(Calendar.MINUTE,-1);
 
-                            if (calendar.before(currentCalendar))
+                            if (calendar.before(current2))
                                 Toast.makeText(getContext(), R.string.reminder_dialog_invalid_date, Toast.LENGTH_SHORT).show();
                             else
                                 scheduleReminder(calendar);
