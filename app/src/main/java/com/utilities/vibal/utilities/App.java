@@ -15,7 +15,7 @@ public class App extends Application {
         createNotificationChannels();
     }
 
-    private void createNotificationChannels(){
+    private void createNotificationChannels() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             //Reminder Channel
             NotificationChannel channelReminder = new NotificationChannel(CHANNEL_REMINDER_ID,

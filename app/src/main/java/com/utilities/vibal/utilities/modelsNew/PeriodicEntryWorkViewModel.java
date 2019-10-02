@@ -23,6 +23,7 @@ public class PeriodicEntryWorkViewModel extends AndroidViewModel {
 
     private PeriodicEntryWorkRepository repository;
     private LiveData<List<PeriodicEntryPojo>> periodicEntries;
+    @NonNull
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
 
@@ -40,7 +41,7 @@ public class PeriodicEntryWorkViewModel extends AndroidViewModel {
         return repository.getPeriodicEntryPojo(uuid);
     }
 
-    public Completable addPeriodicEntryWorkRequest(PeriodicEntryPojo.PeriodicEntryWorkRequest workRequest) {
+    public Completable addPeriodicEntryWorkRequest(@NonNull PeriodicEntryPojo.PeriodicEntryWorkRequest workRequest) {
         return repository.addPeriodicEntryWorkRequest(workRequest);
     }
 
@@ -52,7 +53,7 @@ public class PeriodicEntryWorkViewModel extends AndroidViewModel {
 //        return repository.replacePeriodicEntryWorkInfo(workInfo);
 //    }
 
-    public Completable deletePeriodicEntryWorkInfo(PeriodicEntryPojo.PeriodicEntryWorkInfo workInfo) {
+    public Completable deletePeriodicEntryWorkInfo(@NonNull PeriodicEntryPojo.PeriodicEntryWorkInfo workInfo) {
         return repository.deletePeriodicEntryWorkInfo(workInfo)
                 .ignoreElement();
     }
@@ -61,7 +62,7 @@ public class PeriodicEntryWorkViewModel extends AndroidViewModel {
         return repository.deleteAllPeriodicEntryWorks();
     }
 
-    public void addDisposable(Disposable disposable) {
+    public void addDisposable(@NonNull Disposable disposable) {
         compositeDisposable.add(disposable);
     }
 

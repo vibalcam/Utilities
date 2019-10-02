@@ -35,21 +35,13 @@ public class CashBoxInfo implements Cloneable {
         return id;
     }
 
+    public void setId(long id) {
+        this.id = id;
+    }
+
     @NonNull
     public String getName() {
         return name;
-    }
-
-    public long getOrderId() {
-        return orderId;
-    }
-
-    public void setOrderId(long orderId) {
-        this.orderId = orderId;
-    }
-
-    public void setId(long id) {
-        this.id = id;
     }
 
     /**
@@ -68,10 +60,18 @@ public class CashBoxInfo implements Cloneable {
         this.name = name;
     }
 
+    public long getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(long orderId) {
+        this.orderId = orderId;
+    }
+
     @Override
     public boolean equals(Object obj) {
-        if(obj instanceof CashBoxInfo)
-            return ((CashBoxInfo)obj).getName().equalsIgnoreCase(this.getName());
+        if (obj instanceof CashBoxInfo)
+            return ((CashBoxInfo) obj).getName().equalsIgnoreCase(this.getName());
         return false;
     }
 
@@ -80,6 +80,7 @@ public class CashBoxInfo implements Cloneable {
         return name.toLowerCase().hashCode();
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "CashBoxInfo{" +
@@ -91,17 +92,20 @@ public class CashBoxInfo implements Cloneable {
 
     /**
      * Clones the object without conserving the id and the orderId
+     *
      * @return the new object, product of the cloning
      */
+    @NonNull
     public CashBoxInfo cloneContents() {
-            CashBoxInfo cashBoxInfo = clone();
-            cashBoxInfo.id = NO_CASHBOX;
-            cashBoxInfo.orderId = NO_ORDER_ID;
-            return cashBoxInfo;
+        CashBoxInfo cashBoxInfo = clone();
+        cashBoxInfo.id = NO_CASHBOX;
+        cashBoxInfo.orderId = NO_ORDER_ID;
+        return cashBoxInfo;
     }
 
     /**
      * Clones the object
+     *
      * @return the new object, product of the cloning
      */
     @NonNull
@@ -110,7 +114,7 @@ public class CashBoxInfo implements Cloneable {
         try {
             return (CashBoxInfo) super.clone();
         } catch (CloneNotSupportedException e) { // won't happen
-            LogUtil.error("PruebaCashBoxInfo","Cloning error",e);
+            LogUtil.error("PruebaCashBoxInfo", "Cloning error", e);
             return null;
         }
     }

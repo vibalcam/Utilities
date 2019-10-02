@@ -9,6 +9,8 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -28,8 +30,12 @@ import butterknife.OnClick;
 import butterknife.OnEditorAction;
 
 public class RandomChooserActivity extends AppCompatActivity {
-    @BindView(R.id.rvRandomChooser) RecyclerView rvRandomChooser;
-    @BindView(R.id.inputText) EditText inputText;
+    @Nullable
+    @BindView(R.id.rvRandomChooser)
+    RecyclerView rvRandomChooser;
+    @Nullable
+    @BindView(R.id.inputText)
+    EditText inputText;
 
     private List<String> contestants;
 
@@ -64,7 +70,7 @@ public class RandomChooserActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_RC_deleteAll:
                 int size = contestants.size();

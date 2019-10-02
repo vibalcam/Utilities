@@ -5,6 +5,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.room.Embedded;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
@@ -28,11 +29,13 @@ import static androidx.room.ForeignKey.CASCADE;
 
 public class CashBox implements Parcelable {
     public static final Parcelable.Creator<CashBox> CREATOR = new Parcelable.Creator<CashBox>() {
+        @NonNull
         @Override
-        public CashBox createFromParcel(Parcel source) {
+        public CashBox createFromParcel(@NonNull Parcel source) {
             return new CashBox(source);
         }
 
+        @NonNull
         @Override
         public CashBox[] newArray(int size) {
             return new CashBox[size];
@@ -41,16 +44,17 @@ public class CashBox implements Parcelable {
 
     @Embedded
     private InfoWithCash infoWithCash;
+    @Nullable
     @Relation(parentColumn = "id", entityColumn = "cashBoxId")
     private List<Entry> entries;
 
     @Ignore
-    public CashBox(String name) throws IllegalArgumentException {
-        this(new InfoWithCash(name,0),new ArrayList<Entry>());
+    public CashBox(@NonNull String name) throws IllegalArgumentException {
+        this(new InfoWithCash(name,0), new ArrayList<>());
     }
 
     @Ignore
-    public CashBox(String name, List<Entry> entries) throws  IllegalArgumentException {
+    public CashBox(@NonNull String name, @NonNull List<Entry> entries) throws  IllegalArgumentException {
         this.entries = entries;
         infoWithCash = new InfoWithCash(name,calculateCash(entries));
     }
@@ -65,7 +69,7 @@ public class CashBox implements Parcelable {
     }
 
     @Ignore
-    public CashBox(Parcel parcel) {
+    public CashBox(@NonNull Parcel parcel) {
         infoWithCash = InfoWithCash.CREATOR.createFromParcel(parcel);
         entries = parcel.createTypedArrayList(Entry.CREATOR);
     }
@@ -76,7 +80,7 @@ public class CashBox implements Parcelable {
     }
 
     @Override
-    public void writeToParcel(Parcel dest, int flags) {
+    public void writeToParcel(@NonNull Parcel dest, int flags) {
         infoWithCash.writeToParcel(dest,flags);
         dest.writeTypedList(entries);
     }
@@ -85,6 +89,7 @@ public class CashBox implements Parcelable {
         return infoWithCash;
     }
 
+    @NonNull
     public String getName() {
         return infoWithCash.getCashBoxInfo().getName();
     }
@@ -93,6 +98,7 @@ public class CashBox implements Parcelable {
         return infoWithCash.getCash();
     }
 
+    @Nullable
     public List<Entry> getEntries() {
         return entries;
     }
@@ -101,7 +107,7 @@ public class CashBox implements Parcelable {
         this.infoWithCash = infoWithCash;
     }
 
-    public void setName(String name) throws IllegalArgumentException {
+    public void setName(@NonNull String name) throws IllegalArgumentException {
         infoWithCash.getCashBoxInfo().setName(name);
     }
 
@@ -126,6 +132,7 @@ public class CashBox implements Parcelable {
     /**
      * Deep cloneContents of CashBox
      */
+    @NonNull
     @SuppressWarnings("CloneDoesntCallSuperClone")
     public CashBox cloneContents() {
         List<Entry> entryList = new ArrayList<>();
@@ -162,28 +169,31 @@ public class CashBox implements Parcelable {
         private static final String DIFF_CASH = "cash";
         private static final String DIFF_NAME = "name";
         public static final Parcelable.Creator<InfoWithCash> CREATOR = new Parcelable.Creator<InfoWithCash>() {
+            @NonNull
             @Override
-            public InfoWithCash createFromParcel(Parcel source) {
+            public InfoWithCash createFromParcel(@NonNull Parcel source) {
                 return new InfoWithCash(source);
             }
 
+            @NonNull
             @Override
             public InfoWithCash[] newArray(int size) {
                 return new InfoWithCash[size];
             }
         };
 
+        @Nullable
         @Embedded
         private final CashBoxInfo cashBoxInfo;
         private double cash; //sum of amounts
 
         @Ignore
-        public InfoWithCash(String name, double cash) throws IllegalArgumentException {
+        public InfoWithCash(@NonNull String name, double cash) throws IllegalArgumentException {
             this(new CashBoxInfo(name),cash);
         }
 
         @Ignore
-        public InfoWithCash(String name) throws IllegalArgumentException {
+        public InfoWithCash(@NonNull String name) throws IllegalArgumentException {
             this(name, 0);
         }
 
@@ -193,7 +203,7 @@ public class CashBox implements Parcelable {
         }
 
         @Ignore
-        private InfoWithCash(Parcel parcel) {
+        private InfoWithCash(@NonNull Parcel parcel) {
             cashBoxInfo = new CashBoxInfo(parcel.readString());
             cashBoxInfo.setId(parcel.readLong());
             cash = parcel.readDouble();
@@ -207,6 +217,7 @@ public class CashBox implements Parcelable {
             return cash;
         }
 
+        @Nullable
         public CashBoxInfo getCashBoxInfo() {
             return cashBoxInfo;
         }
@@ -223,6 +234,7 @@ public class CashBox implements Parcelable {
             return cashBoxInfo.hashCode();
         }
 
+        @NonNull
         @Override
         public String toString() {
             return "InfoWithCash{" +
@@ -231,6 +243,7 @@ public class CashBox implements Parcelable {
                     '}';
         }
 
+        @NonNull
         public InfoWithCash cloneContents() {
             return new InfoWithCash(cashBoxInfo.cloneContents(),cash);
         }
@@ -242,7 +255,7 @@ public class CashBox implements Parcelable {
         }
 
         @Override
-        public void writeToParcel(Parcel dest, int flags) {
+        public void writeToParcel(@NonNull Parcel dest, int flags) {
             dest.writeString(cashBoxInfo.getName());
             dest.writeLong(cashBoxInfo.getId());
             dest.writeDouble(cash);
@@ -250,17 +263,18 @@ public class CashBox implements Parcelable {
 
         //Implements DiffDbUsable
         @Override
-        public boolean areItemsTheSame(InfoWithCash newItem) {
+        public boolean areItemsTheSame(@NonNull InfoWithCash newItem) {
             return this.getId()==newItem.getId();
         }
 
         @Override
-        public boolean areContentsTheSame(InfoWithCash newItem) {
+        public boolean areContentsTheSame(@NonNull InfoWithCash newItem) {
             return this.cash==newItem.cash && this.equals(newItem);
         }
 
+        @Nullable
         @Override
-        public Bundle getChangePayload(InfoWithCash newItem) {
+        public Bundle getChangePayload(@NonNull InfoWithCash newItem) {
             Bundle diff = new Bundle();
             if(this.cash!=newItem.cash)
                 diff.putDouble(DIFF_CASH,newItem.cash);
@@ -289,11 +303,13 @@ public class CashBox implements Parcelable {
         private static final String DIFF_INFO = "info";
         @Ignore
         public static final Parcelable.Creator<Entry> CREATOR = new Parcelable.Creator<Entry>() {
+            @NonNull
             @Override
-            public Entry createFromParcel(Parcel source) {
+            public Entry createFromParcel(@NonNull Parcel source) {
                 return new Entry(source);
             }
 
+            @NonNull
             @Override
             public Entry[] newArray(int size) {
                 return new Entry[size];
@@ -303,6 +319,7 @@ public class CashBox implements Parcelable {
         @PrimaryKey(autoGenerate = true)
         private long id;
         private long cashBoxId;
+        @Nullable
         private String info;
         private Calendar date;
         private double amount;
@@ -339,6 +356,7 @@ public class CashBox implements Parcelable {
             return cashBoxId;
         }
 
+        @Nullable
         public String getInfo() {
             return info;
         }
@@ -355,6 +373,7 @@ public class CashBox implements Parcelable {
             this.id = id;
         }
 
+        @NonNull
         public Entry getEntryWithCashBoxId(long cashBoxId) {
             if(this.cashBoxId==cashBoxId)
                 return this;
@@ -371,7 +390,7 @@ public class CashBox implements Parcelable {
         }
 
         @NonNull
-        private String toString(NumberFormat currencyFormat, DateFormat dateFormat) {
+        private String toString(@NonNull NumberFormat currencyFormat, @NonNull DateFormat dateFormat) {
             return dateFormat.format(date.getTime()) +
                     "\t\t" +
                     currencyFormat.format(amount) +
@@ -383,6 +402,7 @@ public class CashBox implements Parcelable {
          * Clones the object without conserving the id and the cashBoxId
          * @return the new object, product of the cloning
          */
+        @NonNull
         public Entry cloneContents() {
                 Entry entry = clone();
                 entry.id = 0;
@@ -412,7 +432,7 @@ public class CashBox implements Parcelable {
         }
 
         @Override
-        public void writeToParcel(Parcel dest, int flags) {
+        public void writeToParcel(@NonNull Parcel dest, int flags) {
             dest.writeLong(id);
             dest.writeLong(cashBoxId);
             dest.writeString(info);
@@ -422,18 +442,19 @@ public class CashBox implements Parcelable {
 
         //Implements DiffDbUsable
         @Override
-        public boolean areItemsTheSame(Entry newItem) {
+        public boolean areItemsTheSame(@NonNull Entry newItem) {
             return this.id==newItem.id;
         }
 
         @Override
-        public boolean areContentsTheSame(Entry newItem) {
+        public boolean areContentsTheSame(@NonNull Entry newItem) {
             return this.amount==newItem.amount && this.date.equals(newItem.date)
                     && this.info.equals(newItem.info);
         }
 
+        @Nullable
         @Override
-        public Bundle getChangePayload(Entry newItem) {
+        public Bundle getChangePayload(@NonNull Entry newItem) {
             Bundle diff = new Bundle();
             if(this.amount!=newItem.amount)
                 diff.putDouble(DIFF_AMOUNT,newItem.amount);

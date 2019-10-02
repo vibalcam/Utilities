@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 import static androidx.room.ForeignKey.CASCADE;
 
 public class PeriodicEntryPojo implements DiffDbUsable<PeriodicEntryPojo> {
-    public static final TimeUnit TIME_UNIT = TimeUnit.SECONDS;//todo
+    public static final TimeUnit TIME_UNIT = TimeUnit.DAYS;
 
     @Embedded
     private final PeriodicEntryWorkInfo workInfo;
@@ -46,17 +46,17 @@ public class PeriodicEntryPojo implements DiffDbUsable<PeriodicEntryPojo> {
     }
 
     @Override
-    public boolean areItemsTheSame(PeriodicEntryPojo newItem) {
+    public boolean areItemsTheSame(@NonNull PeriodicEntryPojo newItem) {
         return this.workInfo.workId.equals(newItem.workInfo.workId);
     }
 
     @Override
-    public boolean areContentsTheSame(PeriodicEntryPojo newItem) {
-        return this.workInfo.amount==newItem.workInfo.amount &&
+    public boolean areContentsTheSame(@NonNull PeriodicEntryPojo newItem) {
+        return this.workInfo.amount == newItem.workInfo.amount &&
                 this.workInfo.info.equals(newItem.workInfo.info) &&
-                this.workInfo.repeatInterval==newItem.workInfo.repeatInterval &&
+                this.workInfo.repeatInterval == newItem.workInfo.repeatInterval &&
                 this.cashBoxName.equals(newItem.cashBoxName) &&
-                this.workInfo.repetitions==newItem.workInfo.repetitions;
+                this.workInfo.repetitions == newItem.workInfo.repetitions;
     }
 
     @Entity(tableName = "periodicWork_table",
@@ -89,53 +89,53 @@ public class PeriodicEntryPojo implements DiffDbUsable<PeriodicEntryPojo> {
             return id;
         }
 
+        public void setId(long id) {
+            this.id = id;
+        }
+
         @NonNull
         public UUID getWorkId() {
             return workId;
-        }
-
-        public long getCashBoxId() {
-            return cashBoxId;
-        }
-
-        public String getInfo() {
-            return info;
-        }
-
-        public double getAmount() {
-            return amount;
-        }
-
-        public long getRepeatInterval() {
-            return repeatInterval;
-        }
-
-        public int getRepetitions() {
-            return repetitions;
-        }
-
-        public void setId(long id) {
-            this.id = id;
         }
 
         public void setWorkId(@NonNull UUID workId) {
             this.workId = workId;
         }
 
+        public long getCashBoxId() {
+            return cashBoxId;
+        }
+
         public void setCashBoxId(long cashBoxId) {
             this.cashBoxId = cashBoxId;
+        }
+
+        public String getInfo() {
+            return info;
         }
 
         public void setInfo(String info) {
             this.info = info;
         }
 
+        public double getAmount() {
+            return amount;
+        }
+
         public void setAmount(double amount) {
             this.amount = amount;
         }
 
+        public long getRepeatInterval() {
+            return repeatInterval;
+        }
+
         public void setRepeatInterval(long repeatInterval) {
             this.repeatInterval = repeatInterval;
+        }
+
+        public int getRepetitions() {
+            return repetitions;
         }
 
         public void setRepetitions(int repetitions) {
@@ -151,17 +151,16 @@ public class PeriodicEntryPojo implements DiffDbUsable<PeriodicEntryPojo> {
                                         long repeatInterval, int repetitions) {
             //Create the periodic task
             Constraints constraints = new Constraints.Builder()
-//                    .setRequiresBatteryNotLow(true) todo
+                    .setRequiresBatteryNotLow(true)
                     .build();
             workRequest = new OneTimeWorkRequest.Builder(RxPeriodicEntryWorker.class)
                     .setConstraints(constraints)
-                    .setInitialDelay(repeatInterval,TIME_UNIT)
+                    .setInitialDelay(repeatInterval, TIME_UNIT)
                     .addTag(RxPeriodicEntryWorker.TAG_PERIODIC)
                     .addTag(String.format(Locale.US, RxPeriodicEntryWorker.TAG_CASHBOX_ID, cashBoxId))
                     .build();
             //Create the PeriodicEntryWorkInfo
-            workInfo = new PeriodicEntryWorkInfo(workRequest.getId(),cashBoxId, amount, info, repeatInterval, repetitions);
-
+            workInfo = new PeriodicEntryWorkInfo(workRequest.getId(), cashBoxId, amount, info, repeatInterval, repetitions);
 
 
 //        private PeriodicEntryWorkInfo workInfo;
@@ -185,7 +184,7 @@ public class PeriodicEntryPojo implements DiffDbUsable<PeriodicEntryPojo> {
         }
 
         public PeriodicEntryWorkRequest(@NonNull PeriodicEntryWorkInfo workInfo) {
-            this(workInfo.getCashBoxId(),workInfo.getAmount(),workInfo.getInfo(),
+            this(workInfo.getCashBoxId(), workInfo.getAmount(), workInfo.getInfo(),
                     workInfo.getRepeatInterval(), workInfo.getRepetitions());
             this.workInfo.setId(workInfo.getId());
         }

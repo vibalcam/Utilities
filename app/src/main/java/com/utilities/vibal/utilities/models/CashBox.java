@@ -4,6 +4,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.io.Serializable;
 import java.text.DateFormat;
@@ -15,11 +16,13 @@ import java.util.List;
 public class CashBox implements Serializable, Parcelable {
     public static final int MAX_LENGTH_NAME = 15;
     public static final Parcelable.Creator<CashBox> CREATOR = new Parcelable.Creator<CashBox>() {
+        @NonNull
         @Override
-        public CashBox createFromParcel(Parcel source) {
+        public CashBox createFromParcel(@NonNull Parcel source) {
             return new CashBox(source);
         }
 
+        @NonNull
         @Override
         public CashBox[] newArray(int size) {
             return new CashBox[size];
@@ -28,12 +31,14 @@ public class CashBox implements Serializable, Parcelable {
 
     private static final long serialVersionUID = 2L;
 
+    @Nullable
     private String name;
     private double cash; //sum of amounts
+    @Nullable
     private List<Entry> entries;
 
     public CashBox(String name) throws IllegalArgumentException {
-        this(name, 0, new ArrayList<Entry>());
+        this(name, 0, new ArrayList<>());
     }
 
     /**
@@ -46,7 +51,7 @@ public class CashBox implements Serializable, Parcelable {
         this.entries = entries;
     }
 
-    public CashBox(Parcel parcel) {
+    public CashBox(@NonNull Parcel parcel) {
         name = parcel.readString();
         cash = parcel.readDouble();
         entries = parcel.createTypedArrayList(Entry.CREATOR);
@@ -58,12 +63,13 @@ public class CashBox implements Serializable, Parcelable {
     }
 
     @Override
-    public void writeToParcel(Parcel dest, int flags) {
+    public void writeToParcel(@NonNull Parcel dest, int flags) {
         dest.writeString(name);
         dest.writeDouble(cash);
         dest.writeTypedList(entries);
     }
 
+    @Nullable
     public String getName() {
         return name;
     }
@@ -92,6 +98,7 @@ public class CashBox implements Serializable, Parcelable {
         return entries.get(index);
     }
 
+    @Nullable
     public String getInfo(int position) {
         return entries.get(position).getInfo();
     }
@@ -112,11 +119,11 @@ public class CashBox implements Serializable, Parcelable {
      * @param date   Date in which it was added
      * @return Total cash after the addition
      */
-    public double add(double amount, String cause, Calendar date) {
+    public double add(double amount, @NonNull String cause, Calendar date) {
         return add(0, new Entry(amount, cause, date));
     }
 
-    public double add(int index, double amount, String cause, Calendar date) {
+    public double add(int index, double amount, @NonNull String cause, Calendar date) {
         return add(index, new Entry(amount, cause, date));
     }
 
@@ -126,13 +133,13 @@ public class CashBox implements Serializable, Parcelable {
      * @param entry entry to add back to the CashBox
      * @return cash after adding
      */
-    public double add(int index, CashBox.Entry entry) {
+    public double add(int index, @NonNull CashBox.Entry entry) {
         cash += entry.getAmount();
         entries.add(index, entry);
         return cash;
     }
 
-    public double addAll(List<Entry> entries) {
+    public double addAll(@NonNull List<Entry> entries) {
         this.entries.addAll(entries);
         cash = updateCash();
         return cash;
@@ -159,10 +166,11 @@ public class CashBox implements Serializable, Parcelable {
     /**
      * Clears all entries in the CashBox
      */
+    @Nullable
     public List<Entry> clear() {
         cash = 0;
         List<Entry> entriesRemoved = entries;
-        entries = new ArrayList<Entry>();
+        entries = new ArrayList<>();
 
         return entriesRemoved;
     }
@@ -176,11 +184,11 @@ public class CashBox implements Serializable, Parcelable {
      * @param index  Index to be modified
      * @return Total cash after the modification
      */
-    public CashBox.Entry modify(int index, double amount, String cause, Calendar date) {
+    public CashBox.Entry modify(int index, double amount, @NonNull String cause, Calendar date) {
         return modify(index, new Entry(amount, cause, date));
     }
 
-    public CashBox.Entry modify(int index, CashBox.Entry modifiedEntry) {
+    public CashBox.Entry modify(int index, @NonNull CashBox.Entry modifiedEntry) {
         CashBox.Entry entry = entries.set(index, modifiedEntry);
         cash += modifiedEntry.getAmount() - entry.getAmount();
         return entry;
@@ -201,10 +209,11 @@ public class CashBox implements Serializable, Parcelable {
         return false;
     }
 
+    @NonNull
     @Override
     @SuppressWarnings("CloneDoesntCallSuperClone")
     public Object clone() {
-        return new CashBox(name, cash, new ArrayList<Entry>(entries));
+        return new CashBox(name, cash, new ArrayList<>(entries));
     }
 
     @Override
@@ -230,11 +239,13 @@ public class CashBox implements Serializable, Parcelable {
     // When modifying directly, watch out, since an entry can be in cloned cashBoxes (no set methods)
     public static class Entry implements Serializable, Parcelable {
         public static final Parcelable.Creator<Entry> CREATOR = new Parcelable.Creator<Entry>() {
+            @NonNull
             @Override
-            public Entry createFromParcel(Parcel source) {
+            public Entry createFromParcel(@NonNull Parcel source) {
                 return new Entry(source);
             }
 
+            @NonNull
             @Override
             public Entry[] newArray(int size) {
                 return new Entry[size];
@@ -242,23 +253,25 @@ public class CashBox implements Serializable, Parcelable {
         };
         private static final long serialVersionUID = 3L;
 
+        @Nullable
         private final String info;
         private final Calendar date;
         private final double amount;
 
-        private Entry(double amount, String info, Calendar date) {
+        private Entry(double amount, @NonNull String info, Calendar date) {
             this.info = info.trim();
             this.date = date;
             this.amount = amount;
         }
 
-        private Entry(Parcel parcel) {
+        private Entry(@NonNull Parcel parcel) {
             info = parcel.readString();
             date = Calendar.getInstance();
             date.setTimeInMillis(parcel.readLong());
             amount = parcel.readDouble();
         }
 
+        @Nullable
         public String getInfo() {
             return info;
         }
@@ -278,7 +291,7 @@ public class CashBox implements Serializable, Parcelable {
         }
 
         @NonNull
-        private String toString(NumberFormat currencyFormat, DateFormat dateFormat) {
+        private String toString(@NonNull NumberFormat currencyFormat, @NonNull DateFormat dateFormat) {
             return dateFormat.format(date.getTime()) +
                     "\t\t" +
                     currencyFormat.format(amount) +
@@ -292,7 +305,7 @@ public class CashBox implements Serializable, Parcelable {
         }
 
         @Override
-        public void writeToParcel(Parcel dest, int flags) {
+        public void writeToParcel(@NonNull Parcel dest, int flags) {
             dest.writeString(info);
             dest.writeLong(date.getTimeInMillis());
             dest.writeDouble(amount);

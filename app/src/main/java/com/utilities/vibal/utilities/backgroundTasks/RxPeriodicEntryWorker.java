@@ -27,10 +27,9 @@ import java.util.Calendar;
 import io.reactivex.Single;
 
 public class RxPeriodicEntryWorker extends RxWorker {
-    private static final String TAG = "PruebaRxPeriodic";
-
     public static final String TAG_PERIODIC = "com.utilities.vibal.utilities.RxPeriodicEntryWorker.TAG_PERIODIC";
     public static final String TAG_CASHBOX_ID = "com.utilities.vibal.utilities.RxPeriodicEntryWorker.TAG_CASHBOX%d";
+    private static final String TAG = "PruebaRxPeriodic";
 
     public RxPeriodicEntryWorker(@NonNull Context appContext, @NonNull WorkerParameters workerParams) {
         super(appContext, workerParams);
@@ -39,34 +38,34 @@ public class RxPeriodicEntryWorker extends RxWorker {
     @NonNull
     @Override
     public Single<Result> createWork() {
-        LogUtil.debug(TAG,"Do job");
+        LogUtil.debug(TAG, "Do job");
         UtilitiesDatabase database = UtilitiesDatabase.getInstance(getApplicationContext());
         return database.periodicEntryWorkDao().getWorkPojoByUUID(getId())
                 .flatMap(periodicEntryPojo -> {
                     //Create entry
                     PeriodicEntryPojo.PeriodicEntryWorkInfo workInfo = periodicEntryPojo.getWorkInfo();
-                    CashBox.Entry entry = new CashBox.Entry(workInfo.getCashBoxId(),workInfo.getAmount(),
+                    CashBox.Entry entry = new CashBox.Entry(workInfo.getCashBoxId(), workInfo.getAmount(),
                             "Periodic: " + workInfo.getInfo(), Calendar.getInstance());
                     Single<Result> result = database.cashBoxEntryDao().insert(entry)
                             .toSingle(() -> {
-                                LogUtil.debug(TAG,"Success");
+                                LogUtil.debug(TAG, "Success");
                                 showNotification(periodicEntryPojo);
                                 return Result.success();
                             }).onErrorReturn(throwable -> {
-                                LogUtil.error(TAG,"Error en periodic", throwable);
+                                LogUtil.error(TAG, "Error en periodic", throwable);
                                 return Result.failure();
                             });
 
                     //Reschedule work
                     int repetitions = workInfo.getRepetitions() - 1;
-                    if(repetitions>0) {
-                        LogUtil.debug(TAG,"Rescheduling work " + repetitions);
+                    if (repetitions > 0) {
+                        LogUtil.debug(TAG, "Rescheduling work " + repetitions);
                         PeriodicEntryPojo.PeriodicEntryWorkRequest workRequest =
                                 new PeriodicEntryPojo.PeriodicEntryWorkRequest(workInfo);
                         workRequest.getWorkInfo().setRepetitions(repetitions);
                         return database.periodicEntryWorkDao().update(workRequest.getWorkInfo())
                                 .flatMap(integer -> {
-                                    if(integer>0)
+                                    if (integer > 0)
                                         WorkManager.getInstance(getApplicationContext()).enqueue(workRequest.getWorkRequest());
                                     return result;
                                 });
@@ -74,10 +73,9 @@ public class RxPeriodicEntryWorker extends RxWorker {
                         return database.periodicEntryWorkDao().delete(workInfo)
                                 .flatMap(integer -> result);
                 }).onErrorReturn(throwable -> {
-                    LogUtil.debug(TAG,"No found the corresponding work info");
+                    LogUtil.debug(TAG, "No found the corresponding work info");
                     return Result.success();
                 });
-
 
 
 //        LogUtil.debug(TAG,"Do job");
@@ -99,15 +97,15 @@ public class RxPeriodicEntryWorker extends RxWorker {
 //                });
     }
 
-    private void showNotification(PeriodicEntryPojo periodicEntryPojo) {
+    private void showNotification(@NonNull PeriodicEntryPojo periodicEntryPojo) {
         //Check if the notifications are enabled
-        if(!PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
-                .getBoolean("notifyPeriodic",false))
+        if (!PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
+                .getBoolean("notifyPeriodic", false))
             return;
 
         //Set up notification
         Intent intentNotif = new Intent(getApplicationContext(), CashBoxManagerActivity.class);
-        intentNotif.putExtra(CashBoxManagerActivity.EXTRA_ACTION,CashBoxManagerActivity.ACTION_DETAILS);
+        intentNotif.putExtra(CashBoxManagerActivity.EXTRA_ACTION, CashBoxManagerActivity.ACTION_DETAILS);
         intentNotif.putExtra(CashBoxManagerActivity.EXTRA_CASHBOX_ID,
                 periodicEntryPojo.getWorkInfo().getCashBoxId());
 
@@ -119,14 +117,14 @@ public class RxPeriodicEntryWorker extends RxWorker {
                         "\nTotal cash: " + periodicEntryPojo.getCashBoxAmount())
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setCategory(NotificationCompat.CATEGORY_SERVICE)
-                .setContentIntent(PendingIntent.getActivity(getApplicationContext(),0,
-                        intentNotif,0))
+                .setContentIntent(PendingIntent.getActivity(getApplicationContext(), 0,
+                        intentNotif, 0))
                 .setAutoCancel(true)
                 .setGroup(CashBoxManagerActivity.GROUP_KEY_CASHBOX)
                 .build();
 
         //Show notification
         NotificationManagerCompat.from(getApplicationContext())
-                .notify(CashBoxItemFragment.REMINDER_ID,notification);
+                .notify(CashBoxItemFragment.REMINDER_ID, notification);
     }
 }

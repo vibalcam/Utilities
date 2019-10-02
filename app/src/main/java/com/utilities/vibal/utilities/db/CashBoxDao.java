@@ -1,5 +1,6 @@
 package com.utilities.vibal.utilities.db;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Delete;
@@ -30,7 +31,7 @@ public abstract class CashBoxDao {
 //    @Query("SELECT * FROM cashBoxesInfo_table ORDER BY id DESC")
 //    abstract LiveData<List<CashBox>> getAllCashBoxes();
 
-//    @Query("SELECT * FROM cashBoxesInfo_table ORDER BY id DESC")
+    //    @Query("SELECT * FROM cashBoxesInfo_table ORDER BY id DESC")
     @Query("SELECT C.id,C.name,C.orderId,SUM(amount) AS cash " +
             "FROM cashBoxesInfo_table AS C LEFT JOIN entries_table AS E ON C.id=E.cashBoxId " +
             "GROUP BY C.id,C.name,C.orderId " +
@@ -61,7 +62,7 @@ public abstract class CashBoxDao {
 //            "THEN orderId+1 ELSE orderId END")
 //    Completable incrementOrderPos(long minOrderPos);
 
-//    @Query("UPDATE cashBoxesInfo_table " +
+    //    @Query("UPDATE cashBoxesInfo_table " +
 //            "SET orderId=CASE " +
 //            "WHEN EXISTS(SELECT * FROM cashBoxesInfo_table WHERE orderId=:fromOrderPos) " +
 //            "THEN orderId ELSE (CASE " +
@@ -99,8 +100,8 @@ public abstract class CashBoxDao {
             "ORDER BY C.orderId DESC")
     public abstract List<CashBox.InfoWithCash> getAllCashBoxInfoForWidget();
 
-    Completable insert(CashBox cashBox, CashBoxEntryDao cashBoxEntryDao){
-        if(cashBox.getEntries().isEmpty())
+    Completable insert(@NonNull CashBox cashBox, @NonNull CashBoxEntryDao cashBoxEntryDao) {
+        if (cashBox.getEntries().isEmpty())
             return insert(cashBox.getInfoWithCash().getCashBoxInfo()).ignoreElement();
         else {
             return insert(cashBox.getInfoWithCash().getCashBoxInfo()).flatMapCompletable(id -> {

@@ -7,6 +7,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.utilities.vibal.utilities.R;
@@ -41,8 +42,10 @@ public class RandomChooserRecyclerAdapter extends RecyclerView.Adapter<RandomCho
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
+        @Nullable
         @BindView(R.id.rvRandomChooserContestant)
         TextView rvRandomChooserContestant;
+        @Nullable
         @BindView(R.id.rvRandomChooserLayout)
         LinearLayout rvRandomChooserLayout;
 

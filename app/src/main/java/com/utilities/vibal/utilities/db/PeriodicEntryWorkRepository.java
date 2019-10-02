@@ -2,6 +2,7 @@ package com.utilities.vibal.utilities.db;
 
 import android.app.Application;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.work.WorkManager;
 
@@ -18,7 +19,7 @@ public class PeriodicEntryWorkRepository {
     private PeriodicEntryWorkDao periodicEntryWorkDao;
     private LiveData<List<PeriodicEntryPojo>> periodicEntries;
 
-    public PeriodicEntryWorkRepository(Application application) {
+    public PeriodicEntryWorkRepository(@NonNull Application application) {
         workManager = WorkManager.getInstance(application);
         periodicEntryWorkDao = UtilitiesDatabase.getInstance(application).periodicEntryWorkDao();
         periodicEntries = periodicEntryWorkDao.getAllWorkPojos();
@@ -32,7 +33,7 @@ public class PeriodicEntryWorkRepository {
         return periodicEntryWorkDao.getWorkPojoByUUID(uuid);
     }
 
-    public Completable addPeriodicEntryWorkRequest (PeriodicEntryPojo.PeriodicEntryWorkRequest workRequest) {
+    public Completable addPeriodicEntryWorkRequest(@NonNull PeriodicEntryPojo.PeriodicEntryWorkRequest workRequest) {
         workManager.enqueue(workRequest.getWorkRequest()); //todo observe, calculate difference between lists
         //Add the data to database
         return periodicEntryWorkDao.insert(workRequest.getWorkInfo());
@@ -51,7 +52,7 @@ public class PeriodicEntryWorkRepository {
 //                                workInfo.getRepeatInterval())));
 //    }
 
-    public Single<Integer> deletePeriodicEntryWorkInfo (PeriodicEntryPojo.PeriodicEntryWorkInfo workInfo) {
+    public Single<Integer> deletePeriodicEntryWorkInfo(@NonNull PeriodicEntryPojo.PeriodicEntryWorkInfo workInfo) {
         workManager.cancelWorkById(workInfo.getWorkId()); //Cancel work
         return periodicEntryWorkDao.delete(workInfo); //Delete from database
     }

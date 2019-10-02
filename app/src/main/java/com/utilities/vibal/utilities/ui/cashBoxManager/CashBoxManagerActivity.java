@@ -3,13 +3,13 @@ package com.utilities.vibal.utilities.ui.cashBoxManager;
 import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationManagerCompat;
 
 import com.utilities.vibal.utilities.R;
 
 public class CashBoxManagerActivity extends AppCompatActivity {
-    //todo change extra action to action
     public static final String EXTRA_CASHBOX_ID = "com.utilities.vibal.utilities.cashBoxId";
     public static final String EXTRA_ACTION = "com.utilities.vibal.utilities.ui.cashBoxManager.action";
     public static final int NO_ACTION = 0;
@@ -19,7 +19,7 @@ public class CashBoxManagerActivity extends AppCompatActivity {
     private static final String TAG = "PruebaCBMActivity";
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.cash_box_manager_activity);
 

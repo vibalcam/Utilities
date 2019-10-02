@@ -66,7 +66,7 @@ public class CashBoxSwipeController extends ItemTouchHelper.Callback {
 
     @Override
     public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-        if(direction == LEFT || direction == RIGHT) {
+        if (direction == LEFT || direction == RIGHT) {
             //^ is an exclusive OR: (left and true) or (right and false)
             if (direction == RIGHT ^ swipeLeftDelete)
                 adapter.onItemDelete(viewHolder.getAdapterPosition());
@@ -118,7 +118,7 @@ public class CashBoxSwipeController extends ItemTouchHelper.Callback {
     @Override
     public void clearView(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
         super.clearView(recyclerView, viewHolder);
-        LogUtil.debug(TAG,"View Cleared");
+        LogUtil.debug(TAG, "View Cleared");
 
         if (fromIndex != -1 && toIndex != -1) { // if there has been a move motion
             adapter.onItemDrop(fromIndex, toIndex);

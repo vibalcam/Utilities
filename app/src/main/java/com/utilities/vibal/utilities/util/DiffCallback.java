@@ -18,12 +18,12 @@ public class DiffCallback<T extends DiffDbUsable<T>> extends DiffUtil.Callback {
 
     @Override
     public int getOldListSize() {
-        return oldList==null ? 0 : oldList.size();
+        return oldList == null ? 0 : oldList.size();
     }
 
     @Override
     public int getNewListSize() {
-        return newList==null ? 0 : newList.size();
+        return newList == null ? 0 : newList.size();
     }
 
     @Override

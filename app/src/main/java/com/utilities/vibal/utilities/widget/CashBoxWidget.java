@@ -8,6 +8,8 @@ import android.content.Intent;
 import android.net.Uri;
 import android.widget.RemoteViews;
 
+import androidx.annotation.NonNull;
+
 import com.utilities.vibal.utilities.R;
 import com.utilities.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity;
 
@@ -19,7 +21,7 @@ public class CashBoxWidget extends AppWidgetProvider {
     public static final int DETAILS_REQUEST = 2;
 
     @Override
-    public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
+    public void onUpdate(@NonNull Context context, @NonNull AppWidgetManager appWidgetManager, @NonNull int[] appWidgetIds) {
         // There may be multiple widgets active, so update all of them
         for (int appWidgetId : appWidgetIds) {
             // Construct the RemoteViews object
@@ -27,21 +29,21 @@ public class CashBoxWidget extends AppWidgetProvider {
 
             // OnClick for button
             Intent buttonIntent = new Intent(context, CashBoxManagerActivity.class);
-            buttonIntent.putExtra(CashBoxManagerActivity.EXTRA_ACTION,CashBoxManagerActivity.ACTION_ADD_CASHBOX);
+            buttonIntent.putExtra(CashBoxManagerActivity.EXTRA_ACTION, CashBoxManagerActivity.ACTION_ADD_CASHBOX);
             views.setOnClickPendingIntent(R.id.addButtonCBMWidget,
-                    PendingIntent.getActivity(context,ADD_REQUEST,buttonIntent,0));
+                    PendingIntent.getActivity(context, ADD_REQUEST, buttonIntent, 0));
 
             // Set-up ListView
             Intent serviceIntent = new Intent(context, CashBoxWidgetService.class);
             serviceIntent.setData(Uri.parse(serviceIntent.toUri(Intent.URI_INTENT_SCHEME)));
-            views.setRemoteAdapter(R.id.listCBMWidget,serviceIntent);
-            views.setEmptyView(R.id.listCBMWidget,R.id.listEmptyCBMWidget);
+            views.setRemoteAdapter(R.id.listCBMWidget, serviceIntent);
+            views.setEmptyView(R.id.listCBMWidget, R.id.listEmptyCBMWidget);
 
             // OnClick for ListView
             Intent listIntent = new Intent(context, CashBoxManagerActivity.class);
-            listIntent.putExtra(CashBoxManagerActivity.EXTRA_ACTION,CashBoxManagerActivity.ACTION_DETAILS);
+            listIntent.putExtra(CashBoxManagerActivity.EXTRA_ACTION, CashBoxManagerActivity.ACTION_DETAILS);
             views.setPendingIntentTemplate(R.id.listCBMWidget,
-                    PendingIntent.getActivity(context,DETAILS_REQUEST,listIntent,0));
+                    PendingIntent.getActivity(context, DETAILS_REQUEST, listIntent, 0));
 
 
             // Instruct the widget manager to update the widget

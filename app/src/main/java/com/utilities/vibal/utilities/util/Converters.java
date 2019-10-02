@@ -7,6 +7,7 @@ import java.util.Calendar;
 import java.util.UUID;
 
 public class Converters {
+    @NonNull
     @TypeConverter
     public static Calendar fromTimestamp(long millis) {
         Calendar calendar = Calendar.getInstance();
@@ -19,8 +20,9 @@ public class Converters {
         return calendar.getTimeInMillis();
     }
 
+    @NonNull
     @TypeConverter
-    public static String UUIDToString(UUID uuid) {
+    public static String UUIDToString(@NonNull UUID uuid) {
         return uuid.toString();
     }
 

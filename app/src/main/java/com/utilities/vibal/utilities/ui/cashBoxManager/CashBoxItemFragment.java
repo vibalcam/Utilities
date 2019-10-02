@@ -70,10 +70,15 @@ public class CashBoxItemFragment extends Fragment {
     private static final double MAX_SHOW_CASH = 99999999;
     private static final String TAG = "PruebaItemFragment";
 
-    @BindView(R.id.itemCash) TextView itemCash;
-    @BindView(R.id.rvCashBoxItem) RecyclerView rvCashBoxItem;
+    @Nullable
+    @BindView(R.id.itemCash)
+    TextView itemCash;
+    @Nullable
+    @BindView(R.id.rvCashBoxItem)
+    RecyclerView rvCashBoxItem;
 
     private CashBoxItemRecyclerAdapter adapter;
+    @NonNull
     private NumberFormat formatCurrency = NumberFormat.getCurrencyInstance();
     private CashBoxViewModel viewModel;
     private ShareActionProvider shareActionProvider;
@@ -81,8 +86,51 @@ public class CashBoxItemFragment extends Fragment {
     private boolean notificationEnabled = false; //By default, the icon is set to alarm off
     private MenuItem menuItemNotification;
 
+    @NonNull
     static CashBoxItemFragment newInstance() {
         return new CashBoxItemFragment();
+    }
+
+    @NonNull
+    static AlertDialog getAddEntryDialog(long cashBoxId, @NonNull Context context, @NonNull CashBoxViewModel viewModel,
+                                         DialogInterface.OnClickListener onPositiveClick) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        AlertDialog dialog = builder.setTitle(R.string.newEntry)
+                .setView(R.layout.cash_box_item_entry_input)
+                .setNegativeButton(R.string.cancelDialog, null)
+                .setPositiveButton(R.string.addEntryDialog, onPositiveClick)
+                .create();
+        dialog.setCanceledOnTouchOutside(false);
+
+        dialog.setOnShowListener((DialogInterface dialog1) -> {
+            Button positive = ((AlertDialog) dialog1).getButton(DialogInterface.BUTTON_POSITIVE);
+            TextInputEditText inputInfo = ((AlertDialog) dialog1).findViewById(R.id.inputTextInfo);
+            TextInputEditText inputAmount = ((AlertDialog) dialog1).findViewById(R.id.inputTextAmount);
+            TextInputLayout layoutAmount = ((AlertDialog) dialog1).findViewById(R.id.inputLayoutAmount);
+
+            Util.showKeyboard(context, inputAmount);
+            positive.setOnClickListener((View v) -> {
+                try {
+                    String input = inputAmount.getText().toString().trim();
+                    if (input.isEmpty()) {
+                        layoutAmount.setError(context.getString(R.string.required));
+                        Util.showKeyboard(context, inputAmount);
+                    } else {
+                        double amount = Util.parseExpression(inputAmount.getText().toString());
+                        viewModel.addDisposable(viewModel.addEntry(cashBoxId, new CashBox.Entry(
+                                amount, inputInfo.getText().toString(), Calendar.getInstance()))
+                                .subscribeOn(Schedulers.io())
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(dialog1::dismiss));
+                    }
+                } catch (NumberFormatException e) {
+                    layoutAmount.setError(context.getString(R.string.errorMessageAmount));
+                    inputAmount.selectAll();
+                    Util.showKeyboard(context, inputAmount);
+                }
+            });
+        });
+        return dialog;
     }
 
     @Override
@@ -100,7 +148,7 @@ public class CashBoxItemFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.cash_box_item_fragment, container, false);
-        ButterKnife.bind(this,view);
+        ButterKnife.bind(this, view);
 
         //Set up RecyclerView
 //        rvCashBoxItem.setNestedScrollingEnabled(true);
@@ -128,16 +176,16 @@ public class CashBoxItemFragment extends Fragment {
         //Set Toolbar as ActionBar
         activity.setSupportActionBar(getView().findViewById(R.id.toolbarCBItem));
         ActionBar actionBar = activity.getSupportActionBar();
-        if(actionBar!=null)
+        if (actionBar != null)
             actionBar.setDisplayHomeAsUpEnabled(true);
 
         // Initialize data
         viewModel = new ViewModelProvider(Objects.requireNonNull(activity)).get(CashBoxViewModel.class);
         viewModel.getCurrentCashBox().observe(getViewLifecycleOwner(), cashBox -> {
-            LogUtil.debug("Prueba","On change data");
+            LogUtil.debug("Prueba", "On change data");
 
             // Set Title
-            if(actionBar!=null)
+            if (actionBar != null)
                 actionBar.setTitle(cashBox.getName());
 
             // Update data
@@ -155,7 +203,7 @@ public class CashBoxItemFragment extends Fragment {
             itemCash.setText(R.string.outOfRange);
         else {
             itemCash.setText(formatCurrency.format(cash));
-            if(cash<0)
+            if (cash < 0)
                 itemCash.setTextColor(Objects.requireNonNull(getActivity())
                         .getColor(R.color.colorNegativeNumber));
             else
@@ -167,7 +215,7 @@ public class CashBoxItemFragment extends Fragment {
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.menu_toolbar_cash_box_item,menu);
+        inflater.inflate(R.menu.menu_toolbar_cash_box_item, menu);
         //Prepare alarm icon
         menuItemNotification = menu.findItem(R.id.action_item_reminder);
         setIconNotification(sharedPrefNot.contains(Long.toString(viewModel.getCurrentCashBoxId())));
@@ -176,7 +224,7 @@ public class CashBoxItemFragment extends Fragment {
     }
 
     private void setIconNotification(boolean enabled) {
-        if(enabled==notificationEnabled)
+        if (enabled == notificationEnabled)
             return;
         if (enabled) {
             menuItemNotification.setIcon(R.drawable.ic_alarm_on_white_24dp);
@@ -210,17 +258,16 @@ public class CashBoxItemFragment extends Fragment {
 
     private void showReminderDialog() {
         //Check if alarm has been already set
-        long timeInMillis = sharedPrefNot.getLong(Long.toString(viewModel.getCurrentCashBoxId()),0);
-        if(timeInMillis==0) { //Set reminder dialog
+        long timeInMillis = sharedPrefNot.getLong(Long.toString(viewModel.getCurrentCashBoxId()), 0);
+        if (timeInMillis == 0) { //Set reminder dialog
             //Choose the date and time for the reminder
             Calendar calendar = Calendar.getInstance();
             new DatePickerDialog(getContext(),
                     (datePicker, year, month, dayOfMonth) -> {
-                //todo before dias sin horas ni nada arreglar
                         calendar.set(year, month, dayOfMonth);
                         Calendar current = Calendar.getInstance();
-                        current.add(Calendar.DAY_OF_MONTH,-1);
-                        LogUtil.debug(TAG,"Current: " + current.toString());
+                        current.add(Calendar.DAY_OF_MONTH, -1);
+                        LogUtil.debug(TAG, "Current: " + current.toString());
                         if (calendar.before(current)) {
                             Toast.makeText(getContext(), R.string.reminder_dialog_invalid_date, Toast.LENGTH_SHORT).show();
                             return;
@@ -230,7 +277,7 @@ public class CashBoxItemFragment extends Fragment {
                             calendar.set(Calendar.MINUTE, minute);
                             calendar.set(Calendar.SECOND, 0);
                             Calendar current2 = Calendar.getInstance();
-                            current2.add(Calendar.MINUTE,-1);
+                            current2.add(Calendar.MINUTE, -1);
 
                             if (calendar.before(current2))
                                 Toast.makeText(getContext(), R.string.reminder_dialog_invalid_date, Toast.LENGTH_SHORT).show();
@@ -247,7 +294,7 @@ public class CashBoxItemFragment extends Fragment {
                     .setTitle(R.string.reminder_dialog_cancel_title)
                     .setMessage(getString(R.string.reminder_dialog_cancel_message,
                             DateFormat.getDateTimeInstance().format(new Date(timeInMillis))))
-                    .setPositiveButton(R.string.reminder_dialog_cancel_keep,null)
+                    .setPositiveButton(R.string.reminder_dialog_cancel_keep, null)
                     .setNegativeButton(R.string.reminder_dialog_cancel_cancel,
                             (dialogInterface, i) -> cancelReminder())
                     .create();
@@ -258,12 +305,12 @@ public class CashBoxItemFragment extends Fragment {
 
     private void scheduleReminder(@NonNull Calendar c) {
         //Enable boot receiver
-        if(sharedPrefNot.getAll().isEmpty()) {
+        if (sharedPrefNot.getAll().isEmpty()) {
 //            ComponentName receiver = new ComponentName(getContext(), ReminderReceiver.class);
 //            PackageManager pm = getContext().getPackageManager();
 //            pm.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
 //                    PackageManager.DONT_KILL_APP);
-            ReminderReceiver.setBootReceiverEnabled(getContext(),true);
+            ReminderReceiver.setBootReceiverEnabled(getContext(), true);
         }
 
         //Set up the alarm manager for the notification
@@ -279,7 +326,7 @@ public class CashBoxItemFragment extends Fragment {
         Toast.makeText(getContext(), "New Reminder Set", Toast.LENGTH_SHORT).show();
 
         //Add reminder to Notification SharedPreferences
-        sharedPrefNot.edit().putLong(Long.toString(cashBoxId),timeInMillis).apply();
+        sharedPrefNot.edit().putLong(Long.toString(cashBoxId), timeInMillis).apply();
         setIconNotification(true);
 
 //        //Set up the notification to be shown
@@ -311,70 +358,28 @@ public class CashBoxItemFragment extends Fragment {
         //Cancel alarm
         AlarmManager alarmManager = (AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE);
         Intent intentAlarm = new Intent(getContext(), ReminderReceiver.class);
-        alarmManager.cancel(PendingIntent.getBroadcast(getContext(), REMINDER_ID, intentAlarm,0));
+        alarmManager.cancel(PendingIntent.getBroadcast(getContext(), REMINDER_ID, intentAlarm, 0));
         Toast.makeText(getContext(), "Reminder Cancelled", Toast.LENGTH_SHORT).show();
 
         //Disable boot receiver
-        if(sharedPrefNot.getAll().isEmpty()) {
+        if (sharedPrefNot.getAll().isEmpty()) {
 //            ComponentName receiver = new ComponentName(getContext(), ReminderReceiver.class);
 //            PackageManager pm = getContext().getPackageManager();
 //            pm.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
 //                    PackageManager.DONT_KILL_APP);
-            ReminderReceiver.setBootReceiverEnabled(getContext(),false);
+            ReminderReceiver.setBootReceiverEnabled(getContext(), false);
         }
     }
 
     @OnClick(R.id.fabCBItem)
     void onFabClicked() {
-        getAddEntryDialog(viewModel.getCurrentCashBoxId(),getContext(),viewModel,
+        getAddEntryDialog(viewModel.getCurrentCashBoxId(), getContext(), viewModel,
                 (dialogInterface, i) -> rvCashBoxItem.scrollToPosition(0))
                 .show();
     }
 
-
-    static AlertDialog getAddEntryDialog(long cashBoxId, Context context, CashBoxViewModel viewModel,
-                                         DialogInterface.OnClickListener onPositiveClick) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        AlertDialog dialog = builder.setTitle(R.string.newEntry)
-                .setView(R.layout.cash_box_item_entry_input)
-                .setNegativeButton(R.string.cancelDialog, null)
-                .setPositiveButton(R.string.addEntryDialog, onPositiveClick)
-                .create();
-        dialog.setCanceledOnTouchOutside(false);
-
-        dialog.setOnShowListener((DialogInterface dialog1) -> {
-            Button positive = ((AlertDialog) dialog1).getButton(DialogInterface.BUTTON_POSITIVE);
-            TextInputEditText inputInfo = ((AlertDialog) dialog1).findViewById(R.id.inputTextInfo);
-            TextInputEditText inputAmount = ((AlertDialog) dialog1).findViewById(R.id.inputTextAmount);
-            TextInputLayout layoutAmount = ((AlertDialog) dialog1).findViewById(R.id.inputLayoutAmount);
-
-            Util.showKeyboard(context, inputAmount);
-            positive.setOnClickListener((View v) -> {
-                try {
-                    String input = inputAmount.getText().toString().trim();
-                    if (input.isEmpty()) {
-                        layoutAmount.setError(context.getString(R.string.required));
-                        Util.showKeyboard(context, inputAmount);
-                    } else {
-                        double amount = Util.parseExpression(inputAmount.getText().toString());
-                        viewModel.addDisposable(viewModel.addEntry(cashBoxId,new CashBox.Entry(
-                                amount,inputInfo.getText().toString(),Calendar.getInstance()))
-                                .subscribeOn(Schedulers.io())
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(dialog1::dismiss));
-                    }
-                } catch (NumberFormatException e) {
-                    layoutAmount.setError(context.getString(R.string.errorMessageAmount));
-                    inputAmount.selectAll();
-                    Util.showKeyboard(context, inputAmount);
-                }
-            });
-        });
-        return dialog;
-    }
-
     private void deleteAll() {
-        if (adapter.getItemCount()==0) {
+        if (adapter.getItemCount() == 0) {
             Toast.makeText(getContext(), R.string.noEntriesDelete, Toast.LENGTH_SHORT).show();
             return;
         }
@@ -399,16 +404,18 @@ public class CashBoxItemFragment extends Fragment {
         private static final boolean DRAG_ENABLED = false;
         private static final boolean SWIPE_ENABLED = true;
 
+        @NonNull
         private DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
+        @NonNull
         private List<CashBox.Entry> currentList = new ArrayList<>();
 
-        void submitList(List<CashBox.Entry> newList) {
+        void submitList(@NonNull List<CashBox.Entry> newList) {
             viewModel.addDisposable(Single.just(DiffUtil.calculateDiff(
-                    new DiffCallback<CashBox.Entry>(currentList,newList), false))
+                    new DiffCallback<>(currentList, newList), false))
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(diffResult -> {
-                        LogUtil.debug(TAG,"DiffResult calculated");
+                        LogUtil.debug(TAG, "DiffResult calculated");
                         currentList.clear();
                         currentList.addAll(newList);
                         diffResult.dispatchUpdatesTo(CashBoxItemRecyclerAdapter.this);
@@ -466,10 +473,10 @@ public class CashBoxItemFragment extends Fragment {
                             getString(R.string.snackbarEntriesDeleted, 1),
                             Snackbar.LENGTH_LONG)
                             .setAction(R.string.undo, (View v) ->
-                                viewModel.addDisposable(viewModel.addEntryToCurrentCashBox(entry)
-                                        .subscribeOn(Schedulers.io())
-                                        .observeOn(AndroidSchedulers.mainThread())
-                                        .subscribe()))
+                                    viewModel.addDisposable(viewModel.addEntryToCurrentCashBox(entry)
+                                            .subscribeOn(Schedulers.io())
+                                            .observeOn(AndroidSchedulers.mainThread())
+                                            .subscribe()))
                             .show()));
         }
 
@@ -508,7 +515,7 @@ public class CashBoxItemFragment extends Fragment {
                             Util.showKeyboard(getContext(), inputAmount);
                         } else {
                             viewModel.addDisposable(viewModel.modifyEntry(modifiedEntry,
-                                    Util.parseExpression(input),inputInfo.getText().toString().trim())
+                                    Util.parseExpression(input), inputInfo.getText().toString().trim())
                                     .subscribeOn(Schedulers.io())
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .subscribe(() -> {
@@ -587,9 +594,15 @@ public class CashBoxItemFragment extends Fragment {
         }
 
         public class ViewHolder extends RecyclerView.ViewHolder {
-            @BindView(R.id.rvItemDate) TextView rvItemDate;
-            @BindView(R.id.rvItemAmount) TextView rvItemAmount;
-            @BindView(R.id.rvItemInfo) TextView rvItemInfo;
+            @Nullable
+            @BindView(R.id.rvItemDate)
+            TextView rvItemDate;
+            @Nullable
+            @BindView(R.id.rvItemAmount)
+            TextView rvItemAmount;
+            @Nullable
+            @BindView(R.id.rvItemInfo)
+            TextView rvItemInfo;
 
             ViewHolder(@NonNull View view) {
                 super(view);

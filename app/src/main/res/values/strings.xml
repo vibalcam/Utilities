@@ -30,7 +30,6 @@
     <string name="randomChooser_helpTitle">"Random Chooser Help"</string>
     <string name="cashBoxManager_helpTitle">"Cash Box Manager Help"</string>
     <string name="enterInitCashDialog">Initial Cash</string>
-    <string name="title_activity_cash_box_item">Cash Box Item</string>
     <string name="newEntry">New Entry</string>
     <string name="modifyEntry">Modify Entry</string>
     <string name="addEntryDialog">Add Entry</string>

@@ -55,11 +55,14 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
 public class CashBoxPeriodicFragment extends Fragment {
-    @BindView(R.id.lyCBPeriodic) CoordinatorLayout coordinatorLayout;
+    @Nullable
+    @BindView(R.id.lyCBPeriodic)
+    CoordinatorLayout coordinatorLayout;
 
     private PeriodicEntryWorkViewModel viewModel;
     private CashBoxPeriodicRecyclerAdapter adapter;
 
+    @NonNull
     static CashBoxPeriodicFragment newInstance() {
         return new CashBoxPeriodicFragment();
     }
@@ -75,8 +78,8 @@ public class CashBoxPeriodicFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.cash_box_periodic_fragment,container,false);
-        ButterKnife.bind(this,view);
+        View view = inflater.inflate(R.layout.cash_box_periodic_fragment, container, false);
+        ButterKnife.bind(this, view);
 
         //Set up the RecyclerView
         RecyclerView rvPeriodicEntry = view.findViewById(R.id.rvCashBoxPeriodic);
@@ -88,7 +91,7 @@ public class CashBoxPeriodicFragment extends Fragment {
         rvPeriodicEntry.setAdapter(adapter);
         new ItemTouchHelper(new CashBoxSwipeController(adapter,
                 PreferenceManager.getDefaultSharedPreferences(getContext())
-                        .getBoolean("swipeLeftDelete",true)))
+                        .getBoolean("swipeLeftDelete", true)))
                 .attachToRecyclerView(rvPeriodicEntry);
 
         return view;
@@ -100,15 +103,15 @@ public class CashBoxPeriodicFragment extends Fragment {
 
         AppCompatActivity activity = (AppCompatActivity) Objects.requireNonNull(getActivity());
         viewModel = new ViewModelProvider(activity).get(PeriodicEntryWorkViewModel.class);
-        viewModel.getPeriodicEntries().observe(getViewLifecycleOwner(),periodicEntryPojos -> {
-            LogUtil.debug("Prueba","New list submitted");
+        viewModel.getPeriodicEntries().observe(getViewLifecycleOwner(), periodicEntryPojos -> {
+            LogUtil.debug("Prueba", "New list submitted");
             adapter.submitList(periodicEntryPojos);
         });
 
         //Set Toolbar as ActionBar
         activity.setSupportActionBar(getView().findViewById(R.id.toolbarCBPeriodic));
         ActionBar actionBar = activity.getSupportActionBar();
-        if(actionBar!=null) {
+        if (actionBar != null) {
             actionBar.setTitle(R.string.title_periodicEntry);
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
@@ -117,7 +120,7 @@ public class CashBoxPeriodicFragment extends Fragment {
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.menu_toolbar_cash_box_periodic,menu);
+        inflater.inflate(R.menu.menu_toolbar_cash_box_periodic, menu);
     }
 
     @Override
@@ -138,7 +141,7 @@ public class CashBoxPeriodicFragment extends Fragment {
     }
 
     private void deleteAll() {
-        if(adapter.getItemCount()==0) {
+        if (adapter.getItemCount() == 0) {
             Toast.makeText(getContext(), "No entries to delete", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -160,11 +163,12 @@ public class CashBoxPeriodicFragment extends Fragment {
         private static final boolean DRAG_ENABLED = false;
 
         private final NumberFormat currencyFormat = NumberFormat.getCurrencyInstance();
+        @NonNull
         private List<PeriodicEntryPojo> currentList = new ArrayList<>();
 
-        void submitList(List<PeriodicEntryPojo> newList) {
+        void submitList(@NonNull List<PeriodicEntryPojo> newList) {
             viewModel.addDisposable(Single.just(DiffUtil.calculateDiff(
-                    new DiffCallback<PeriodicEntryPojo>(currentList,newList),false))
+                    new DiffCallback<>(currentList, newList), false))
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(diffResult -> {
@@ -177,7 +181,7 @@ public class CashBoxPeriodicFragment extends Fragment {
         @NonNull
         @Override
         public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.cash_box_periodic_item,parent,false);
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.cash_box_periodic_item, parent, false);
             return new ViewHolder(view);
         }
 
@@ -188,9 +192,9 @@ public class CashBoxPeriodicFragment extends Fragment {
             holder.rvName.setText(pojo.getCashBoxName());
             holder.rvInfo.setText(workInfo.getInfo());
             holder.rvAmountPeriod.setText(getString(R.string.periodic_amountPeriod,
-                    currencyFormat.format(workInfo.getAmount()),workInfo.getRepeatInterval()));
+                    currencyFormat.format(workInfo.getAmount()), workInfo.getRepeatInterval()));
             holder.rvRepetitions.setText(getString(R.string.periodic_repetitionsLeft, workInfo.getRepetitions()));
-            int colorRes = workInfo.getAmount()<0 ? R.color.colorNegativeNumber : R.color.colorPositiveNumber;
+            int colorRes = workInfo.getAmount() < 0 ? R.color.colorNegativeNumber : R.color.colorPositiveNumber;
             holder.rvAmountPeriod.setTextColor(getContext().getColor(colorRes));
         }
 
@@ -215,20 +219,19 @@ public class CashBoxPeriodicFragment extends Fragment {
             notifyItemRemoved(position);
             Snackbar.make(coordinatorLayout,
                     getString(R.string.snackbarEntriesDeleted, 1), Snackbar.LENGTH_LONG)
-                    .setAction(R.string.undo,view -> {
-                        currentList.add(position,deletedEntry);
-                    }).addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
+                    .setAction(R.string.undo, view -> currentList.add(position, deletedEntry))
+                    .addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
                 @Override
                 public void onDismissed(Snackbar transientBottomBar, int event) {
                     super.onDismissed(transientBottomBar, event);
 
-                    LogUtil.debug("Prueba","Deleted entry");
-                    if(event!=DISMISS_EVENT_ACTION)
+                    LogUtil.debug("Prueba", "Deleted entry");
+                    if (event != DISMISS_EVENT_ACTION)
                         viewModel.addDisposable(
                                 viewModel.deletePeriodicEntryWorkInfo(deletedEntry.getWorkInfo())
-                                .subscribeOn(Schedulers.io())
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe());
+                                        .subscribeOn(Schedulers.io())
+                                        .observeOn(AndroidSchedulers.mainThread())
+                                        .subscribe());
                 }
             }).show();
         }
@@ -255,9 +258,9 @@ public class CashBoxPeriodicFragment extends Fragment {
 
                 //Set to the current values
                 inputInfo.setText(workInfo.getInfo());
-                inputAmount.setText(String.format(Locale.US,"%.2f",workInfo.getAmount()));
-                inputPeriod.setText(String.format(Locale.US,"%d",workInfo.getRepeatInterval()));
-                inputRepetitions.setText(String.format(Locale.US,"%d",workInfo.getRepetitions()));
+                inputAmount.setText(String.format(Locale.US, "%.2f", workInfo.getAmount()));
+                inputPeriod.setText(String.format(Locale.US, "%d", workInfo.getRepeatInterval()));
+                inputRepetitions.setText(String.format(Locale.US, "%d", workInfo.getRepetitions()));
 
                 Util.showKeyboard(getContext(), inputAmount);
                 positive.setOnClickListener((View v) -> {
@@ -267,9 +270,9 @@ public class CashBoxPeriodicFragment extends Fragment {
                         if (input.isEmpty()) {
                             layoutAmount.setError(getString(R.string.required));
                             Util.showKeyboard(getContext(), inputAmount);
-                        } else if(repetitions<1) {
+                        } else if (repetitions < 1) {
                             layoutRepetitions.setError("Min. 1");
-                            Util.showKeyboard(getContext(),inputRepetitions);
+                            Util.showKeyboard(getContext(), inputRepetitions);
                         } else { //Change values and do the DB change
                             try {
                                 workInfo.setAmount(Util.parseExpression(inputAmount.getText().toString()));
@@ -277,7 +280,6 @@ public class CashBoxPeriodicFragment extends Fragment {
                                 workInfo.setRepeatInterval(Long.parseLong(inputPeriod.getText().toString()));
                                 workInfo.setRepetitions(repetitions);
 
-                                //todo change if its currently available
                                 viewModel.addDisposable(viewModel.updatePeriodicEntryWorkInfo(workInfo)
                                         .subscribeOn(Schedulers.io())
                                         .observeOn(AndroidSchedulers.mainThread())
@@ -300,14 +302,22 @@ public class CashBoxPeriodicFragment extends Fragment {
         }
 
         public class ViewHolder extends RecyclerView.ViewHolder {
-            @BindView(R.id.periodic_rvName) TextView rvName;
-            @BindView(R.id.periodic_rvAmountPeriod) TextView rvAmountPeriod;
-            @BindView(R.id.periodic_rvInfo) TextView rvInfo;
-            @BindView(R.id.periodic_rvRepetitions) TextView rvRepetitions;
+            @Nullable
+            @BindView(R.id.periodic_rvName)
+            TextView rvName;
+            @Nullable
+            @BindView(R.id.periodic_rvAmountPeriod)
+            TextView rvAmountPeriod;
+            @Nullable
+            @BindView(R.id.periodic_rvInfo)
+            TextView rvInfo;
+            @Nullable
+            @BindView(R.id.periodic_rvRepetitions)
+            TextView rvRepetitions;
 
             public ViewHolder(@NonNull View itemView) {
                 super(itemView);
-                ButterKnife.bind(this,itemView);
+                ButterKnife.bind(this, itemView);
             }
         }
     }
