@@ -1,5 +1,7 @@
 package com.utilities.vibal.utilities.ui.cashBoxManager;
 
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -8,8 +10,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationManagerCompat;
 
 import com.utilities.vibal.utilities.R;
+import com.utilities.vibal.utilities.util.LogUtil;
+import com.utilities.vibal.utilities.widget.CashBoxWidgetProvider;
 
 public class CashBoxManagerActivity extends AppCompatActivity {
+    //todo use action
     public static final String EXTRA_CASHBOX_ID = "com.utilities.vibal.utilities.cashBoxId";
     public static final String EXTRA_ACTION = "com.utilities.vibal.utilities.ui.cashBoxManager.action";
     public static final int NO_ACTION = 0;
@@ -32,6 +37,20 @@ public class CashBoxManagerActivity extends AppCompatActivity {
                     .add(R.id.container, CashBoxManagerFragment.newInstance())
                     .commitNow();
         }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        //update app widget
+        //todo update app widget
+        Intent intent = new Intent(this, CashBoxWidgetProvider.class);
+        intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+        int[] ids = AppWidgetManager.getInstance(getApplicationContext())
+                .getAppWidgetIds(new ComponentName(getApplicationContext(), CashBoxWidgetProvider.class));
+        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS,ids);
+        sendBroadcast(intent);
+        LogUtil.debug(TAG,"Updated Widgets");
     }
 
     @Override

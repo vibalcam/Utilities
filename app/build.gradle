@@ -18,8 +18,8 @@ android {
         applicationId "com.utilities.vibal.utilities"
         minSdkVersion 23
         targetSdkVersion 29
-        versionCode 7
-        versionName "2.2.0"
+        versionCode 8
+        versionName "2.2.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         resValue "string", "aboutApp", "Utilities v" + versionName + "\n\nvibal " + (new Date().format("dd/MM/yyyy"))
     }
@@ -32,8 +32,20 @@ android {
         }
         debug {
             buildConfigField "boolean", "DEBUG_MODE", "true"
+            resValue "string", "aboutApp", "Utilities debug"
         }
     }
+    flavorDimensions "version"
+    productFlavors {
+        open {
+            dimension "version"
+        }
+        full {
+            dimension "version"
+            versionNameSuffix "-full"
+        }
+    }
+
     compileOptions {
         sourceCompatibility 1.8
         targetCompatibility 1.8
@@ -47,7 +59,7 @@ dependencies {
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'androidx.constraintlayout:constraintlayout:2.0.0-beta2'
-    implementation 'com.google.android.material:material:1.1.0-alpha10'
+    implementation 'com.google.android.material:material:1.1.0-beta01'
     implementation 'androidx.preference:preference:1.1.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     testImplementation 'junit:junit:4.13-beta-3'

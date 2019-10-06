@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    tools:showIn="@layout/main_activity">
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/randomChooser"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/main_randomChooser"
+        android:layout_marginEnd="@dimen/main_marginHorizontal"
+        android:layout_marginStart="@dimen/main_marginHorizontal"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/cashBoxManager"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/main_cashBoxManager"
+        android:layout_marginEnd="@dimen/main_marginHorizontal"
+        android:layout_marginStart="@dimen/main_marginHorizontal"/>
+</LinearLayout>

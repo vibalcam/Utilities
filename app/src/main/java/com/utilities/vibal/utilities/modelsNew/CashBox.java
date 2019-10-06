@@ -85,6 +85,7 @@ public class CashBox implements Parcelable {
         dest.writeTypedList(entries);
     }
 
+    @NonNull
     public InfoWithCash getInfoWithCash() {
         return infoWithCash;
     }
@@ -182,7 +183,7 @@ public class CashBox implements Parcelable {
             }
         };
 
-        @Nullable
+        @NonNull
         @Embedded
         private final CashBoxInfo cashBoxInfo;
         private double cash; //sum of amounts

@@ -19,35 +19,20 @@
         android:textStyle="bold"
         android:layout_marginTop="@dimen/main_marginVertical"
         android:layout_marginBottom="@dimen/main_marginVertical"
-        app:layout_constraintBottom_toTopOf="@+id/randomChooser"
+        app:layout_constraintBottom_toTopOf="@id/utility_options_fragment"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0"/>
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/randomChooser"
-        android:layout_width="0dp"
+    <include tools:layout="@layout/main_utility_options"
+        android:id="@+id/utility_options_fragment"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/main_randomChooser"
-        android:layout_marginEnd="@dimen/main_marginHorizontal"
-        android:layout_marginStart="@dimen/main_marginHorizontal"
-        app:layout_constraintBottom_toTopOf="@+id/cashBoxManager"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/titleText" />
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/cashBoxManager"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="@string/main_cashBoxManager"
-        app:layout_constraintBottom_toTopOf="@+id/logoImage"
-        app:layout_constraintEnd_toEndOf="@+id/randomChooser"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/randomChooser"
-        app:layout_constraintTop_toBottomOf="@+id/randomChooser" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/titleText"
+        app:layout_constraintBottom_toTopOf="@id/logoImage" />
 
     <ImageView
         android:id="@+id/logoImage"
@@ -55,7 +40,7 @@
         android:layout_height="0dp"
         android:scaleType="centerInside"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/cashBoxManager"
+        app:layout_constraintTop_toBottomOf="@id/utility_options_fragment"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:src="@drawable/logo"

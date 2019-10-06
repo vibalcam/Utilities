@@ -20,7 +20,7 @@
             </intent-filter>
         </receiver>
 
-        <receiver android:name=".widget.CashBoxWidget">
+        <receiver android:name=".widget.CashBoxWidgetProvider">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>

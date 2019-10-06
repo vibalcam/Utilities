@@ -16,7 +16,7 @@ import com.utilities.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity;
 /**
  * Implementation of App Widget functionality.
  */
-public class CashBoxWidget extends AppWidgetProvider {
+public class CashBoxWidgetProvider extends AppWidgetProvider {
     public static final int ADD_REQUEST = 1;
     public static final int DETAILS_REQUEST = 2;
 
@@ -50,8 +50,6 @@ public class CashBoxWidget extends AppWidgetProvider {
             appWidgetManager.updateAppWidget(appWidgetId, views);
         }
     }
-
-    //todo update al salir de app
 
 //    @Override
 //    public void onReceive(Context context, Intent intent) {

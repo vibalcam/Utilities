@@ -71,6 +71,9 @@ public class CashBoxViewModel extends AndroidViewModel {
         return cashBoxRepository.insertCashBoxInfo(cashBoxInfo).ignoreElement();
     }
 
+    /**
+     * CAREFUL: ADDING CASHBOX BEFORE ANOTHER ONE, DOES NOT ASSURE ORDER ID
+     */
     public Completable addCashBox(@NonNull CashBox cashBox) {
 //        return cashBoxRepository.insertCashBoxInfo(cashBox.getInfoWithCash())
 //                .flatMapCompletable(id -> {

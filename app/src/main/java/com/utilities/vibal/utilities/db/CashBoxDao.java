@@ -35,7 +35,7 @@ public abstract class CashBoxDao {
     @Query("SELECT C.id,C.name,C.orderId,SUM(amount) AS cash " +
             "FROM cashBoxesInfo_table AS C LEFT JOIN entries_table AS E ON C.id=E.cashBoxId " +
             "GROUP BY C.id,C.name,C.orderId " +
-            "ORDER BY C.orderId DESC")
+            "ORDER BY C.orderId ASC")
     abstract LiveData<List<CashBox.InfoWithCash>> getAllCashBoxesInfo();
 
     @Query("SELECT C.id,C.name,C.orderId,SUM(amount) AS cash " +
@@ -68,6 +68,7 @@ public abstract class CashBoxDao {
 //            "THEN orderId ELSE (CASE " +
 //            "WHEN id=:cashBoxId THEN :toOrderPos " +
 //            "WHEN orderId BETWEEN :fromOrderPos AND :toOrderPos THEN )")
+    //todo mejorar coger from directamente
     @Query("UPDATE cashBoxesInfo_table " +
             "SET orderId=CASE " +
             "WHEN id=:cashBoxId THEN :toOrderPos " +
@@ -114,8 +115,20 @@ public abstract class CashBoxDao {
         }
     }
 
+    Single<Long> insert(CashBoxInfo cashBoxInfo) {
+        return insertWithoutOrderId(cashBoxInfo)
+                .flatMap(id -> configureOrderId(id)
+                        .toSingle(() -> id));
+    }
+
+    @Query("UPDATE cashBoxesInfo_table " +
+            "SET orderId=CASE " +
+            "WHEN orderId=" + CashBoxInfo.NO_ORDER_ID + " THEN :cashBoxId " +
+            "ELSE orderId END")
+    abstract Completable configureOrderId(long cashBoxId);
+
     @Insert
-    abstract Single<Long> insert(CashBoxInfo cashBoxInfo);
+    abstract Single<Long> insertWithoutOrderId(CashBoxInfo cashBoxInfo);
 
     @Update
     abstract Completable update(CashBoxInfo cashBoxInfo);

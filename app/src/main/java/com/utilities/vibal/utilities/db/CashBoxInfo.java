@@ -25,7 +25,7 @@ public class CashBoxInfo implements Cloneable {
     @NonNull
     @ColumnInfo(collate = NOCASE)
     private String name;
-    private long orderId;
+    private long orderId = NO_ORDER_ID;
 
     public CashBoxInfo(@NonNull String name) throws IllegalArgumentException {
         setName(name);

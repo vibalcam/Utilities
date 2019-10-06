@@ -76,12 +76,14 @@ public class CashBoxRepository {
      * @param cashBoxInfo the cashBoxInfo which orderId is going to be configured
      */
     private void configureOrderId(@NonNull CashBoxInfo cashBoxInfo) {
-        if (cashBoxInfo.getOrderId() == NO_ORDER_ID) {
-            List<CashBox.InfoWithCash> temp = cashBoxesInfo.getValue();
-            long orderId = temp == null || temp.isEmpty() ? NO_ORDER_ID + 1 :
-                    temp.get(0).getCashBoxInfo().getOrderId() + 1;
-            cashBoxInfo.setOrderId(orderId);
-        }
+//        if (cashBoxInfo.getOrderId() == NO_ORDER_ID) {
+//            List<CashBox.InfoWithCash> temp = cashBoxesInfo.getValue();
+//            long orderId = temp == null || temp.isEmpty() ? NO_ORDER_ID + 1 :
+//                    temp.get(0).getCashBoxInfo().getOrderId() + 1;
+//            cashBoxInfo.setOrderId(orderId);
+//        }
+        if(cashBoxInfo.getOrderId() == NO_ORDER_ID)
+            cashBoxInfo.setOrderId(cashBoxInfo.getId());
     }
 
     public Completable updateCashBoxInfo(CashBoxInfo cashBoxInfo) {

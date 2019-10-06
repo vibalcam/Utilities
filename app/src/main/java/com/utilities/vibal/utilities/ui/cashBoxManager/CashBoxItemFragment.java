@@ -70,10 +70,8 @@ public class CashBoxItemFragment extends Fragment {
     private static final double MAX_SHOW_CASH = 99999999;
     private static final String TAG = "PruebaItemFragment";
 
-    @Nullable
     @BindView(R.id.itemCash)
     TextView itemCash;
-    @Nullable
     @BindView(R.id.rvCashBoxItem)
     RecyclerView rvCashBoxItem;
 
@@ -198,6 +196,13 @@ public class CashBoxItemFragment extends Fragment {
         });
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        //Fix error of recycler view
+        adapter.notifyDataSetChanged();
+    }
+
     private void updateCash(double cash) {
         if (Math.abs(cash) > MAX_SHOW_CASH)
             itemCash.setText(R.string.outOfRange);
@@ -289,18 +294,15 @@ public class CashBoxItemFragment extends Fragment {
                     }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
                     calendar.get(Calendar.DAY_OF_MONTH))
                     .show();
-        } else { //Cancel reminder dialog
-            AlertDialog dialog = new AlertDialog.Builder(getContext())
+        } else //Cancel reminder dialog
+            new AlertDialog.Builder(getContext())
                     .setTitle(R.string.reminder_dialog_cancel_title)
                     .setMessage(getString(R.string.reminder_dialog_cancel_message,
                             DateFormat.getDateTimeInstance().format(new Date(timeInMillis))))
-                    .setPositiveButton(R.string.reminder_dialog_cancel_keep, null)
-                    .setNegativeButton(R.string.reminder_dialog_cancel_cancel,
+                    .setNegativeButton(R.string.reminder_dialog_cancel_keep, null)
+                    .setPositiveButton(R.string.reminder_dialog_cancel_cancel,
                             (dialogInterface, i) -> cancelReminder())
-                    .create();
-            dialog.setCanceledOnTouchOutside(false);
-            dialog.show();
-        }
+                    .show();
     }
 
     private void scheduleReminder(@NonNull Calendar c) {

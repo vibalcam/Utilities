@@ -203,64 +203,13 @@ public class CashBoxManagerFragment extends Fragment {
         }).subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe());
-
-
-//        LogUtil.debug(TAG,"Inicio check file");
-//        //Check if the file exists
-//        File originalFile = getContext().getFileStreamPath("cashBoxManager");
-//        File tempFile = getContext().getFileStreamPath("cashBoxManagerTemp");
-//        if(!originalFile.exists() && !tempFile.exists()) {
-//            LogUtil.debug(TAG,"No files found");
-//            return;
-//        }
-//        LogUtil.debug(TAG, Arrays.toString(originalFile.getParentFile().list()));
-//
-//        //If it does, upload all the cashBoxes to the new DB version
-//        String fileName = tempFile.lastModified() > originalFile.lastModified() ?
-//                "cashBoxManagerTemp" : "cashBoxManager";
-//
-//        Object cashBoxManager;
-//        Completable completable = Completable.complete();
-//        try (ObjectInputStream objectInputStream = new ObjectInputStream(getContext().openFileInput(fileName))) {
-//            cashBoxManager = objectInputStream.readObject();
-//            if (cashBoxManager instanceof CashBoxManager) {
-//                CashBoxManager manager = (CashBoxManager) cashBoxManager;
-//                CashBox.InfoWithCash infoWithCash;
-//                List<CashBox.Entry> entryList;
-//                com.utilities.vibal.utilities.models.CashBox cashBox;
-//                com.utilities.vibal.utilities.models.CashBox.Entry entry;
-//                for(int k=0; k<manager.size(); k++) {
-//                    cashBox = manager.get(k);
-//                    infoWithCash = new CashBox.InfoWithCash(cashBox.getName());
-//                    entryList = new ArrayList<>();
-//                    for(int i=0; i<cashBox.sizeEntries();i++) {
-//                        entry = cashBox.getEntry(i);
-//                        entryList.add(new CashBox.Entry(entry.getAmount(),entry.getInfo(),entry.getDate()));
-//                    }
-//
-//                    completable = completable.andThen(viewModel.addCashBox(new CashBox(infoWithCash,entryList)));
-//                    LogUtil.debug(TAG,new CashBox(infoWithCash,entryList).toString());
-//                }
-//            }
-//        } catch (IOException | ClassNotFoundException e) {
-//            LogUtil.error(TAG, "loadData: error al leer archivo", e);
-//        }
-
-//        viewModel.addDisposable(completable
-//                .subscribeOn(Schedulers.io())
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .subscribe(() -> {
-//                    //Delete files
-//                    getContext().deleteFile(originalFile.getName());
-//                    getContext().deleteFile(tempFile.getName());
-//                    LogUtil.debug(TAG,"Success delete");
-//                    LogUtil.debug(TAG, Arrays.toString(originalFile.getParentFile().list()));
-//                },throwable -> LogUtil.error(TAG,"Error delte",throwable)));
     }
 
     @Override
     public void onStart() {
         super.onStart();
+        //Fix error of recycler view
+        adapter.notifyDataSetChanged();
         // Look at intent
         doIntentAction();
     }
@@ -311,7 +260,7 @@ public class CashBoxManagerFragment extends Fragment {
         if (action == ACTION_ADD_CASHBOX)
             showAddDialog();
         else if (action == ACTION_DETAILS)
-            swapToItemFragment(intent.getIntExtra(EXTRA_CASHBOX_ID, CashBoxInfo.NO_CASHBOX));
+            swapToItemFragment(intent.getLongExtra(EXTRA_CASHBOX_ID, CashBoxInfo.NO_CASHBOX));
     }
 
     private void swapToItemFragment(long cashBoxId) {
@@ -471,6 +420,7 @@ public class CashBoxManagerFragment extends Fragment {
         private CashBoxManagerRecyclerAdapter.ViewHolder selectedViewHolder = null;
         @NonNull
         private List<CashBox.InfoWithCash> currentList = new ArrayList<>();
+        private List<Integer> posToDelete = new ArrayList<>();
 
         // Contextual toolbar
         @Nullable
@@ -535,8 +485,19 @@ public class CashBoxManagerFragment extends Fragment {
                         LogUtil.debug(TAG, "DiffResult calculated");
                         currentList.clear();
                         currentList.addAll(newList);
-                        notifyDataSetChanged();
+//                        notifyDataSetChanged();
                         diffResult.dispatchUpdatesTo(CashBoxManagerRecyclerAdapter.this);
+//                        for(Integer k:posToDelete)
+//                            adapter.notifyItemRemoved(diffResult.convertOldPositionToNew(k));
+                        //Delete the temporarily deleted entries
+                        int pos;
+                        for(int k=0; k<posToDelete.size();k++) {
+                            pos = diffResult.convertOldPositionToNew(posToDelete.remove(k));
+                            if(pos!= DiffUtil.DiffResult.NO_POSITION) {
+                                currentList.remove(pos);
+                                notifyItemRemoved(pos);
+                            }
+                        }
                     }));
         }
 
@@ -598,32 +559,38 @@ public class CashBoxManagerFragment extends Fragment {
 
         @Override
         public int getItemCount() {
+//            return currentList.size() - posToDelete.size();
             return currentList.size();
         }
 
-        //todo fix: add data to know when to look for changes and when not
         @Override
         public void onItemDelete(int position) {
             if (actionMode != null)
                 actionMode.finish();
-            CashBox.InfoWithCash deletedCashBoxInfo = currentList.remove(position);
-            notifyItemRemoved(position);
+//            CashBox.InfoWithCash deletedCashBoxInfo = currentList.remove(position);
+//            notifyItemRemoved(position);
+            List<CashBox.InfoWithCash> list = new ArrayList<>(currentList);
+            posToDelete.add(position);
+            submitList(currentList);
             Snackbar.make(coordinatorLayout,
                     getString(R.string.snackbarEntriesDeleted, 1), Snackbar.LENGTH_LONG)
                     .setAction(R.string.undo, v -> {
-                        currentList.add(position, deletedCashBoxInfo);
-                        notifyItemInserted(position);
+                        submitList(list);
+//                        currentList.add(position, deletedCashBoxInfo);
+//                        notifyItemInserted(position);
                     }).addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
                 @Override
                 public void onDismissed(Snackbar transientBottomBar, int event) {
                     super.onDismissed(transientBottomBar, event);
 
-                    LogUtil.debug(TAG, "Delete CashBox");
-                    if (event != DISMISS_EVENT_ACTION)
-                        viewModel.addDisposable(viewModel.deleteCashBoxInfo(deletedCashBoxInfo)
+                    if (event != DISMISS_EVENT_ACTION) {
+                        LogUtil.debug(TAG, "Delete CashBox");
+//                        viewModel.addDisposable(viewModel.deleteCashBoxInfo(deletedCashBoxInfo)
+                        viewModel.addDisposable(viewModel.deleteCashBoxInfo(list.get(position))
                                 .subscribeOn(Schedulers.io())
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe());
+                    }
                 }
             }).show();
         }
@@ -734,13 +701,10 @@ public class CashBoxManagerFragment extends Fragment {
         }
 
         public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
-            @Nullable
             @BindView(R.id.rvName)
             TextView rvName;
-            @Nullable
             @BindView(R.id.rvAmount)
             TextView rvAmount;
-            @Nullable
             @BindView(R.id.reorderImage)
             ImageView reorderImage;
 
