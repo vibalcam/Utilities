@@ -44,6 +44,7 @@ import com.utilities.vibal.utilities.util.Util;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -51,11 +52,11 @@ import java.util.Objects;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.reactivex.Single;
+import io.reactivex.SingleOnSubscribe;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
 public class CashBoxPeriodicFragment extends Fragment {
-    @Nullable
     @BindView(R.id.lyCBPeriodic)
     CoordinatorLayout coordinatorLayout;
 
@@ -117,12 +118,12 @@ public class CashBoxPeriodicFragment extends Fragment {
         }
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        //Fix error of recycler view
-        adapter.notifyDataSetChanged();
-    }
+//    @Override
+//    public void onStart() {
+//        super.onStart();
+//        //Fix error of recycler view
+//        adapter.notifyDataSetChanged();
+//    }
 
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
@@ -172,26 +173,31 @@ public class CashBoxPeriodicFragment extends Fragment {
         private final NumberFormat currencyFormat = NumberFormat.getCurrencyInstance();
         @NonNull
         private List<PeriodicEntryPojo> currentList = new ArrayList<>();
-        private List<Integer> posToDelete = new ArrayList<>();
+        private LinkedList<PeriodicEntryPojo> toDelete = new LinkedList<>();
 
         void submitList(@NonNull List<PeriodicEntryPojo> newList) {
-            viewModel.addDisposable(Single.just(DiffUtil.calculateDiff(
-                    new DiffCallback<>(currentList, newList), false))
+            viewModel.addDisposable(Single.create((SingleOnSubscribe<List<PeriodicEntryPojo>>) emitter -> {
+                        for(PeriodicEntryPojo pojo:toDelete)
+                            newList.remove(pojo);
+                        emitter.onSuccess(newList);
+                    }).map(periodicEntryPojos -> DiffUtil.calculateDiff(
+                    new DiffCallback<>(currentList, periodicEntryPojos), false))
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(diffResult -> {
                         currentList.clear();
                         currentList.addAll(newList);
+//                        notifyDataSetChanged();
                         diffResult.dispatchUpdatesTo(CashBoxPeriodicRecyclerAdapter.this);
 
-                        int pos;
-                        for(int k=0; k<posToDelete.size(); k++) {
-                            pos = diffResult.convertOldPositionToNew(posToDelete.remove(k));
-                            if(pos!= DiffUtil.DiffResult.NO_POSITION) {
-                                currentList.remove(pos);
-                                notifyItemRemoved(pos);
-                            }
-                        }
+//                        int pos;
+//                        for(int k = 0; k< toDelete.size(); k++) {
+//                            pos = diffResult.convertOldPositionToNew(toDelete.remove(k));
+//                            if(pos!= DiffUtil.DiffResult.NO_POSITION) {
+//                                currentList.remove(pos);
+//                                notifyItemRemoved(pos);
+//                            }
+//                        }
                     }));
         }
 
@@ -232,15 +238,17 @@ public class CashBoxPeriodicFragment extends Fragment {
 
         @Override
         public void onItemDelete(int position) {
+            PeriodicEntryPojo removed = currentList.get(position);
             List<PeriodicEntryPojo> list = new ArrayList<>(currentList);
-            posToDelete.add(position);
-            submitList(currentList);
+            toDelete.add(removed);
+            submitList(new ArrayList<>(currentList));
 //            PeriodicEntryPojo deletedEntry = currentList.remove(position);
 //            notifyItemRemoved(position);
             Snackbar.make(coordinatorLayout,
                     getString(R.string.snackbarEntriesDeleted, 1), Snackbar.LENGTH_LONG)
                     .setAction(R.string.undo, view -> {
 //                        currentList.add(position, deletedEntry);
+                        toDelete.removeFirst();
                         submitList(list);
                     }).addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
                 @Override
@@ -251,7 +259,7 @@ public class CashBoxPeriodicFragment extends Fragment {
                     if (event != DISMISS_EVENT_ACTION)
                         viewModel.addDisposable(
 //                                viewModel.deletePeriodicEntryWorkInfo(deletedEntry.getWorkInfo())
-                                viewModel.deletePeriodicEntryWorkInfo(list.get(position).getWorkInfo())
+                                viewModel.deletePeriodicEntryWorkInfo(toDelete.removeFirst().getWorkInfo())
                                         .subscribeOn(Schedulers.io())
                                         .observeOn(AndroidSchedulers.mainThread())
                                         .subscribe());

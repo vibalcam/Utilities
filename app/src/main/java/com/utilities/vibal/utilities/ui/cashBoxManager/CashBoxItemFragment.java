@@ -196,12 +196,12 @@ public class CashBoxItemFragment extends Fragment {
         });
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        //Fix error of recycler view
-        adapter.notifyDataSetChanged();
-    }
+//    @Override
+//    public void onStart() {
+//        super.onStart();
+//        //Fix error of recycler view
+//        adapter.notifyDataSetChanged();
+//    }
 
     private void updateCash(double cash) {
         if (Math.abs(cash) > MAX_SHOW_CASH)
@@ -420,6 +420,7 @@ public class CashBoxItemFragment extends Fragment {
                         LogUtil.debug(TAG, "DiffResult calculated");
                         currentList.clear();
                         currentList.addAll(newList);
+//                        notifyDataSetChanged();
                         diffResult.dispatchUpdatesTo(CashBoxItemRecyclerAdapter.this);
                     }));
         }

@@ -14,7 +14,6 @@ import com.utilities.vibal.utilities.util.LogUtil;
 import com.utilities.vibal.utilities.widget.CashBoxWidgetProvider;
 
 public class CashBoxManagerActivity extends AppCompatActivity {
-    //todo use action
     public static final String EXTRA_CASHBOX_ID = "com.utilities.vibal.utilities.cashBoxId";
     public static final String EXTRA_ACTION = "com.utilities.vibal.utilities.ui.cashBoxManager.action";
     public static final int NO_ACTION = 0;
@@ -31,12 +30,12 @@ public class CashBoxManagerActivity extends AppCompatActivity {
         //Cancel reminder notifications if any
         NotificationManagerCompat.from(this).cancelAll();
 
-        if (savedInstanceState == null) {
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .add(R.id.container, CashBoxManagerFragment.newInstance())
-                    .commitNow();
-        }
+//        if (savedInstanceState == null) {
+//            getSupportFragmentManager()
+//                    .beginTransaction()
+//                    .add(R.id.container, CashBoxManagerFragment.newInstance())
+//                    .commitNow();
+//        }
     }
 
     @Override

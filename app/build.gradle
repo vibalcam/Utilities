@@ -18,8 +18,8 @@ android {
         applicationId "com.utilities.vibal.utilities"
         minSdkVersion 23
         targetSdkVersion 29
-        versionCode 8
-        versionName "2.2.1"
+        versionCode 9
+        versionName "2.2.2"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         resValue "string", "aboutApp", "Utilities v" + versionName + "\n\nvibal " + (new Date().format("dd/MM/yyyy"))
     }
@@ -32,7 +32,8 @@ android {
         }
         debug {
             buildConfigField "boolean", "DEBUG_MODE", "true"
-            resValue "string", "aboutApp", "Utilities debug"
+            resValue "string", "aboutApp", "Utilities debug " + getVersion()
+            applicationIdSuffix ".debug"
         }
     }
     flavorDimensions "version"
