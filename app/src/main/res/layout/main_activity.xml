@@ -25,7 +25,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0"/>
 
-    <fragment android:name="com.utilities.vibal.utilities.ui.UtilitiesOptionsFragment"
+    <fragment android:name="com.vibal.utilities.ui.UtilitiesOptionsFragment"
         android:id="@+id/utility_options_fragment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

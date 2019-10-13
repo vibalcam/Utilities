@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.utilities.vibal.utilities">
+    package="com.vibal.utilities">
 
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
@@ -45,7 +45,7 @@
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.utilities.vibal.utilities.ui.MainActivity" />
+                android:value="com.vibal.utilities.ui.MainActivity" />
         </activity>
 
         <activity
@@ -54,7 +54,7 @@
             android:parentActivityName=".ui.MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.utilities.vibal.utilities.ui.MainActivity" />
+                android:value="com.vibal.utilities.ui.MainActivity" />
         </activity>
 
         <activity

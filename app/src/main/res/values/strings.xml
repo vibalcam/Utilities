@@ -46,6 +46,9 @@
     <string name="helperEnterNameDialog">Max. 15 characters</string>
     <string name="contentDescriptionLogoMain">App\'s logo</string>
 
+    <!--CashBox Activity-->
+    <string name="no_cashbox_selected">No CashBox Selected</string>
+
     <!--CashBox Manager Menu-->
     <string name="menuCBM_showPeriodic">Periodic Tasks</string>
 
