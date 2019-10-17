@@ -30,12 +30,12 @@ public class CashBoxManagerActivity extends AppCompatActivity {
         //Cancel reminder notifications if any
         NotificationManagerCompat.from(this).cancelAll();
 
-//        if (savedInstanceState == null) {
-//            getSupportFragmentManager()
-//                    .beginTransaction()
-//                    .add(R.id.container, CashBoxManagerFragment.newInstance())
-//                    .commitNow();
-//        }
+        if (savedInstanceState == null) {
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .add(R.id.containerManager, CashBoxManagerFragment.newInstance())
+                    .commitNow();
+        }
     }
 
     @Override

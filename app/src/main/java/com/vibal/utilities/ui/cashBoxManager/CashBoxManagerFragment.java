@@ -3,6 +3,7 @@ package com.vibal.utilities.ui.cashBoxManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.database.sqlite.SQLiteConstraintException;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -25,6 +26,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.ActionMode;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DiffUtil;
@@ -272,13 +274,25 @@ public class CashBoxManagerFragment extends Fragment {
             return;
 
         viewModel.setCurrentCashBoxId(cashBoxId);
-        getParentFragmentManager()
+        FragmentTransaction transaction = getParentFragmentManager()
                 .beginTransaction()
                 .setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_right,
                         R.anim.enter_from_right, R.anim.exit_to_right)
-                .addToBackStack(null)
-                .replace(R.id.container, CashBoxItemFragment.newInstance())
-                .commit();
+                .replace(R.id.container, CashBoxItemFragment.newInstance());
+
+        // In landscape, no backstack so back returns to parent activity
+        if(getResources().getConfiguration().orientation==Configuration.ORIENTATION_LANDSCAPE)
+            transaction.commitNow();
+        else
+            transaction.addToBackStack(null).commit();
+
+//        getParentFragmentManager()
+//                .beginTransaction()
+//                .setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_right,
+//                        R.anim.enter_from_right, R.anim.exit_to_right)
+//                .addToBackStack(null)
+//                .replace(R.id.container, CashBoxItemFragment.newInstance())
+//                .commit();
     }
 
     private void deleteAll() {
@@ -600,6 +614,8 @@ public class CashBoxManagerFragment extends Fragment {
         public void onItemDelete(int position) {
             if (actionMode != null)
                 actionMode.finish();
+            if(selectedViewHolder!=null && selectedViewHolder.getAdapterPosition()==position)
+                selectedViewHolder=null;
 //            CashBox.InfoWithCash deletedCashBoxInfo = currentList.remove(position);
 //            notifyItemRemoved(position);
             CashBox.InfoWithCash removed = currentList.get(position);
@@ -775,6 +791,8 @@ public class CashBoxManagerFragment extends Fragment {
                 if (actionMode != null) //Highlight selected element
                     setSelectedViewHolder(this);
                 else {
+                    if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
+                        setSelectedViewHolder(this);
                     swapToItemFragment(currentList.get(getAdapterPosition()).getCashBoxInfo().getId());
                 }
             }

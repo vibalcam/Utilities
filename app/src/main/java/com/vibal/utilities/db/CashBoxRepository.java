@@ -40,6 +40,8 @@ public class CashBoxRepository {
 
         liveDataMerger.addSource(cashBoxDao.getCashBoxInfoWithCashById(id),
                 infoWithCash -> {
+                    if(infoWithCash == null)
+                        return;
                     LogUtil.debug("Prueba", "Change in info with cash: " + infoWithCash.toString());
                     CashBox cashBox = liveDataMerger.getValue();
                     cashBox.setInfoWithCash(infoWithCash);
@@ -47,6 +49,8 @@ public class CashBoxRepository {
                 });
         liveDataMerger.addSource(cashBoxEntryDao.getEntriesByCashBoxId(id),
                 entries -> {
+                    if(entries == null)
+                        return;
                     LogUtil.debug("Prueba", "Change in entries: " + entries.toString());
                     CashBox cashBox = liveDataMerger.getValue();
                     cashBox.setEntries(entries);
