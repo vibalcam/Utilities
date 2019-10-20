@@ -43,7 +43,6 @@
         app:layout_constraintTop_toBottomOf="@id/utility_options_fragment"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:src="@drawable/logo"
         app:srcCompat="@drawable/logo"
         android:contentDescription="@string/contentDescriptionLogoMain" />
 

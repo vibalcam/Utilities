@@ -134,11 +134,14 @@ public class CashBoxItemFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Fragment has options menu
-        setHasOptionsMenu(true);
-        //Set up SharedPreferences for notifications
-        sharedPrefNot = getContext().getSharedPreferences(ReminderReceiver.PREFERENCE_KEY,
-                Context.MODE_PRIVATE);
+        // Fragment has options menu if not in landscape mode
+        View viewLand = getActivity().findViewById(R.id.containerItem);
+        if(viewLand==null || viewLand.getVisibility()!=View.VISIBLE) {
+            setHasOptionsMenu(true);
+            //Set up SharedPreferences for notifications
+            sharedPrefNot = getContext().getSharedPreferences(ReminderReceiver.PREFERENCE_KEY,
+                    Context.MODE_PRIVATE);
+        }
     }
 
     @Nullable
@@ -172,18 +175,18 @@ public class CashBoxItemFragment extends Fragment {
         AppCompatActivity activity = (AppCompatActivity) Objects.requireNonNull(getActivity());
 
         //Set Toolbar as ActionBar
-        activity.setSupportActionBar(getView().findViewById(R.id.toolbarCBItem));
+//        activity.setSupportActionBar(getView().findViewById(R.id.toolbar));
         ActionBar actionBar = activity.getSupportActionBar();
-        if (actionBar != null)
-            actionBar.setDisplayHomeAsUpEnabled(true);
+//        if (actionBar != null)
+//            actionBar.setDisplayHomeAsUpEnabled(true);
 
         // Initialize data
         viewModel = new ViewModelProvider(Objects.requireNonNull(activity)).get(CashBoxViewModel.class);
         viewModel.getCurrentCashBox().observe(getViewLifecycleOwner(), cashBox -> {
-            LogUtil.debug("Prueba", "On change data");
+            LogUtil.debug("PruebaItemFragment", "Is Visible: "+isVisible());
 
             // Set Title
-            if (actionBar != null)
+            if (actionBar != null && isVisible())
                 actionBar.setTitle(cashBox.getName());
 
             // Update data
@@ -220,6 +223,7 @@ public class CashBoxItemFragment extends Fragment {
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
+        menu.clear();
         inflater.inflate(R.menu.menu_toolbar_cash_box_item, menu);
         //Prepare alarm icon
         menuItemNotification = menu.findItem(R.id.action_item_reminder);
@@ -245,7 +249,8 @@ public class CashBoxItemFragment extends Fragment {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                getActivity().onBackPressed();
+//                getActivity().onBackPressed();
+                getParentFragmentManager().popBackStack();
                 return true;
             case R.id.action_item_deleteAll:
                 deleteAll();

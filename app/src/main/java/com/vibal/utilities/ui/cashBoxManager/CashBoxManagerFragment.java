@@ -1,5 +1,7 @@
 package com.vibal.utilities.ui.cashBoxManager;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -20,7 +22,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.ActionMode;
@@ -34,6 +35,7 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
@@ -86,9 +88,48 @@ public class CashBoxManagerFragment extends Fragment {
 
     @BindView(R.id.lyCBM)
     CoordinatorLayout coordinatorLayout;
+    @BindView(R.id.fabCBM_main)
+    FloatingActionButton fabMain;
+    @BindView(R.id.fabCBM_groupAdd)
+    FloatingActionButton fabGroupAdd;
+    @BindView(R.id.fabCBM_singleAdd)
+    FloatingActionButton fabSingleAdd;
+    @BindView(R.id.bgFabMenu_CBM)
+    View viewBgFabMenu;
 
     private CashBoxViewModel viewModel;
     private CashBoxManagerRecyclerAdapter adapter;
+    private boolean isFabOpen = false;
+
+    private ActionMode groupAddActionMode;
+    private
+    private final ActionMode.Callback groupAddModeCallback = new ActionMode.Callback() {
+
+        @Override
+        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+            mode.setTitle("Choose CashBoxes:");
+            // Notify adapter to hide images for choosing
+            adapter.notifyItemRangeChanged(0, adapter.getItemCount());
+            return true;
+        }
+
+        @Override
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            return false;
+        }
+
+        @Override
+        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+            return false;
+        }
+
+        @Override
+        public void onDestroyActionMode(ActionMode mode) {
+            adapter.setSelectedViewHolder(null);
+            // Notify adapter to show images again
+            adapter.notifyItemRangeChanged(0, adapter.getItemCount());
+        }
+    };
 
     @NonNull
     static CashBoxManagerFragment newInstance() {
@@ -132,6 +173,7 @@ public class CashBoxManagerFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        LogUtil.debug(TAG, "onActivityCreated: ");
 
         AppCompatActivity activity = (AppCompatActivity) Objects.requireNonNull(getActivity());
         // Initialize data
@@ -140,12 +182,13 @@ public class CashBoxManagerFragment extends Fragment {
                 adapter.submitList(infoWithCashes));
 
         //Set Toolbar as ActionBar
-        activity.setSupportActionBar(getView().findViewById(R.id.toolbarCBManager));
-        ActionBar actionBar = activity.getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setTitle(R.string.titleCBM);
-            actionBar.setDisplayHomeAsUpEnabled(true);
-        }
+//        activity.setSupportActionBar(getView().findViewById(R.id.toolbar));
+//        ActionBar actionBar = activity.getSupportActionBar();
+//        if (actionBar != null) {
+//            actionBar.setTitle(R.string.titleCBM);
+//            actionBar.setDisplayHomeAsUpEnabled(true);
+//        }
+        activity.getSupportActionBar().setTitle(R.string.titleCBM);
 
         checkFileForCashBoxes();
     }
@@ -212,6 +255,7 @@ public class CashBoxManagerFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
+        LogUtil.debug(TAG, "onStart: ");
         //Fix error of recycler view
 //        adapter.notifyDataSetChanged();
         // Look at intent
@@ -221,6 +265,7 @@ public class CashBoxManagerFragment extends Fragment {
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
+        menu.clear();
         inflater.inflate(R.menu.menu_toolbar_cash_box_manager, menu);
     }
 
@@ -268,7 +313,7 @@ public class CashBoxManagerFragment extends Fragment {
             swapToItemFragment(intent.getLongExtra(EXTRA_CASHBOX_ID, CashBoxInfo.NO_CASHBOX));
     }
 
-    private void swapToItemFragment(long cashBoxId) { //todo
+    private void swapToItemFragment(long cashBoxId) {
         LogUtil.debug(TAG, "Selected " + cashBoxId);
         if (cashBoxId == CashBoxInfo.NO_CASHBOX)
             return;
@@ -277,14 +322,17 @@ public class CashBoxManagerFragment extends Fragment {
         FragmentTransaction transaction = getParentFragmentManager()
                 .beginTransaction()
                 .setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_right,
-                        R.anim.enter_from_right, R.anim.exit_to_right)
-                .replace(R.id.container, CashBoxItemFragment.newInstance());
+                        R.anim.enter_from_right, R.anim.exit_to_right);
 
         // In landscape, no backstack so back returns to parent activity
-        if(getResources().getConfiguration().orientation==Configuration.ORIENTATION_LANDSCAPE)
-            transaction.commitNow();
+        View landsView = getActivity().findViewById(R.id.containerItem);
+        if(landsView!=null && landsView.getVisibility() == View.VISIBLE)
+            transaction.replace(R.id.containerItem, CashBoxItemFragment.newInstance())
+                    .commitNow();
         else
-            transaction.addToBackStack(null).commit();
+            transaction.replace(R.id.container, CashBoxItemFragment.newInstance())
+                    .addToBackStack(null)
+                    .commit();
 
 //        getParentFragmentManager()
 //                .beginTransaction()
@@ -313,8 +361,61 @@ public class CashBoxManagerFragment extends Fragment {
                 .show();
     }
 
-    @OnClick(R.id.fabCBManager)
+    @OnClick(R.id.fabCBM_main)
+    void toggleFabMenu() {
+        if(isFabOpen) {
+            closeFabMenu();
+            return;
+        }
+
+        LogUtil.debug(TAG,"Open FAB Menu");
+        //Open FAB Menu
+        isFabOpen = true;
+        fabGroupAdd.setVisibility(View.VISIBLE);
+        fabSingleAdd.setVisibility(View.VISIBLE);
+        viewBgFabMenu.setVisibility(View.VISIBLE);
+
+        //Animate
+        fabMain.animate().rotation(135f);
+        viewBgFabMenu.animate().alpha(1f);
+        fabGroupAdd.animate()
+                .translationY(-getResources().getDimension(R.dimen.standard_55))
+                .rotation(0f);
+        fabSingleAdd.animate()
+                .translationY(-getResources().getDimension(R.dimen.standard_100))
+                .rotation(0f);
+    }
+
+    @OnClick(R.id.bgFabMenu_CBM)
+    void closeFabMenu() {
+        LogUtil.debug(TAG,"Close FAB Menu");
+        isFabOpen = false;
+        //Animate
+        fabMain.animate().rotation(0f);
+        viewBgFabMenu.animate().alpha(0f);
+        fabGroupAdd.animate()
+                .translationY(0f)
+                .rotation(90f);
+        fabSingleAdd.animate()
+                .translationY(0f)
+                .rotation(90f)
+                .setListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        if(!isFabOpen) {
+                            LogUtil.debug(TAG,"Hide fabs");
+                            fabGroupAdd.setVisibility(View.GONE);
+                            fabSingleAdd.setVisibility(View.GONE);
+                            viewBgFabMenu.setVisibility(View.GONE);
+                        }
+                    }
+                });
+
+    }
+
+    @OnClick(R.id.fabCBM_singleAdd)
     void showAddDialog() {
+        LogUtil.debug(TAG,"Single add");
         if (adapter.actionMode != null)
             adapter.actionMode.finish();
 
@@ -370,6 +471,73 @@ public class CashBoxManagerFragment extends Fragment {
             });
         });
         dialog.show();
+        closeFabMenu();
+    }
+
+    @OnClick(R.id.fabCBM_groupAdd)
+    void showGroupAddDialog() {
+        LogUtil.debug(TAG,"Group add");
+        //todo
+        //Choose CashBox in group
+        if (adapter.actionMode != null)
+            adapter.actionMode.finish();
+        groupAddActionMode = ((AppCompatActivity) getActivity()).startSupportActionMode(groupAddModeCallback);
+
+
+//        //Add dialog
+//        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+//        AlertDialog dialog = builder.setTitle(R.string.newGroupEntry)
+//                .setView(R.layout.cash_box_new_input)  //use that view from folder layout
+//                .setNegativeButton(R.string.cancelDialog, null)
+//                .setPositiveButton(R.string.createCashBoxDialog, null)
+//                .create();
+//        dialog.setCanceledOnTouchOutside(false);
+//
+//        dialog.setOnShowListener(dialog1 -> {
+//            Button positive = ((AlertDialog) dialog1).getButton(DialogInterface.BUTTON_POSITIVE);
+//            TextInputEditText inputTextName = ((AlertDialog) dialog1).findViewById(R.id.inputTextName);
+//            TextInputLayout inputLayoutName = ((AlertDialog) dialog1).findViewById(R.id.inputLayoutName);
+//            TextInputEditText inputTextInitCash = ((AlertDialog) dialog1).findViewById(R.id.inputTextInitCash);
+//            TextInputLayout inputLayoutInitCash = ((AlertDialog) dialog1).findViewById(R.id.inputLayoutInitCash);
+//
+//            Util.showKeyboard(getContext(), inputTextName);
+//            positive.setOnClickListener(v -> {
+//                inputLayoutInitCash.setError(null);
+//                inputLayoutName.setError(null);
+//                try {
+//                    CashBox cashBox = new CashBox(inputTextName.getText().toString());
+//                    String strInitCash = inputTextInitCash.getText().toString().trim();
+//                    if (!strInitCash.isEmpty()) {
+//                        double initCash = Util.parseExpression(strInitCash);
+//                        if (initCash != 0)
+//                            cashBox.getEntries().add(new CashBox.Entry(initCash,
+//                                    "Initial Amount", Calendar.getInstance()));
+//                    }
+//
+//                    viewModel.addDisposable(viewModel.addCashBox(cashBox)
+//                            .subscribeOn(Schedulers.io())
+//                            .observeOn(AndroidSchedulers.mainThread())
+//                            .subscribe(dialog1::dismiss, throwable -> {
+//                                LogUtil.error(TAG, "Error in add", throwable);
+//                                inputLayoutName.setError(getContext().getString(R.string.nameInUse));
+//                                inputTextName.selectAll();
+//                                Util.showKeyboard(getContext(), inputTextName);
+//                            }));
+//                } catch (NumberFormatException e) {
+//                    LogUtil.error(TAG, "Error in add", e);
+//                    inputLayoutInitCash.setError(getContext().getString(R.string.errorMessageAmount));
+//                    inputTextInitCash.selectAll();
+//                    Util.showKeyboard(getContext(), inputTextInitCash);
+//                } catch (IllegalArgumentException e) {
+//                    LogUtil.error(TAG, "Error in add", e);
+//                    inputLayoutName.setError(e.getMessage());
+//                    inputTextName.selectAll();
+//                    Util.showKeyboard(getContext(), inputTextName);
+//                }
+//            });
+//        });
+//        dialog.show();
+        closeFabMenu();
     }
 
     private void showAddPeriodicDialog(@NonNull CashBox.InfoWithCash infoWithCash) {
@@ -443,7 +611,7 @@ public class CashBoxManagerFragment extends Fragment {
         @Nullable
         private ActionMode actionMode;
         @NonNull
-        private ActionMode.Callback actionModeCallback = new ActionMode.Callback() {
+        private final ActionMode.Callback actionModeCallback = new ActionMode.Callback() {
             @Override
             public boolean onCreateActionMode(@NonNull ActionMode mode, Menu menu) {
                 mode.getMenuInflater().inflate(R.menu.menu_contextual_toolbar_cash_box_manager, menu);
@@ -565,8 +733,13 @@ public class CashBoxManagerFragment extends Fragment {
                 viewHolder.reorderImage.setImageResource(R.drawable.reorder_horizontal_gray_24dp);
                 viewHolder.rvAmount.setVisibility(View.GONE);
             } else {
-                viewHolder.reorderImage.setImageResource(R.drawable.ic_add);
-                viewHolder.rvAmount.setVisibility(View.VISIBLE);
+                if(groupAddActionMode!=null) //In group add mode
+                    viewHolder.rvAmount.setVisibility(View.GONE);
+                else {
+                    viewHolder.rvAmount.setVisibility(View.VISIBLE);
+                    viewHolder.reorderImage.setImageResource(R.drawable.ic_add);
+                }
+
                 viewHolder.rvAmount.setText(currencyFormat.format(cashBoxInfo.getCash()));
                 int colorRes = cashBoxInfo.getCash() < 0 ? R.color.colorNegativeNumber : R.color.colorPositiveNumber;
                 viewHolder.rvAmount.setTextColor(getActivity().getColor(colorRes));
@@ -576,6 +749,10 @@ public class CashBoxManagerFragment extends Fragment {
             if (selectedViewHolder != null && index == selectedViewHolder.getAdapterPosition()) {
                 setSelectedViewHolder(viewHolder);
             }
+
+            if(getResources().getConfiguration().orientation==Configuration.ORIENTATION_LANDSCAPE &&
+                    viewModel.getCurrentCashBoxId()==cashBoxInfo.getId())
+                setSelectedViewHolder(viewHolder);
         }
 
         @Override
@@ -788,7 +965,9 @@ public class CashBoxManagerFragment extends Fragment {
 
             @Override
             public void onClick(View v) {
-                if (actionMode != null) //Highlight selected element
+                if(groupAddActionMode!=null)
+                    setSelectedViewHolder(this);//todo
+                else if (actionMode != null) //Highlight selected element
                     setSelectedViewHolder(this);
                 else {
                     if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)

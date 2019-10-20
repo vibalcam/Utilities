@@ -5,33 +5,17 @@
     android:id="@+id/lyCBM"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
     tools:context=".ui.cashBoxManager.CashBoxManagerFragment">
-
-    <com.google.android.material.appbar.AppBarLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:theme="@style/AppTheme.AppBarOverlay">
-
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbarCBManager"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            android:elevation="4dp"
-            app:popupTheme="@style/AppTheme.PopupOverlay"
-            app:titleTextColor="@android:color/white"
-            app:navigationIcon="@drawable/home"/>
-    </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvCashBoxManager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
+        tools:listitem="@layout/cash_box_manager_item"
+        tools:itemCount="5"/>
 
     <View
-        android:id="@+id/bgFabMenu_CBManager"
+        android:id="@+id/bgFabMenu_CBM"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#48000000"
@@ -39,13 +23,34 @@
         android:visibility="gone"/>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabCBManager"
+        android:id="@+id/fabCBM_groupAdd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/standard_23"
+        android:visibility="gone"
+        android:rotation="90"
+        app:fabSize="mini"
+        app:srcCompat="@drawable/ic_group_add_black_24dp" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabCBM_singleAdd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/standard_23"
+        android:visibility="gone"
+        android:rotation="90"
+        app:fabSize="mini"
+        app:srcCompat="@drawable/ic_person_add_black_24dp" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabCBM_main"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
         app:fabSize="normal"
-        android:src="@drawable/ic_add"
         app:srcCompat="@drawable/ic_add"
         android:tint="@android:color/black"/>
 

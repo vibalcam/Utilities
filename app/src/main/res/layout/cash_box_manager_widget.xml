@@ -2,6 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical">
 
     <RelativeLayout
@@ -29,7 +30,7 @@
             android:layout_gravity="center_vertical"
             android:scaleType="centerInside"
             android:background="?android:selectableItemBackground"
-            android:src="@drawable/ic_add"
+            app:srcCompat="@drawable/ic_add"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:layout_marginEnd="@dimen/marginAddButton_cbmWidget"
@@ -45,7 +46,8 @@
         <ListView
             android:id="@+id/listCBMWidget"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent"
+            tools:listitem="@layout/cash_box_manager_widget_item"/>
         <TextView
             android:id="@+id/listEmptyCBMWidget"
             android:layout_width="match_parent"

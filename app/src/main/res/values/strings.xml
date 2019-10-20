@@ -31,6 +31,7 @@
     <string name="cashBoxManager_helpTitle">"Cash Box Manager Help"</string>
     <string name="enterInitCashDialog">Initial Cash</string>
     <string name="newEntry">New Entry</string>
+    <string name="newGroupEntry">New Group Entry</string>
     <string name="modifyEntry">Modify Entry</string>
     <string name="addEntryDialog">Add Entry</string>
     <string name="confirm">Confirm</string>
