@@ -34,7 +34,6 @@
     <string name="newGroupEntry">New Group Entry</string>
     <string name="modifyEntry">Modify Entry</string>
     <string name="addEntryDialog">Add Entry</string>
-    <string name="confirm">Confirm</string>
     <string name="enterAmountDialog">Amount</string>
     <string name="enterInfoDialog">Info</string>
     <string name="item_totalCash">Total Cash</string>
@@ -49,6 +48,7 @@
 
     <!--CashBox Activity-->
     <string name="no_cashbox_selected">No CashBox Selected</string>
+    <string name="hintAddGroupDialog">Total Amount</string>
 
     <!--CashBox Manager Menu-->
     <string name="menuCBM_showPeriodic">Periodic Tasks</string>
@@ -118,4 +118,5 @@
 
     <!--CashBox Manager Widget-->
     <string name="emptyCashBoxManager">No CashBoxes added</string>
+    <string name="confirm">Confirm</string>
 </resources>

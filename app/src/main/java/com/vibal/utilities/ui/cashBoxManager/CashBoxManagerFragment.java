@@ -62,7 +62,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -106,9 +105,11 @@ public class CashBoxManagerFragment extends Fragment {
 
     private ActionMode groupAddActionMode;
     private final ActionMode.Callback groupAddModeCallback = new ActionMode.Callback() {
+        private boolean dialogOpened = false;
 
         @Override
         public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+            mode.getMenuInflater().inflate(R.menu.menu_contextual_group_add_cbm,menu);
             mode.setTitle("Choose CashBoxes:");
             //Hide fab
             fabMain.animate().alpha(0f);
@@ -125,17 +126,32 @@ public class CashBoxManagerFragment extends Fragment {
 
         @Override
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+            if(item.getItemId()==R.id.action_add_group_done) {
+                if(adapter.selectedItems.size()>0) {
+                    dialogOpened = true;
+                    showGroupAddDialog();
+                } else
+                    Toast.makeText(getContext(), "No items selected", Toast.LENGTH_SHORT).show();
+                mode.finish();
+                return true;
+            }
             return false;
         }
 
         @Override
         public void onDestroyActionMode(ActionMode mode) {
-            adapter.selectedItems.clear();//todo remove
             //Show fab
             fabMain.setVisibility(View.VISIBLE);
             fabMain.animate().alpha(1f);
-            // Notify adapter to show images again
-            adapter.notifyItemRangeChanged(0, adapter.getItemCount());
+            //If menu was not clicked, clear selection and notify adapter to show images again
+            if(!dialogOpened) {
+                for(Integer k:adapter.selectedItems) {
+                    adapter.selectedItems.remove(k);
+                    adapter.notifyItemChanged(k);
+                }
+//                adapter.selectedItems.clear();
+//                adapter.notifyItemRangeChanged(0, adapter.getItemCount());
+            }
         }
     };
 
@@ -423,6 +439,7 @@ public class CashBoxManagerFragment extends Fragment {
 
     @OnClick(R.id.fabCBM_singleAdd)
     void showAddDialog() {
+        closeFabMenu();
         LogUtil.debug(TAG,"Single add");
         if (adapter.actionMode != null)
             adapter.actionMode.finish();
@@ -479,15 +496,15 @@ public class CashBoxManagerFragment extends Fragment {
             });
         });
         dialog.show();
-        closeFabMenu();
     }
 
     @OnClick(R.id.fabCBM_groupAdd)
-    void showContextualGroupAdd() {
+    void showContextualModeGroupAdd() {
+        closeFabMenu();
         if(groupAddActionMode!=null)
             return;
         LogUtil.debug(TAG,"Group add");
-        //todo
+
         //Choose CashBox in group
         if (adapter.actionMode != null)
             adapter.actionMode.finish();
@@ -496,60 +513,63 @@ public class CashBoxManagerFragment extends Fragment {
 
     private void showGroupAddDialog() {
         //todo
-//        //Add dialog
-//        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-//        AlertDialog dialog = builder.setTitle(R.string.newGroupEntry)
-//                .setView(R.layout.cash_box_new_input)  //use that view from folder layout
-//                .setNegativeButton(R.string.cancelDialog, null)
-//                .setPositiveButton(R.string.createCashBoxDialog, null)
-//                .create();
-//        dialog.setCanceledOnTouchOutside(false);
-//
-//        dialog.setOnShowListener(dialog1 -> {
-//            Button positive = ((AlertDialog) dialog1).getButton(DialogInterface.BUTTON_POSITIVE);
-//            TextInputEditText inputTextName = ((AlertDialog) dialog1).findViewById(R.id.inputTextName);
-//            TextInputLayout inputLayoutName = ((AlertDialog) dialog1).findViewById(R.id.inputLayoutName);
-//            TextInputEditText inputTextInitCash = ((AlertDialog) dialog1).findViewById(R.id.inputTextInitCash);
-//            TextInputLayout inputLayoutInitCash = ((AlertDialog) dialog1).findViewById(R.id.inputLayoutInitCash);
-//
-//            Util.showKeyboard(getContext(), inputTextName);
-//            positive.setOnClickListener(v -> {
-//                inputLayoutInitCash.setError(null);
-//                inputLayoutName.setError(null);
-//                try {
-//                    CashBox cashBox = new CashBox(inputTextName.getText().toString());
-//                    String strInitCash = inputTextInitCash.getText().toString().trim();
-//                    if (!strInitCash.isEmpty()) {
-//                        double initCash = Util.parseExpression(strInitCash);
-//                        if (initCash != 0)
-//                            cashBox.getEntries().add(new CashBox.Entry(initCash,
-//                                    "Initial Amount", Calendar.getInstance()));
-//                    }
-//
-//                    viewModel.addDisposable(viewModel.addCashBox(cashBox)
-//                            .subscribeOn(Schedulers.io())
-//                            .observeOn(AndroidSchedulers.mainThread())
-//                            .subscribe(dialog1::dismiss, throwable -> {
-//                                LogUtil.error(TAG, "Error in add", throwable);
-//                                inputLayoutName.setError(getContext().getString(R.string.nameInUse));
-//                                inputTextName.selectAll();
-//                                Util.showKeyboard(getContext(), inputTextName);
-//                            }));
-//                } catch (NumberFormatException e) {
-//                    LogUtil.error(TAG, "Error in add", e);
-//                    inputLayoutInitCash.setError(getContext().getString(R.string.errorMessageAmount));
-//                    inputTextInitCash.selectAll();
-//                    Util.showKeyboard(getContext(), inputTextInitCash);
-//                } catch (IllegalArgumentException e) {
-//                    LogUtil.error(TAG, "Error in add", e);
-//                    inputLayoutName.setError(e.getMessage());
-//                    inputTextName.selectAll();
-//                    Util.showKeyboard(getContext(), inputTextName);
-//                }
-//            });
-//        });
-//        dialog.show();
-        closeFabMenu();
+        if(adapter.selectedItems.size()==0) //Should never occur
+            throw new RuntimeException("At least one item should be selected");
+
+        //Add dialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        AlertDialog dialog = builder.setTitle(R.string.newGroupEntry)
+                .setView(R.layout.cash_box_item_entry_input)  //use that view from folder layout
+                .setNegativeButton(R.string.cancelDialog, null)
+                .setPositiveButton(R.string.createCashBoxDialog, null)
+                .create();
+        dialog.setCanceledOnTouchOutside(false);
+
+        dialog.setOnShowListener(dialogInterface -> {
+            Button positive = ((AlertDialog) dialogInterface).getButton(DialogInterface.BUTTON_POSITIVE);
+            TextInputEditText inputInfo = ((AlertDialog) dialogInterface).findViewById(R.id.inputTextInfo);
+            TextInputEditText inputAmount = ((AlertDialog) dialogInterface).findViewById(R.id.inputTextAmount);
+            TextInputLayout layoutAmount = ((AlertDialog) dialogInterface).findViewById(R.id.inputLayoutAmount);
+
+            //Change hint in layoutAmount
+            layoutAmount.setHint(getString(R.string.hintAddGroupDialog));
+
+            Util.showKeyboard(getContext(), inputAmount);
+            positive.setOnClickListener(v -> {
+                try {
+                    String input = inputAmount.getText().toString().trim();
+                    if (input.isEmpty()) {
+                        layoutAmount.setError(getString(R.string.required));
+                        Util.showKeyboard(getContext(), inputAmount);
+                    } else {
+                        //Divided in equal parts
+                        double amount = Util.parseExpression(inputAmount.getText().toString())/
+                                adapter.selectedItems.size();
+                        Completable addEntries = Completable.complete();
+                        for(int k:adapter.selectedItems)
+                            addEntries = addEntries.andThen(viewModel.addEntry(adapter.currentList.get(k).getId(),
+                                    new CashBox.Entry(amount, inputInfo.getText().toString(), Calendar.getInstance())));
+                        viewModel.addDisposable(addEntries.subscribeOn(Schedulers.io())
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(() -> {
+                                    dialogInterface.dismiss();
+                                    //Clear selection and notify adapter
+                                    for(Integer k:adapter.selectedItems) {
+                                        adapter.selectedItems.remove(k);
+                                        adapter.notifyItemChanged(k);
+                                    }
+//                                    adapter.selectedItems.clear();
+//                                    adapter.notifyItemRangeChanged(0, adapter.getItemCount());
+                                }));
+                    }
+                } catch (NumberFormatException e) {
+                    layoutAmount.setError(getString(R.string.errorMessageAmount));
+                    inputAmount.selectAll();
+                    Util.showKeyboard(getContext(), inputAmount);
+                }
+            });
+        });
+        dialog.show();
     }
 
     private void showAddPeriodicDialog(@NonNull CashBox.InfoWithCash infoWithCash) {
