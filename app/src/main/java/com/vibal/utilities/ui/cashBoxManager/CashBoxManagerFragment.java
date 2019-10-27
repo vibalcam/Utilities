@@ -102,6 +102,7 @@ public class CashBoxManagerFragment extends Fragment {
     private CashBoxViewModel viewModel;
     private CashBoxManagerRecyclerAdapter adapter;
     private boolean isFabOpen = false;
+    private SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener;
 
     private ActionMode groupAddActionMode;
     private final ActionMode.Callback groupAddModeCallback = new ActionMode.Callback() {
@@ -140,18 +141,23 @@ public class CashBoxManagerFragment extends Fragment {
 
         @Override
         public void onDestroyActionMode(ActionMode mode) {
+            groupAddActionMode = null;
             //Show fab
             fabMain.setVisibility(View.VISIBLE);
             fabMain.animate().alpha(1f);
             //If menu was not clicked, clear selection and notify adapter to show images again
-            if(!dialogOpened) {
-                for(Integer k:adapter.selectedItems) {
-                    adapter.selectedItems.remove(k);
-                    adapter.notifyItemChanged(k);
-                }
-//                adapter.selectedItems.clear();
-//                adapter.notifyItemRangeChanged(0, adapter.getItemCount());
-            }
+            if(!dialogOpened)
+                adapter.selectedItems.clear();
+            LogUtil.debug(TAG,"" + adapter.getItemCount() + adapter.selectedItems.toString());
+            adapter.notifyItemRangeChanged(0, adapter.getItemCount());
+//            if(!dialogOpened) {
+//                for(Integer k:adapter.selectedItems) {
+//                    adapter.selectedItems.remove(k);
+//                    adapter.notifyItemChanged(k);
+//                }
+////                adapter.selectedItems.clear();
+////                adapter.notifyItemRangeChanged(0, adapter.getItemCount());
+//            }
         }
     };
 
@@ -189,6 +195,11 @@ public class CashBoxManagerFragment extends Fragment {
 
         //Register listener for settings change
         //todo
+        preferenceChangeListener = (sharedPreferences, s) -> {
+            if (s.equals("swipeLeftDelete"))
+                swipeController.setSwipeLeftDelete(sharedPreferences.getBoolean("swipeLeftDelete", true));
+        };
+        preferences.registerOnSharedPreferenceChangeListener(preferenceChangeListener);
 
         LogUtil.debug(TAG, "onCreate: ");
         return view;
@@ -554,12 +565,12 @@ public class CashBoxManagerFragment extends Fragment {
                                 .subscribe(() -> {
                                     dialogInterface.dismiss();
                                     //Clear selection and notify adapter
-                                    for(Integer k:adapter.selectedItems) {
-                                        adapter.selectedItems.remove(k);
-                                        adapter.notifyItemChanged(k);
-                                    }
-//                                    adapter.selectedItems.clear();
-//                                    adapter.notifyItemRangeChanged(0, adapter.getItemCount());
+//                                    for(Integer k:adapter.selectedItems) {
+//                                        adapter.selectedItems.remove(k);
+//                                        adapter.notifyItemChanged(k);
+//                                    }
+                                    adapter.selectedItems.clear();
+                                    adapter.notifyItemRangeChanged(0, adapter.getItemCount());
                                 }));
                     }
                 } catch (NumberFormatException e) {
@@ -633,7 +644,7 @@ public class CashBoxManagerFragment extends Fragment {
 
         private final NumberFormat currencyFormat = NumberFormat.getCurrencyInstance();
         private OnStartDragListener onStartDragListener;
-        private final Set<Integer> selectedItems = new HashSet<>(); //todo collection
+        private final Set<Integer> selectedItems = new HashSet<>();
         @NonNull
         private List<CashBox.InfoWithCash> currentList = new ArrayList<>();
         private LinkedList<CashBox.InfoWithCash> toDelete = new LinkedList<>();
@@ -773,28 +784,48 @@ public class CashBoxManagerFragment extends Fragment {
             viewHolder.rvName.setText(cashBoxInfo.getCashBoxInfo().getName());
 
             // Enable or disable dragging
-            if (isDragEnabled()) {
+            if(isDragEnabled()) {
+                viewHolder.reorderImage.setVisibility(View.VISIBLE);
                 viewHolder.reorderImage.setImageResource(R.drawable.reorder_horizontal_gray_24dp);
                 viewHolder.rvAmount.setVisibility(View.GONE);
+            } else if (groupAddActionMode!=null) {
+                viewHolder.reorderImage.setVisibility(View.GONE);
+                viewHolder.rvAmount.setVisibility(View.GONE);
             } else {
-                if(groupAddActionMode!=null) //In group add mode
-                    viewHolder.rvAmount.setVisibility(View.GONE);
-                else {
-                    viewHolder.rvAmount.setVisibility(View.VISIBLE);
-                    viewHolder.reorderImage.setImageResource(R.drawable.ic_add);
-                }
-
+                viewHolder.reorderImage.setVisibility(View.VISIBLE);
+                viewHolder.reorderImage.setImageResource(R.drawable.ic_add);
+                viewHolder.rvAmount.setVisibility(View.VISIBLE);
                 viewHolder.rvAmount.setText(currencyFormat.format(cashBoxInfo.getCash()));
                 int colorRes = cashBoxInfo.getCash() < 0 ? R.color.colorNegativeNumber : R.color.colorPositiveNumber;
                 viewHolder.rvAmount.setTextColor(getActivity().getColor(colorRes));
             }
 
-            // Update selected items
-            for(Integer k:selectedItems)
-                if(k==index)
-                    viewHolder.itemView.setBackgroundResource(R.color.colorRVSelectedCashBox);
-                else
-                    viewHolder.itemView.setBackgroundResource(R.color.colorRVBackgroundCashBox);
+//            if (isDragEnabled()) {
+//                viewHolder.reorderImage.setImageResource(R.drawable.reorder_horizontal_gray_24dp);
+//                viewHolder.rvAmount.setVisibility(View.GONE);
+//            } else {
+//                if(groupAddActionMode!=null) //In group add mode
+//                    viewHolder.rvAmount.setVisibility(View.GONE);
+//                else {
+//                    viewHolder.rvAmount.setVisibility(View.VISIBLE);
+//                    viewHolder.reorderImage.setImageResource(R.drawable.ic_add);
+//                }
+//
+//                viewHolder.rvAmount.setText(currencyFormat.format(cashBoxInfo.getCash()));
+//                int colorRes = cashBoxInfo.getCash() < 0 ? R.color.colorNegativeNumber : R.color.colorPositiveNumber;
+//                viewHolder.rvAmount.setTextColor(getActivity().getColor(colorRes));
+//            }
+
+            // Update if item selected
+            if(selectedItems.contains(index))
+                viewHolder.itemView.setBackgroundResource(R.color.colorRVSelectedCashBox);
+            else
+                viewHolder.itemView.setBackgroundResource(R.color.colorRVBackgroundCashBox);
+//            for(Integer k:selectedItems)
+//                if(k==index)
+//                    viewHolder.itemView.setBackgroundResource(R.color.colorRVSelectedCashBox);
+//                else
+//                    viewHolder.itemView.setBackgroundResource(R.color.colorRVBackgroundCashBox);
 
 //            if(getResources().getConfiguration().orientation==Configuration.ORIENTATION_LANDSCAPE &&
 //                    viewModel.getCurrentCashBoxId()==cashBoxInfo.getId())
