@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:minHeight="?listPreferredItemHeightSmall"
+    app:layout_constraintHeight_min="?listPreferredItemHeightSmall"
     android:paddingStart="@dimen/main_marginHorizontal"
     android:paddingEnd="@dimen/main_marginHorizontal"
     android:paddingTop="@dimen/rvMarginItemCB"

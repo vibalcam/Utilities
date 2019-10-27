@@ -8,6 +8,10 @@
             app:entryValues="@array/defaultStart_values"
             app:defaultValue="@string/defaultValue_defaultStart"
             app:useSimpleSummaryProvider="true"/>
+        <SwitchPreference
+            app:key="playAboutSong"
+            app:title="Play song in about app"
+            app:defaultValue="true" />
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/pref_CBM_header">

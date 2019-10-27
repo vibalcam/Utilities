@@ -75,6 +75,7 @@ public class CashBoxItemFragment extends Fragment {
     @BindView(R.id.rvCashBoxItem)
     RecyclerView rvCashBoxItem;
 
+    private SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener;
     private CashBoxItemRecyclerAdapter adapter;
     @NonNull
     private NumberFormat formatCurrency = NumberFormat.getCurrencyInstance();
@@ -158,11 +159,18 @@ public class CashBoxItemFragment extends Fragment {
         rvCashBoxItem.setLayoutManager(layoutManager);
         adapter = new CashBoxItemRecyclerAdapter();
         rvCashBoxItem.setAdapter(adapter);
-        boolean swipeLeftDelete = PreferenceManager.getDefaultSharedPreferences(getContext())
-                .getBoolean("swipeLeftDelete", true);
-        (new ItemTouchHelper(new CashBoxSwipeController(adapter, swipeLeftDelete)))
-                .attachToRecyclerView(rvCashBoxItem);
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(Objects.requireNonNull(getContext()));
+        CashBoxSwipeController swipeController = new CashBoxSwipeController(adapter,
+                preferences.getBoolean("swipeLeftDelete", true));
+        (new ItemTouchHelper(swipeController)).attachToRecyclerView(rvCashBoxItem);
         rvCashBoxItem.addItemDecoration(new DividerItemDecoration(getContext(), layoutManager.getOrientation()));
+
+        //Register listener for settings change
+        preferenceChangeListener = (sharedPreferences, s) -> {
+            if (s.equals("swipeLeftDelete"))
+                swipeController.setSwipeLeftDelete(sharedPreferences.getBoolean("swipeLeftDelete", true));
+        };
+        preferences.registerOnSharedPreferenceChangeListener(preferenceChangeListener);
 
         LogUtil.debug(TAG, "on create:");
         return view;

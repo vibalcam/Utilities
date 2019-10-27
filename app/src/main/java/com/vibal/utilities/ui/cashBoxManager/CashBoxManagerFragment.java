@@ -194,7 +194,6 @@ public class CashBoxManagerFragment extends Fragment {
         adapter.setOnStartDragListener(itemTouchHelper::startDrag);
 
         //Register listener for settings change
-        //todo
         preferenceChangeListener = (sharedPreferences, s) -> {
             if (s.equals("swipeLeftDelete"))
                 swipeController.setSwipeLeftDelete(sharedPreferences.getBoolean("swipeLeftDelete", true));
@@ -705,6 +704,12 @@ public class CashBoxManagerFragment extends Fragment {
             this.onStartDragListener = onStartDragListener;
         }
 
+        //TODO create unmodifiable list so it must go to submit
+        /**
+         * Submit a new list of elements for the adapter to show.
+         * All changes in adapter lis must go through submitList.
+         * @param newList New list to be submitted
+         */
         void submitList(@NonNull List<CashBox.InfoWithCash> newList) {
             LogUtil.debug(TAG, "New list submitted: " + newList.toString());
 
