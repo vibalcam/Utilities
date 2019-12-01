@@ -38,6 +38,11 @@
             android:name=".ui.settings.SettingsActivity"
             android:label="@string/title_activity_settings" />
 
+        <activity
+            android:name=".ui.cashBoxManager.CashBoxPeriodicActivity"
+            android:label="@string/main_cashBoxManager"
+            android:theme="@style/AppTheme.NoActionBar"/>
+
         <activity android:name=".ui.cashBoxManager.CashBoxManagerActivity"
             android:label="@string/main_cashBoxManager"
             android:launchMode="singleTop"

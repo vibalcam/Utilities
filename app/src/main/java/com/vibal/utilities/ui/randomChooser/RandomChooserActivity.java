@@ -10,7 +10,6 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -30,14 +29,12 @@ import butterknife.OnClick;
 import butterknife.OnEditorAction;
 
 public class RandomChooserActivity extends AppCompatActivity {
-    @Nullable
     @BindView(R.id.rvRandomChooser)
     RecyclerView rvRandomChooser;
-    @Nullable
     @BindView(R.id.inputText)
     EditText inputText;
 
-    private List<String> contestants;
+    private List<String> contestants = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,9 +43,6 @@ public class RandomChooserActivity extends AppCompatActivity {
         ButterKnife.bind(this);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-        //Initialize data
-        contestants = new ArrayList<>();
 
         //Set-up RecyclerView
         rvRandomChooser.setHasFixedSize(true);

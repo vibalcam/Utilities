@@ -7,6 +7,7 @@ import androidx.lifecycle.LiveData;
 import androidx.work.WorkManager;
 
 import com.vibal.utilities.backgroundTasks.RxPeriodicEntryWorker;
+import com.vibal.utilities.util.LogUtil;
 
 import java.util.List;
 import java.util.UUID;
@@ -34,6 +35,7 @@ public class PeriodicEntryWorkRepository {
     }
 
     public Completable addPeriodicEntryWorkRequest(@NonNull PeriodicEntryPojo.PeriodicEntryWorkRequest workRequest) {
+        LogUtil.debug("PruebaPeriodicViewModel","Add new periodic work");
         workManager.enqueue(workRequest.getWorkRequest()); //todo observe, calculate difference between lists
         //Add the data to database
         return periodicEntryWorkDao.insert(workRequest.getWorkInfo());

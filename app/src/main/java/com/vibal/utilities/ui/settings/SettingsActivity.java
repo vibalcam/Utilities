@@ -29,8 +29,7 @@ public class SettingsActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
-//            onBackPressed();
-            getSupportFragmentManager().popBackStack();
+            onBackPressed();
             return true;
         }
         return super.onOptionsItemSelected(item);

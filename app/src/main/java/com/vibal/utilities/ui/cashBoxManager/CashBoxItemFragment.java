@@ -137,7 +137,8 @@ public class CashBoxItemFragment extends Fragment {
         super.onCreate(savedInstanceState);
         // Fragment has options menu if not in landscape mode
         View viewLand = getActivity().findViewById(R.id.containerItem);
-        if(viewLand==null || viewLand.getVisibility()!=View.VISIBLE) {
+        LogUtil.debug(TAG,"Has options menu item: " + (isVisible() && (viewLand==null || viewLand.getVisibility()!=View.VISIBLE)));
+        if(isVisible() && (viewLand==null || viewLand.getVisibility()!=View.VISIBLE)) {
             setHasOptionsMenu(true);
             //Set up SharedPreferences for notifications
             sharedPrefNot = getContext().getSharedPreferences(ReminderReceiver.PREFERENCE_KEY,
@@ -183,10 +184,7 @@ public class CashBoxItemFragment extends Fragment {
         AppCompatActivity activity = (AppCompatActivity) Objects.requireNonNull(getActivity());
 
         //Set Toolbar as ActionBar
-//        activity.setSupportActionBar(getView().findViewById(R.id.toolbar));
         ActionBar actionBar = activity.getSupportActionBar();
-//        if (actionBar != null)
-//            actionBar.setDisplayHomeAsUpEnabled(true);
 
         // Initialize data
         viewModel = new ViewModelProvider(Objects.requireNonNull(activity)).get(CashBoxViewModel.class);
@@ -207,13 +205,6 @@ public class CashBoxItemFragment extends Fragment {
         });
     }
 
-//    @Override
-//    public void onStart() {
-//        super.onStart();
-//        //Fix error of recycler view
-//        adapter.notifyDataSetChanged();
-//    }
-
     private void updateCash(double cash) {
         if (Math.abs(cash) > MAX_SHOW_CASH)
             itemCash.setText(R.string.outOfRange);
@@ -233,7 +224,7 @@ public class CashBoxItemFragment extends Fragment {
         super.onCreateOptionsMenu(menu, inflater);
         menu.clear();
         inflater.inflate(R.menu.menu_toolbar_cash_box_item, menu);
-        //Prepare alarm icon
+        // Prepare alarm icon
         menuItemNotification = menu.findItem(R.id.action_item_reminder);
         setIconNotification(sharedPrefNot.contains(Long.toString(viewModel.getCurrentCashBoxId())));
         // Set up ShareActionProvider
@@ -256,10 +247,10 @@ public class CashBoxItemFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
-            case android.R.id.home:
-//                getActivity().onBackPressed();
-                getParentFragmentManager().popBackStack();
-                return true;
+//            case android.R.id.home:
+////                getActivity().onBackPressed();
+//                getParentFragmentManager().popBackStack();
+//                return true;
             case R.id.action_item_deleteAll:
                 deleteAll();
                 return true;
@@ -343,26 +334,6 @@ public class CashBoxItemFragment extends Fragment {
         //Add reminder to Notification SharedPreferences
         sharedPrefNot.edit().putLong(Long.toString(cashBoxId), timeInMillis).apply();
         setIconNotification(true);
-
-//        //Set up the notification to be shown
-//        Intent intent = new Intent(getContext(), CashBoxManagerActivity.class);
-//        intent.putExtra(CashBoxManagerActivity.EXTRA_ACTION,CashBoxManagerActivity.ACTION_DETAILS);
-//        intent.putExtra(CashBoxManagerActivity.EXTRA_CASHBOX_ID,viewModel.getCurrentCashBoxId());
-//
-//        Notification notification = new NotificationCompat.Builder(getContext(),
-//                App.CHANNEL_REMINDER_ID)
-//                .setSmallIcon(R.drawable.logo)
-//                .setContentTitle(((AppCompatActivity) getActivity()).getSupportActionBar().getTitle())
-//                .setContentText("Total cash: " + itemCash.getText())
-//                .setPriority(NotificationCompat.PRIORITY_HIGH)
-//                .setCategory(NotificationCompat.CATEGORY_REMINDER)
-//                .setContentIntent(PendingIntent.getActivity(getContext(),0,intent,0))
-//                .setAutoCancel(true)
-//                .setOnlyAlertOnce(true)
-//                .setGroup(CashBoxManagerActivity.GROUP_KEY_CASHBOX)
-//                .build();
-//
-//        notificationManager.notify(REMINDER_ID,notification);
     }
 
     private void cancelReminder() {
@@ -456,10 +427,11 @@ public class CashBoxItemFragment extends Fragment {
             else
                 viewHolder.rvItemAmount.setTextColor(getActivity().getColor(R.color.colorPositiveNumber));
             // CashBoxInfo
-            if (entry.getInfo().isEmpty())
-                viewHolder.rvItemInfo.setText(R.string.noInfoEntered);
-            else
-                viewHolder.rvItemInfo.setText(entry.getInfo());
+            viewHolder.rvItemInfo.setText(entry.getInfo());
+//            if (entry.getInfo().isEmpty())
+//                viewHolder.rvItemInfo.setText(R.string.noInfoEntered);
+//            else
+//                viewHolder.rvItemInfo.setText(entry.getInfo());
             // Date
             viewHolder.rvItemDate.setText(dateFormat.format(entry.getDate().getTime()));
         }
@@ -556,67 +528,13 @@ public class CashBoxItemFragment extends Fragment {
             dialog.show();
 
             notifyItemChanged(position);   // since the item is deleted from swipping we have to show it back again
-
-//            dialog.setOnShowListener((DialogInterface dialogInterface) -> {
-//                Button positive = ((AlertDialog) dialogInterface).getButton(DialogInterface.BUTTON_POSITIVE);
-//                TextInputEditText inputInfo = ((AlertDialog) dialogInterface).findViewById(R.id.inputTextInfo);
-//                TextInputEditText inputAmount = ((AlertDialog) dialogInterface).findViewById(R.id.inputTextAmount);
-//                TextInputLayout layoutAmount = ((AlertDialog) dialogInterface).findViewById(R.id.inputLayoutAmount);
-//                CashBox.Entry modifiedEntry = currentList.get(position);
-//
-//                inputInfo.setText(modifiedEntry.getInfo());
-//                inputAmount.setText(String.format(Locale.getDefault(), "%.2f", modifiedEntry.getAmount()));
-//                // Show keyboard and select the whole text
-//                inputAmount.selectAll();
-//                Util.showKeyboard(getContext(), inputAmount);
-//
-//                positive.setOnClickListener((View v) -> {
-//                    try {
-//                        LogUtil.debug(TAG_PERIODIC, "showAddDialog: cause" + (inputInfo.getText() == null) + (inputInfo.getText().toString().isEmpty()));
-//                        String input = inputAmount.getText().toString().trim();
-//                        if (input.isEmpty()) {
-//                            layoutAmount.setError(getString(R.string.required));
-//                            inputAmount.setText("");
-//                            Util.showKeyboard(getContext(), inputAmount);
-//                        } else {
-//                            double amount = Util.parseDouble(input);
-//                            CashBox.Entry entry = modifiedEntry.cloneContents();
-//
-//                            viewModel.addDisposable(viewModel.updateEntry(entry)
-//                                    .subscribeOn(Schedulers.io())
-//                                    .observeOn(AndroidSchedulers.mainThread())
-//                                    .subscribe(() -> {
-//                                        Snackbar.make(rvCashBoxItem,
-//                                                R.string.snackbarEntryModified, Snackbar.LENGTH_LONG)
-//                                                .setAction(R.string.undo, (View v1) ->
-//                                                    viewModel.addDisposable(viewModel.updateEntry(modifiedEntry)
-//                                                            .subscribeOn(Schedulers.io())
-//                                                            .observeOn(AndroidSchedulers.mainThread())
-//                                                            .subscribe()))
-//                                                .show();
-//                                        dialogInterface.dismiss();
-//                                    }));
-//                        }
-//                    } catch (NumberFormatException e) {
-//                        layoutAmount.setError(getString(R.string.errorMessageAmount));
-//                        inputAmount.selectAll();
-//                        Util.showKeyboard(getContext(), inputAmount);
-//                    }
-//                });
-//            });
-//            dialog.show();
-//
-//            notifyDataSetChanged();   // since the item is deleted from swipping we have to show it back again
         }
 
         public class ViewHolder extends RecyclerView.ViewHolder {
-            @Nullable
             @BindView(R.id.rvItemDate)
             TextView rvItemDate;
-            @Nullable
             @BindView(R.id.rvItemAmount)
             TextView rvItemAmount;
-            @Nullable
             @BindView(R.id.rvItemInfo)
             TextView rvItemInfo;
 

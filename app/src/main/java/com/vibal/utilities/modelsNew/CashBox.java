@@ -3,6 +3,7 @@ package com.vibal.utilities.modelsNew;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -18,6 +19,7 @@ import com.vibal.utilities.db.CashBoxInfo;
 import com.vibal.utilities.util.Converters;
 import com.vibal.utilities.util.DiffDbUsable;
 import com.vibal.utilities.util.LogUtil;
+import com.vibal.utilities.util.Util;
 
 import java.text.DateFormat;
 import java.text.NumberFormat;
@@ -297,6 +299,8 @@ public class CashBox implements Parcelable {
             indices = {@Index(value = "cashBoxId")})
     public static class Entry implements Parcelable, Cloneable, DiffDbUsable<Entry> {
         @Ignore
+        public static final String NO_INFO = "(No info)";
+        @Ignore
         private static final String DIFF_AMOUNT = "amount";
         @Ignore
         private static final String DIFF_DATE = "date";
@@ -320,7 +324,6 @@ public class CashBox implements Parcelable {
         @PrimaryKey(autoGenerate = true)
         private long id;
         private long cashBoxId;
-        @Nullable
         private String info;
         private Calendar date;
         private double amount;
@@ -328,10 +331,10 @@ public class CashBox implements Parcelable {
         /**
          * Constructor for Room
          */
-        public Entry(long cashBoxId, double amount, @NonNull String info, Calendar date) {
-            this.info = info.trim();
+        public Entry(long cashBoxId, double amount, @Nullable String info, Calendar date) {
+            setInfo(info);
             this.date = date;
-            this.amount = amount;
+            setAmount(amount);
             this.cashBoxId = cashBoxId;
         }
 
@@ -342,11 +345,11 @@ public class CashBox implements Parcelable {
 
         @Ignore
         private Entry(@NonNull Parcel parcel) {
-            id = parcel.readLong();
+            setId(parcel.readLong());
             cashBoxId = parcel.readLong();
-            info = parcel.readString();
+            setInfo(parcel.readString());
             date = Converters.fromTimestamp(parcel.readLong());
-            amount = parcel.readDouble();
+            setAmount(parcel.readDouble());
         }
 
         public long getId() {
@@ -357,11 +360,15 @@ public class CashBox implements Parcelable {
             return cashBoxId;
         }
 
-        @Nullable
+        @NonNull
         public String getInfo() {
-            return info;
+            if(info.isEmpty())
+                return NO_INFO;
+            else
+                return info;
         }
 
+        @NonNull
         public Calendar getDate() {
             return date;
         }
@@ -372,6 +379,17 @@ public class CashBox implements Parcelable {
 
         public void setId(long id) {
             this.id = id;
+        }
+
+        public void setAmount(double amount) {
+            this.amount = Util.roundTwoDecimals(amount);
+        }
+
+        public void setInfo(@Nullable String info) {
+            if(!TextUtils.isEmpty(info))
+                this.info = info.trim();
+            else
+                this.info = "";
         }
 
         @NonNull

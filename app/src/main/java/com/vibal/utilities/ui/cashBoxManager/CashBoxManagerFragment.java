@@ -317,13 +317,7 @@ public class CashBoxManagerFragment extends Fragment {
                 adapter.showActionMode();
                 return true;
             case R.id.action_manager_showPeriodic:
-                getParentFragmentManager()
-                        .beginTransaction()
-                        .setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_right,
-                                R.anim.enter_from_right, R.anim.exit_to_right)
-                        .addToBackStack(null)
-                        .replace(R.id.container, CashBoxPeriodicFragment.newInstance())
-                        .commit();
+                startActivity(new Intent(getContext(), CashBoxPeriodicActivity.class));
                 return true;
             case R.id.action_manager_settings:
                 startActivity(new Intent(getContext(), SettingsActivity.class));
@@ -367,14 +361,6 @@ public class CashBoxManagerFragment extends Fragment {
             transaction.replace(R.id.container, CashBoxItemFragment.newInstance())
                     .addToBackStack(null)
                     .commit();
-
-//        getParentFragmentManager()
-//                .beginTransaction()
-//                .setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_right,
-//                        R.anim.enter_from_right, R.anim.exit_to_right)
-//                .addToBackStack(null)
-//                .replace(R.id.container, CashBoxItemFragment.newInstance())
-//                .commit();
     }
 
     private void deleteAll() {
@@ -522,7 +508,6 @@ public class CashBoxManagerFragment extends Fragment {
     }
 
     private void showGroupAddDialog() {
-        //todo
         if(adapter.selectedItems.size()==0) //Should never occur
             throw new RuntimeException("At least one item should be selected");
 
@@ -532,6 +517,11 @@ public class CashBoxManagerFragment extends Fragment {
                 .setView(R.layout.cash_box_item_entry_input)  //use that view from folder layout
                 .setNegativeButton(R.string.cancelDialog, null)
                 .setPositiveButton(R.string.createCashBoxDialog, null)
+                .setOnDismissListener(dialogInterface -> {
+                    //Clear selection and notify adapter
+                    adapter.selectedItems.clear();
+                    adapter.notifyItemRangeChanged(0, adapter.getItemCount());
+                })
                 .create();
         dialog.setCanceledOnTouchOutside(false);
 
@@ -552,25 +542,31 @@ public class CashBoxManagerFragment extends Fragment {
                         layoutAmount.setError(getString(R.string.required));
                         Util.showKeyboard(getContext(), inputAmount);
                     } else {
-                        //Divided in equal parts
-                        double amount = Util.parseExpression(inputAmount.getText().toString())/
-                                adapter.selectedItems.size();
+                        // Calculate Amount
+                        String defaultValue = getString(R.string.groupAddBehaviour_defaultValue_divSelected);
+                        String groupAddBehaviour = PreferenceManager.getDefaultSharedPreferences(getContext())
+                                .getString("groupAddBehaviour",defaultValue);
+                        double amount = Util.parseExpression(inputAmount.getText().toString());
+                        if(groupAddBehaviour.equals(defaultValue))
+                            amount /= adapter.selectedItems.size();
+                        else if(groupAddBehaviour.equals(getString(R.string.groupAddBehaviour_value_divSelectedPlusOne)))
+                            amount /= adapter.selectedItems.size() + 1;
+
+                        // Get Info
+                        String info = inputInfo.getText().toString();
+                        if(info.trim().isEmpty())
+                            info = "Group Add: " + CashBox.Entry.NO_INFO;
+                        else
+                            info = "Group Add: " + info;
+
+                        // Add entries
                         Completable addEntries = Completable.complete();
                         for(int k:adapter.selectedItems)
                             addEntries = addEntries.andThen(viewModel.addEntry(adapter.currentList.get(k).getId(),
-                                    new CashBox.Entry(amount, inputInfo.getText().toString(), Calendar.getInstance())));
+                                    new CashBox.Entry(amount, info, Calendar.getInstance())));
                         viewModel.addDisposable(addEntries.subscribeOn(Schedulers.io())
                                 .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(() -> {
-                                    dialogInterface.dismiss();
-                                    //Clear selection and notify adapter
-//                                    for(Integer k:adapter.selectedItems) {
-//                                        adapter.selectedItems.remove(k);
-//                                        adapter.notifyItemChanged(k);
-//                                    }
-                                    adapter.selectedItems.clear();
-                                    adapter.notifyItemRangeChanged(0, adapter.getItemCount());
-                                }));
+                                .subscribe(dialogInterface::dismiss));
                     }
                 } catch (NumberFormatException e) {
                     layoutAmount.setError(getString(R.string.errorMessageAmount));
@@ -737,43 +733,7 @@ public class CashBoxManagerFragment extends Fragment {
                             if(temp!= DiffUtil.DiffResult.NO_POSITION)
                                 selectedItems.add(temp);
                         }
-
-//                        for(Integer k:toDelete)
-//                            adapter.notifyItemRemoved(diffResult.convertOldPositionToNew(k));
-                        //Delete the temporarily deleted entries
-//                        int pos;
-//                        for(int k = 0; k< toDelete.size(); k++) {
-//                            pos = diffResult.convertOldPositionToNew(toDelete.remove(k));
-//                            if(pos!= DiffUtil.DiffResult.NO_POSITION) {
-//                                currentList.remove(pos);
-//                                notifyItemRemoved(pos);
-//                            }
-//                        }
                     }));
-
-
-//            viewModel.addDisposable(Single.just(DiffUtil.calculateDiff(
-//                    new DiffCallback<>(currentList, newList), false))
-//                    .subscribeOn(Schedulers.io())
-//                    .observeOn(AndroidSchedulers.mainThread())
-//                    .subscribe(diffResult -> {
-//                        LogUtil.debug(TAG, "DiffResult calculated");
-//                        currentList.clear();
-//                        currentList.addAll(newList);
-////                        notifyDataSetChanged();
-//                        diffResult.dispatchUpdatesTo(CashBoxManagerRecyclerAdapter.this);
-////                        for(Integer k:toDelete)
-////                            adapter.notifyItemRemoved(diffResult.convertOldPositionToNew(k));
-//                        //Delete the temporarily deleted entries
-////                        int pos;
-////                        for(int k = 0; k< toDelete.size(); k++) {
-////                            pos = diffResult.convertOldPositionToNew(toDelete.remove(k));
-////                            if(pos!= DiffUtil.DiffResult.NO_POSITION) {
-////                                currentList.remove(pos);
-////                                notifyItemRemoved(pos);
-////                            }
-////                        }
-//                    }));
         }
 
         @NonNull
@@ -805,36 +765,11 @@ public class CashBoxManagerFragment extends Fragment {
                 viewHolder.rvAmount.setTextColor(getActivity().getColor(colorRes));
             }
 
-//            if (isDragEnabled()) {
-//                viewHolder.reorderImage.setImageResource(R.drawable.reorder_horizontal_gray_24dp);
-//                viewHolder.rvAmount.setVisibility(View.GONE);
-//            } else {
-//                if(groupAddActionMode!=null) //In group add mode
-//                    viewHolder.rvAmount.setVisibility(View.GONE);
-//                else {
-//                    viewHolder.rvAmount.setVisibility(View.VISIBLE);
-//                    viewHolder.reorderImage.setImageResource(R.drawable.ic_add);
-//                }
-//
-//                viewHolder.rvAmount.setText(currencyFormat.format(cashBoxInfo.getCash()));
-//                int colorRes = cashBoxInfo.getCash() < 0 ? R.color.colorNegativeNumber : R.color.colorPositiveNumber;
-//                viewHolder.rvAmount.setTextColor(getActivity().getColor(colorRes));
-//            }
-
             // Update if item selected
             if(selectedItems.contains(index))
                 viewHolder.itemView.setBackgroundResource(R.color.colorRVSelectedCashBox);
             else
                 viewHolder.itemView.setBackgroundResource(R.color.colorRVBackgroundCashBox);
-//            for(Integer k:selectedItems)
-//                if(k==index)
-//                    viewHolder.itemView.setBackgroundResource(R.color.colorRVSelectedCashBox);
-//                else
-//                    viewHolder.itemView.setBackgroundResource(R.color.colorRVBackgroundCashBox);
-
-//            if(getResources().getConfiguration().orientation==Configuration.ORIENTATION_LANDSCAPE &&
-//                    viewModel.getCurrentCashBoxId()==cashBoxInfo.getId())
-//                setSelectedViewHolder(viewHolder);
         }
 
         @Override

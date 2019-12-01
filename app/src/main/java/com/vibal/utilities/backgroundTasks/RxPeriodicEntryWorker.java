@@ -44,8 +44,9 @@ public class RxPeriodicEntryWorker extends RxWorker {
                 .flatMap(periodicEntryPojo -> {
                     //Create entry
                     PeriodicEntryPojo.PeriodicEntryWorkInfo workInfo = periodicEntryPojo.getWorkInfo();
-                    CashBox.Entry entry = new CashBox.Entry(workInfo.getCashBoxId(), workInfo.getAmount(),
-                            "Periodic: " + workInfo.getInfo(), Calendar.getInstance());
+                    CashBox.Entry entry = new CashBox.Entry(workInfo.getCashBoxId(),
+                            workInfo.getAmount(), workInfo.getInfo(), Calendar.getInstance());
+                    entry.setInfo("Periodic: " + entry.getInfo());
                     Single<Result> result = database.cashBoxEntryDao().insert(entry)
                             .toSingle(() -> {
                                 LogUtil.debug(TAG, "Success");

@@ -38,7 +38,6 @@
     <string name="enterInfoDialog">Info</string>
     <string name="item_totalCash">Total Cash</string>
     <string name="outOfRange">Out of range</string>
-    <string name="noInfoEntered">(No info)</string>
     <string name="required">*Required</string>
     <string name="errorMessageAmount">" "</string>
     <string name="noEntriesDelete">"No entries to delete"</string>
@@ -106,7 +105,9 @@
 
     <!--General Preferences-->
     <string name="pref_defaultStart">Default start screen</string>
-    <string name="defaultValue_defaultStart">main</string>
+    <string name="defaultStart_defaultValue_main">main</string>
+    <string name="defaultStart_value_randomChooser">randomChooser</string>
+    <string name="defaultStart_value_cashBoxManager">cashBoxManager</string>
 
     <!--CashBox Preferences-->
     <string name="pref_swipeDelete">Swipe left action</string>
@@ -115,6 +116,10 @@
     <string name="pref_notifyPeriodic">Notification Periodic</string>
     <string name="pref_summaryOn_notifyPeriodic">Notify when a periodic entry has been added</string>
     <string name="pref_summaryOff_notifyPeriodic">Do not notify when a periodic entry has been added</string>
+    <string name="pref_title_groupAddBehaviour">Group Add Behaviour</string>
+    <string name="groupAddBehaviour_value_noDiv">noDiv</string>
+    <string name="groupAddBehaviour_defaultValue_divSelected">divSelected</string>
+    <string name="groupAddBehaviour_value_divSelectedPlusOne">divSelectedPlusOne</string>
 
     <!--CashBox Manager Widget-->
     <string name="emptyCashBoxManager">No CashBoxes added</string>

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.preference.PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
     <PreferenceCategory app:title="@string/pref_general_header">
-        <ListPreference
+        <DropDownPreference
             app:key="defaultStart"
             app:title="@string/pref_defaultStart"
             app:entries="@array/defaultStart_entries"
             app:entryValues="@array/defaultStart_values"
-            app:defaultValue="@string/defaultValue_defaultStart"
+            app:defaultValue="@string/defaultStart_defaultValue_main"
             app:useSimpleSummaryProvider="true"/>
         <SwitchPreference
             app:key="playAboutSong"
@@ -27,5 +27,12 @@
             app:summaryOn="@string/pref_summaryOn_notifyPeriodic"
             app:summaryOff="@string/pref_summaryOff_notifyPeriodic"
             app:defaultValue="true" />
+        <ListPreference
+            app:key="groupAddBehaviour"
+            app:title="@string/pref_title_groupAddBehaviour"
+            app:entries="@array/groupAddBehaviour_entries"
+            app:entryValues="@array/groupAddBehaviour_values"
+            app:defaultValue="@string/groupAddBehaviour_defaultValue_divSelected"
+            app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
 </androidx.preference.PreferenceScreen>
