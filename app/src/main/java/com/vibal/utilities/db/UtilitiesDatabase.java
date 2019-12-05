@@ -14,7 +14,7 @@ import com.vibal.utilities.modelsNew.CashBox;
 import com.vibal.utilities.util.Converters;
 
 @Database(entities = {CashBoxInfo.class, CashBox.Entry.class,
-        PeriodicEntryPojo.PeriodicEntryWorkInfo.class}, version = 1, exportSchema = false)
+        PeriodicEntryPojo.PeriodicEntryWorkInfo.class}, version = 2, exportSchema = false)
 @TypeConverters(Converters.class)
 public abstract class UtilitiesDatabase extends RoomDatabase {
     private static UtilitiesDatabase INSTANCE = null;
@@ -24,7 +24,7 @@ public abstract class UtilitiesDatabase extends RoomDatabase {
         if (INSTANCE == null) {
             INSTANCE = Room.databaseBuilder(context.getApplicationContext(), UtilitiesDatabase.class,
                     "utilities_database")
-//                    .addMigrations(MIGRATION_1_2)
+                    .addMigrations(MIGRATION_1_2)
 //                    .fallbackToDestructiveMigration()
 //                    .addCallback(roomCallback)
                     .build();
@@ -38,8 +38,32 @@ public abstract class UtilitiesDatabase extends RoomDatabase {
 
     public abstract PeriodicEntryWorkDao periodicEntryWorkDao();
 
-    //todo finish migration group add id
     static final Migration MIGRATION_1_2 = new Migration(1,2) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            // New Table entries
+            database.execSQL("CREATE TABLE new_entries_table (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "cashBoxId INTEGER NOT NULL, " +
+                    "amount REAL NOT NULL, " +
+                    "date INTEGER, " +
+                    "info TEXT, " +
+                    "groupId INTEGER NOT NULL DEFAULT 0," +
+                    "FOREIGN KEY(cashBoxId) REFERENCES cashBoxesInfo_table(id) " +
+                    "ON UPDATE CASCADE ON DELETE CASCADE )");
+            database.execSQL("INSERT INTO new_entries_table (id, cashBoxId, amount, date, info) " +
+                    "SELECT id, cashBoxId, amount , date, info FROM entries_table");
+            database.execSQL("DROP TABLE entries_table");
+            database.execSQL("ALTER TABLE new_entries_table RENAME TO entries_table");
+
+            // Create Index
+            database.execSQL("CREATE INDEX IF NOT EXISTS index_entries_table_cashBoxId " +
+                    "ON entries_table (cashBoxId)");
+        }
+    };
+
+    // todo migration deleted group
+    static final Migration MIGRATION_2_3 = new Migration(2,3) {
         @Override
         public void migrate(@NonNull SupportSQLiteDatabase database) {
 

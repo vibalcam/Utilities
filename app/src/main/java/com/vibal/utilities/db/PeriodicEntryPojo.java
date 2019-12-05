@@ -155,12 +155,13 @@ public class PeriodicEntryPojo implements DiffDbUsable<PeriodicEntryPojo> {
                     .build();
             workRequest = new OneTimeWorkRequest.Builder(RxPeriodicEntryWorker.class)
                     .setConstraints(constraints)
-                    .setInitialDelay(repeatInterval, TIME_UNIT)
+//                    .setInitialDelay(repeatInterval, TIME_UNIT)
                     .addTag(RxPeriodicEntryWorker.TAG_PERIODIC)
                     .addTag(String.format(Locale.US, RxPeriodicEntryWorker.TAG_CASHBOX_ID, cashBoxId))
                     .build();
             //Create the PeriodicEntryWorkInfo
-            workInfo = new PeriodicEntryWorkInfo(workRequest.getId(), cashBoxId, amount, info, repeatInterval, repetitions);
+            workInfo = new PeriodicEntryWorkInfo(workRequest.getId(), cashBoxId, amount, info,
+                    repeatInterval+1, repetitions); // repeat interval + starting
 
 
 //        private PeriodicEntryWorkInfo workInfo;

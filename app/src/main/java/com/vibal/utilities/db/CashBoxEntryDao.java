@@ -20,6 +20,9 @@ public interface CashBoxEntryDao {
     @Query("SELECT * FROM entries_table WHERE cashBoxId=:cashBoxId ORDER BY date DESC")
     LiveData<List<CashBox.Entry>> getEntriesByCashBoxId(long cashBoxId);
 
+    @Query("SELECT * FROM entries_table WHERE groupId=:groupId")
+    Single<List<CashBox.Entry>> getGroupEntries(long groupId);
+
     @Insert
     Completable insert(CashBox.Entry entry);
 
@@ -36,6 +39,15 @@ public interface CashBoxEntryDao {
             "SET amount=:amount,info=:info " +
             "WHERE id=:id")
     Completable modify(long id, double amount, String info);
+
+    @Query("UPDATE entries_table " +
+            "SET amount=:amount,info=:info " +
+            "WHERE groupId!=0 AND groupId=:groupId")
+    Completable modifyGroup(long groupId, double amount, String info);
+
+    @Query("DELETE FROM entries_table " +
+            "WHERE groupId!=0 AND groupId=:groupId")
+    Single<Integer> deleteGroup(long groupId);
 
     @Query("DELETE FROM entries_table WHERE cashBoxId=:cashBoxId")
     Single<Integer> deleteAll(long cashBoxId);

@@ -31,7 +31,7 @@ import io.reactivex.schedulers.Schedulers;
 import static com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity.EXTRA_CASHBOX_ID;
 
 public class ReminderReceiver extends BroadcastReceiver {
-    public static final String PREFERENCE_KEY = "com.vibal.utilities.NOTIFICATION_PREFERENCE";
+    public static final String REMINDER_PREFERENCE = "com.vibal.utilities.NOTIFICATION_PREFERENCE";
     private static final String TAG = "PruebaReminderReceiver";
 
     public static void setAlarm(@NonNull AlarmManager alarmManager, Context context, long cashBoxId, long timeInMillis) {
@@ -56,7 +56,7 @@ public class ReminderReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(@NonNull Context context, @NonNull Intent intent) {
         String action = intent.getAction();
-        SharedPreferences sharedPref = context.getSharedPreferences(PREFERENCE_KEY,
+        SharedPreferences sharedPref = context.getSharedPreferences(REMINDER_PREFERENCE,
                 Context.MODE_PRIVATE);
         //If reboot completed, reset the alarms
         if (action != null && action.equals(Intent.ACTION_BOOT_COMPLETED)) {
@@ -100,7 +100,7 @@ public class ReminderReceiver extends BroadcastReceiver {
                                 .setContentIntent(PendingIntent.getActivity(context, 0, intentNotif, 0))
                                 .setAutoCancel(true)
                                 .setOnlyAlertOnce(true)
-                                .setGroup(CashBoxManagerActivity.GROUP_KEY_CASHBOX)
+                                .setGroup(CashBoxManagerActivity.NOTIFICATION_GROUP_KEY_CASHBOX)
                                 .build();
 
                         //Show notification

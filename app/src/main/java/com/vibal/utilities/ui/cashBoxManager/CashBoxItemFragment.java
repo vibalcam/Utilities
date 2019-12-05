@@ -61,6 +61,7 @@ import java.util.Objects;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
@@ -135,15 +136,17 @@ public class CashBoxItemFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Fragment has options menu if not in landscape mode
-        View viewLand = getActivity().findViewById(R.id.containerItem);
-        LogUtil.debug(TAG,"Has options menu item: " + (isVisible() && (viewLand==null || viewLand.getVisibility()!=View.VISIBLE)));
-        if(isVisible() && (viewLand==null || viewLand.getVisibility()!=View.VISIBLE)) {
+        // Fragment has options menu
+//        View viewLand = getActivity().findViewById(R.id.containerItem);
+//        LogUtil.debug(TAG,"IsVisible before onCreate: " + isVisible());
+//        LogUtil.debug(TAG,"Rest before onCreate: " + (viewLand==null || viewLand.getVisibility()!=View.VISIBLE));
+//        LogUtil.debug(TAG,"Has options menu item: " + (isVisible() && (viewLand==null || viewLand.getVisibility()!=View.VISIBLE)));
+//        if(isVisible() && (viewLand==null || viewLand.getVisibility()!=View.VISIBLE)) {
             setHasOptionsMenu(true);
             //Set up SharedPreferences for notifications
-            sharedPrefNot = getContext().getSharedPreferences(ReminderReceiver.PREFERENCE_KEY,
+            sharedPrefNot = getContext().getSharedPreferences(ReminderReceiver.REMINDER_PREFERENCE,
                     Context.MODE_PRIVATE);
-        }
+//        }
     }
 
     @Nullable
@@ -189,7 +192,7 @@ public class CashBoxItemFragment extends Fragment {
         // Initialize data
         viewModel = new ViewModelProvider(Objects.requireNonNull(activity)).get(CashBoxViewModel.class);
         viewModel.getCurrentCashBox().observe(getViewLifecycleOwner(), cashBox -> {
-            LogUtil.debug("PruebaItemFragment", "Is Visible: "+isVisible());
+            LogUtil.debug("PruebaItemFragment", "Is Visible onSubmitList: "+isVisible());
 
             // Set Title
             if (actionBar != null && isVisible())
@@ -222,13 +225,21 @@ public class CashBoxItemFragment extends Fragment {
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        menu.clear();
-        inflater.inflate(R.menu.menu_toolbar_cash_box_item, menu);
-        // Prepare alarm icon
-        menuItemNotification = menu.findItem(R.id.action_item_reminder);
-        setIconNotification(sharedPrefNot.contains(Long.toString(viewModel.getCurrentCashBoxId())));
-        // Set up ShareActionProvider
-        shareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menu.findItem(R.id.action_item_share));
+
+        // Change options menu if not in landscape mode
+        View viewLand = getActivity().findViewById(R.id.containerItem);
+//        LogUtil.debug(TAG,"IsVisible onCreateOptionsMenu: " + isVisible());
+//        LogUtil.debug(TAG,"Rest onCreateOptionsMenu: " + (viewLand==null || viewLand.getVisibility()!=View.VISIBLE));
+//        LogUtil.debug(TAG,"Has options onCreateOptionsMenu: " + (isVisible() && (viewLand==null || viewLand.getVisibility()!=View.VISIBLE)));
+        if(isVisible() && (viewLand==null || viewLand.getVisibility()!=View.VISIBLE)) {
+            menu.clear();
+            inflater.inflate(R.menu.menu_toolbar_cash_box_item, menu);
+            // Prepare alarm icon
+            menuItemNotification = menu.findItem(R.id.action_item_reminder);
+            setIconNotification(sharedPrefNot.contains(Long.toString(viewModel.getCurrentCashBoxId())));
+            // Set up ShareActionProvider
+            shareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menu.findItem(R.id.action_item_share));
+        }
     }
 
     private void setIconNotification(boolean enabled) {
@@ -427,7 +438,7 @@ public class CashBoxItemFragment extends Fragment {
             else
                 viewHolder.rvItemAmount.setTextColor(getActivity().getColor(R.color.colorPositiveNumber));
             // CashBoxInfo
-            viewHolder.rvItemInfo.setText(entry.getInfo());
+            viewHolder.rvItemInfo.setText(entry.printInfo());
 //            if (entry.getInfo().isEmpty())
 //                viewHolder.rvItemInfo.setText(R.string.noInfoEntered);
 //            else
@@ -454,6 +465,39 @@ public class CashBoxItemFragment extends Fragment {
         @Override
         public void onItemDelete(int position) {
             CashBox.Entry entry = currentList.get(position);
+
+            if(entry.getGroupId() == CashBox.Entry.NO_GROUP) {
+                deleteEntry(entry);
+                return;
+            }
+
+            AlertDialog dialog = new AlertDialog.Builder(getContext())
+                    .setTitle(R.string.titleGroupEntryDelete)
+                    .setMessage(R.string.messageGroupDelete)
+                    .setOnCancelListener(dialogInterface -> notifyItemChanged(position))   // since the item is deleted from swipping we have to show it back again)
+                    .setNegativeButton(R.string.groupEntryIndividual,
+                            (dialogInterface, i) -> deleteEntry(entry))
+                    .setPositiveButton(R.string.groupEntryAll, (dialogInterface, i) ->
+                            viewModel.addDisposable(viewModel.getGroupEntries(entry)
+                            .flatMap(entries -> viewModel.deleteGroupEntries(entry)
+                                    .map(integer -> entries))
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(entryList -> Snackbar.make(rvCashBoxItem,
+                                    getString(R.string.snackbarEntriesDeleted, 1),
+                                    Snackbar.LENGTH_LONG)
+                                    .setAction(R.string.undo, (View v) ->
+                                            viewModel.addDisposable(viewModel.addAllEntries(entryList)
+                                                    .subscribeOn(Schedulers.io())
+                                                    .observeOn(AndroidSchedulers.mainThread())
+                                                    .subscribe()))
+                                    .show())))
+                    .create();
+            dialog.setCanceledOnTouchOutside(false);
+            dialog.show();
+        }
+
+        private void deleteEntry(CashBox.Entry entry) {
             viewModel.addDisposable(viewModel.deleteEntry(entry)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
@@ -471,10 +515,11 @@ public class CashBoxItemFragment extends Fragment {
         @Override
         public void onItemModify(int position) {
             LogUtil.debug(TAG, "onItemModify: ID del entry: " + currentList.get(position).getId()
-                    + "\nID del cashBox: " + currentList.get(position).getCashBoxId());
+                    + "\nID del cashBox: " + currentList.get(position).getCashBoxId() + "\nID group: " +
+                    currentList.get(position).getGroupId());
 
-            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-            AlertDialog dialog = builder.setTitle(R.string.modifyEntry)
+            AlertDialog dialog = new AlertDialog.Builder(getContext())
+                    .setTitle(R.string.modifyEntry)
                     .setView(R.layout.cash_box_item_entry_input)
                     .setNegativeButton(R.string.cancelDialog, null)
                     .setPositiveButton(R.string.confirm, null)
@@ -497,26 +542,50 @@ public class CashBoxItemFragment extends Fragment {
                 positive.setOnClickListener((View v) -> {
                     try {
                         String input = inputAmount.getText().toString().trim();
+
                         if (input.isEmpty()) {
                             layoutAmount.setError(getString(R.string.required));
                             inputAmount.setText("");
                             Util.showKeyboard(getContext(), inputAmount);
                         } else {
-                            viewModel.addDisposable(viewModel.modifyEntry(modifiedEntry,
-                                    Util.parseExpression(input), inputInfo.getText().toString().trim())
-                                    .subscribeOn(Schedulers.io())
-                                    .observeOn(AndroidSchedulers.mainThread())
-                                    .subscribe(() -> {
-                                        dialogInterface.dismiss();
-                                        Snackbar.make(rvCashBoxItem,
-                                                R.string.snackbarEntryModified, Snackbar.LENGTH_LONG)
-                                                .setAction(R.string.undo, (View v1) ->
-                                                        viewModel.addDisposable(viewModel.updateEntry(modifiedEntry)
-                                                                .subscribeOn(Schedulers.io())
-                                                                .observeOn(AndroidSchedulers.mainThread())
-                                                                .subscribe()))
-                                                .show();
-                                    }));
+                            String info = inputInfo.getText().toString().trim();
+                            double amount = Util.parseExpression(input);
+
+                            if(modifiedEntry.getGroupId()== CashBox.Entry.NO_GROUP)
+                                modifyEntry(modifiedEntry, dialogInterface, amount, info);
+                            else {
+                                AlertDialog dialogGroup = new AlertDialog.Builder(getContext())
+                                        .setTitle(R.string.titleGroupEntryModify)
+                                        .setMessage(R.string.messageGroupModify)
+                                        .setNegativeButton(R.string.groupEntryIndividual,
+                                                (dialogInterfaceGroup, i) -> modifyEntry(modifiedEntry,
+                                                        dialogInterface, amount, info))
+                                        .setPositiveButton(R.string.groupEntryAll, (dialogInterfaceGroup, i) ->
+                                                viewModel.addDisposable(viewModel.getGroupEntries(modifiedEntry)
+                                                        .flatMap(entries -> viewModel.modifyGroupEntry(modifiedEntry, amount,info)
+                                                                .toSingleDefault(entries))
+                                                        .subscribeOn(Schedulers.io())
+                                                        .observeOn(AndroidSchedulers.mainThread())
+                                                        .subscribe(entryList -> {
+                                                            dialogInterface.dismiss();
+                                                                Snackbar.make(rvCashBoxItem,
+                                                                getString(R.string.snackbarEntriesDeleted, 1),
+                                                                Snackbar.LENGTH_LONG)
+                                                                .setAction(R.string.undo, (View v2) -> {
+                                                                    Completable completable = Completable.complete();
+                                                                    for(CashBox.Entry k:entryList)
+                                                                        completable = completable.andThen(
+                                                                                viewModel.updateEntry(k));
+                                                                    viewModel.addDisposable(completable
+                                                                            .subscribeOn(Schedulers.io())
+                                                                            .observeOn(AndroidSchedulers.mainThread())
+                                                                            .subscribe());
+                                                                }).show();
+                                                        })))
+                                        .create();
+                                dialogGroup.setCanceledOnTouchOutside(false);
+                                dialogGroup.show();
+                            }
                         }
                     } catch (NumberFormatException e) {
                         layoutAmount.setError(getString(R.string.errorMessageAmount));
@@ -528,6 +597,23 @@ public class CashBoxItemFragment extends Fragment {
             dialog.show();
 
             notifyItemChanged(position);   // since the item is deleted from swipping we have to show it back again
+        }
+
+        private void modifyEntry( CashBox.Entry modifiedEntry, DialogInterface dialogInterface, double amount, String info) {
+            viewModel.addDisposable(viewModel.modifyEntry(modifiedEntry, amount, info)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(() -> {
+                        dialogInterface.dismiss();
+                        Snackbar.make(rvCashBoxItem,
+                                R.string.snackbarEntryModified, Snackbar.LENGTH_LONG)
+                                .setAction(R.string.undo, (View v1) ->
+                                        viewModel.addDisposable(viewModel.updateEntry(modifiedEntry)
+                                                .subscribeOn(Schedulers.io())
+                                                .observeOn(AndroidSchedulers.mainThread())
+                                                .subscribe()))
+                                .show();
+                    }));
         }
 
         public class ViewHolder extends RecyclerView.ViewHolder {

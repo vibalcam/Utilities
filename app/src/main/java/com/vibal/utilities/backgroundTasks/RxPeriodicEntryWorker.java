@@ -121,7 +121,7 @@ public class RxPeriodicEntryWorker extends RxWorker {
                 .setContentIntent(PendingIntent.getActivity(getApplicationContext(), 0,
                         intentNotif, 0))
                 .setAutoCancel(true)
-                .setGroup(CashBoxManagerActivity.GROUP_KEY_CASHBOX)
+                .setGroup(CashBoxManagerActivity.NOTIFICATION_GROUP_KEY_CASHBOX)
                 .build();
 
         //Show notification

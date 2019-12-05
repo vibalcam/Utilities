@@ -15,8 +15,6 @@ import java.util.List;
 import io.reactivex.Completable;
 import io.reactivex.Single;
 
-import static com.vibal.utilities.db.CashBoxInfo.NO_ORDER_ID;
-
 public class CashBoxRepository {
     private CashBoxDao cashBoxDao;
     private CashBoxEntryDao cashBoxEntryDao;
@@ -65,29 +63,11 @@ public class CashBoxRepository {
     }
 
     public Completable insertCashBox(@NonNull CashBox cashBox) {
-        configureOrderId(cashBox.getInfoWithCash().getCashBoxInfo());
         return cashBoxDao.insert(cashBox, cashBoxEntryDao);
     }
 
     public Single<Long> insertCashBoxInfo(@NonNull CashBox.InfoWithCash infoWithCash) {
-        configureOrderId(infoWithCash.getCashBoxInfo());
         return cashBoxDao.insert(infoWithCash.getCashBoxInfo());
-    }
-
-    /**
-     * Configures the orderId by getting CashBox orderId and incrementing it by one
-     *
-     * @param cashBoxInfo the cashBoxInfo which orderId is going to be configured
-     */
-    private void configureOrderId(@NonNull CashBoxInfo cashBoxInfo) {
-//        if (cashBoxInfo.getOrderId() == NO_ORDER_ID) {
-//            List<CashBox.InfoWithCash> temp = cashBoxesInfo.getValue();
-//            long orderId = temp == null || temp.isEmpty() ? NO_ORDER_ID + 1 :
-//                    temp.get(0).getCashBoxInfo().getOrderId() + 1;
-//            cashBoxInfo.setOrderId(orderId);
-//        }
-        if(cashBoxInfo.getOrderId() == NO_ORDER_ID)
-            cashBoxInfo.setOrderId(cashBoxInfo.getId());
     }
 
     public Completable updateCashBoxInfo(CashBoxInfo cashBoxInfo) {
@@ -121,6 +101,18 @@ public class CashBoxRepository {
 
     public Completable modifyEntry(long id, double amount, String info) {
         return cashBoxEntryDao.modify(id, amount, info);
+    }
+
+    public Single<List<CashBox.Entry>> getGroupEntries(long groupId) {
+        return cashBoxEntryDao.getGroupEntries(groupId);
+    }
+
+    public Completable modifyGroupEntry(long groupId, double amount, String info) {
+        return cashBoxEntryDao.modifyGroup(groupId, amount, info);
+    }
+
+    public Single<Integer> deleteGroupEntries(long groupId) {
+        return cashBoxEntryDao.deleteGroup(groupId);
     }
 
     public Completable deleteEntry(CashBox.Entry entry) {

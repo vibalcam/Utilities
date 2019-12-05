@@ -122,9 +122,8 @@ public abstract class CashBoxDao {
     }
 
     @Query("UPDATE cashBoxesInfo_table " +
-            "SET orderId=CASE " +
-            "WHEN orderId=" + CashBoxInfo.NO_ORDER_ID + " THEN :cashBoxId " +
-            "ELSE orderId END")
+            "SET orderId=:cashBoxId " +
+            "WHERE id=:cashBoxId AND orderId=" + CashBoxInfo.NO_ORDER_ID)
     abstract Completable configureOrderId(long cashBoxId);
 
     @Insert

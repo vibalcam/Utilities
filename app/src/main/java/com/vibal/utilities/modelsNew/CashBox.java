@@ -7,6 +7,7 @@ import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.room.ColumnInfo;
 import androidx.room.Embedded;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
@@ -46,7 +47,7 @@ public class CashBox implements Parcelable {
 
     @Embedded
     private InfoWithCash infoWithCash;
-    @Nullable
+    @NonNull
     @Relation(parentColumn = "id", entityColumn = "cashBoxId")
     private List<Entry> entries;
 
@@ -65,7 +66,7 @@ public class CashBox implements Parcelable {
      * You must ensure that cash is the sum of all the amounts.
      * Should not be used directly.
      */
-    public CashBox(InfoWithCash infoWithCash, List<Entry> entries) throws IllegalArgumentException {
+    public CashBox(InfoWithCash infoWithCash, @NonNull List<Entry> entries) throws IllegalArgumentException {
         this.infoWithCash = infoWithCash;
         this.entries = entries;
     }
@@ -101,7 +102,7 @@ public class CashBox implements Parcelable {
         return infoWithCash.getCash();
     }
 
-    @Nullable
+    @NonNull
     public List<Entry> getEntries() {
         return entries;
     }
@@ -299,6 +300,8 @@ public class CashBox implements Parcelable {
             indices = {@Index(value = "cashBoxId")})
     public static class Entry implements Parcelable, Cloneable, DiffDbUsable<Entry> {
         @Ignore
+        public static final long NO_GROUP = 0;
+        @Ignore
         public static final String NO_INFO = "(No info)";
         @Ignore
         private static final String DIFF_AMOUNT = "amount";
@@ -324,18 +327,31 @@ public class CashBox implements Parcelable {
         @PrimaryKey(autoGenerate = true)
         private long id;
         private long cashBoxId;
-        private String info;
-        private Calendar date;
         private double amount;
+        private Calendar date;
+        private String info;
+        @ColumnInfo(defaultValue = "0")
+        private long groupId;
 
         /**
          * Constructor for Room
          */
-        public Entry(long cashBoxId, double amount, @Nullable String info, Calendar date) {
+        public Entry(long cashBoxId, double amount, @Nullable String info, Calendar date, long groupId) {
             setInfo(info);
+            this.groupId = groupId;
             this.date = date;
             setAmount(amount);
             this.cashBoxId = cashBoxId;
+        }
+
+        @Ignore
+        public Entry(long cashBoxId, double amount, @Nullable String info, Calendar date) {
+            this(cashBoxId,amount,info,date,NO_GROUP);
+        }
+
+        @Ignore
+        public Entry(double amount, @NonNull String info, Calendar date, long groupId) {
+            this(CashBoxInfo.NO_CASHBOX,amount,info,date,groupId);
         }
 
         @Ignore
@@ -350,6 +366,7 @@ public class CashBox implements Parcelable {
             setInfo(parcel.readString());
             date = Converters.fromTimestamp(parcel.readLong());
             setAmount(parcel.readDouble());
+            this.groupId = parcel.readLong();
         }
 
         public long getId() {
@@ -362,10 +379,17 @@ public class CashBox implements Parcelable {
 
         @NonNull
         public String getInfo() {
-            if(info.isEmpty())
-                return NO_INFO;
+            return info;
+        }
+
+        @NonNull
+        public String printInfo() {
+            String string = info.isEmpty() ? NO_INFO : info;
+
+            if(groupId==NO_GROUP)
+                return string;
             else
-                return info;
+                return "Group Add: " + string;
         }
 
         @NonNull
@@ -375,6 +399,10 @@ public class CashBox implements Parcelable {
 
         public double getAmount() {
             return amount;
+        }
+
+        public long getGroupId() {
+            return groupId;
         }
 
         public void setId(long id) {
@@ -426,6 +454,7 @@ public class CashBox implements Parcelable {
                 Entry entry = clone();
                 entry.id = 0;
                 entry.cashBoxId = CashBoxInfo.NO_CASHBOX;
+                entry.groupId = NO_GROUP;
                 return entry;
         }
 
@@ -457,6 +486,7 @@ public class CashBox implements Parcelable {
             dest.writeString(info);
             dest.writeLong(Converters.calendarToTimestamp(date));
             dest.writeDouble(amount);
+            dest.writeLong(groupId);
         }
 
         //Implements DiffDbUsable

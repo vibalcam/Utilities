@@ -155,6 +155,10 @@ public class CashBoxViewModel extends AndroidViewModel {
         return cashBoxRepository.insertAllEntries(entryArrayList);
     }
 
+    public Completable addAllEntries(@NonNull Collection<CashBox.Entry> entries) {
+        return cashBoxRepository.insertAllEntries(entries);
+    }
+
     public Completable updateEntry(CashBox.Entry entry) {
         return cashBoxRepository.updateEntry(entry);
     }
@@ -177,6 +181,18 @@ public class CashBoxViewModel extends AndroidViewModel {
 
     public void addDisposable(@NonNull Disposable disposable) {
         compositeDisposable.add(disposable);
+    }
+
+    public Single<List<CashBox.Entry>> getGroupEntries(CashBox.Entry entry) {
+        return cashBoxRepository.getGroupEntries(entry.getGroupId());
+    }
+
+    public Completable modifyGroupEntry(CashBox.Entry entry, double amount, String info) {
+        return cashBoxRepository.modifyGroupEntry(entry.getGroupId(), amount, info);
+    }
+
+    public Single<Integer> deleteGroupEntries(CashBox.Entry entry) {
+        return cashBoxRepository.deleteGroupEntries(entry.getGroupId());
     }
 
     @Override

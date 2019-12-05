@@ -17,13 +17,26 @@ import com.vibal.utilities.widget.CashBoxWidgetProvider;
 import java.util.Objects;
 
 public class CashBoxManagerActivity extends AppCompatActivity {
+    // Extras for intents
     public static final String EXTRA_CASHBOX_ID = "com.vibal.utilities.cashBoxId";
     public static final String EXTRA_ACTION = "com.vibal.utilities.ui.cashBoxManager.action";
     public static final int NO_ACTION = 0;
     public static final int ACTION_ADD_CASHBOX = 1;
     public static final int ACTION_DETAILS = 2;
-    public static final String GROUP_KEY_CASHBOX = "com.vibal.utilities.CASHBOX";
-    private static final String TAG = "PruebaCBMActivity";
+
+    /**
+     * Group Notification for CashBoxManager
+     */
+    public static final String NOTIFICATION_GROUP_KEY_CASHBOX = "com.vibal.utilities.CASHBOX";
+
+    /**
+     * Shared Preferences Key for CashBoxManager
+     */
+    public static final String CASHBOX_MANAGER_PREFERENCE = "com.vibal.utilities.cashBoxManager.CASHBOX_MANAGER_PREFERENCE";
+    /**
+     * Next free group id for use (returned id is not in use, +1 when save new one)
+     */
+    public static final String SAVED_GROUP_ID_COUNT = "com.vibal.utilities.cashBoxManager.GROUP_ID_COUNT";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {

@@ -66,7 +66,7 @@ public class CashBoxPeriodicActivity extends AppCompatActivity {
         setContentView(R.layout.cash_box_periodic_activity);
         ButterKnife.bind(this);
 
-        // Set viewModel
+        // Set ViewModel
         viewModel = new ViewModelProvider(this).get(PeriodicEntryWorkViewModel.class);
         viewModel.getPeriodicEntries().observe(this, periodicEntryPojos -> {
             LogUtil.debug("Prueba", "New list submitted");

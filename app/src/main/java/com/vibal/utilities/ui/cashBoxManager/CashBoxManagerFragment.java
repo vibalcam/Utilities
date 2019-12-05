@@ -2,6 +2,7 @@ package com.vibal.utilities.ui.cashBoxManager;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -81,9 +82,11 @@ import io.reactivex.schedulers.Schedulers;
 
 import static com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity.ACTION_ADD_CASHBOX;
 import static com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity.ACTION_DETAILS;
+import static com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity.CASHBOX_MANAGER_PREFERENCE;
 import static com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity.EXTRA_ACTION;
 import static com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity.EXTRA_CASHBOX_ID;
 import static com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity.NO_ACTION;
+import static com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity.SAVED_GROUP_ID_COUNT;
 
 public class CashBoxManagerFragment extends Fragment {
     private static final String TAG = "PruebaManagerFragment";
@@ -504,7 +507,10 @@ public class CashBoxManagerFragment extends Fragment {
         //Choose CashBox in group
         if (adapter.actionMode != null)
             adapter.actionMode.finish();
-        groupAddActionMode = ((AppCompatActivity) getActivity()).startSupportActionMode(groupAddModeCallback);
+        if(!adapter.currentList.isEmpty())
+            groupAddActionMode = ((AppCompatActivity) getActivity()).startSupportActionMode(groupAddModeCallback);
+        else
+            Toast.makeText(getContext(), "No available CashBoxes", Toast.LENGTH_SHORT).show();
     }
 
     private void showGroupAddDialog() {
@@ -552,21 +558,25 @@ public class CashBoxManagerFragment extends Fragment {
                         else if(groupAddBehaviour.equals(getString(R.string.groupAddBehaviour_value_divSelectedPlusOne)))
                             amount /= adapter.selectedItems.size() + 1;
 
-                        // Get Info
-                        String info = inputInfo.getText().toString();
-                        if(info.trim().isEmpty())
-                            info = "Group Add: " + CashBox.Entry.NO_INFO;
-                        else
-                            info = "Group Add: " + info;
+                        // Get next usable Group ID
+                        SharedPreferences preferences = getActivity().getSharedPreferences(
+                                CASHBOX_MANAGER_PREFERENCE, Context.MODE_PRIVATE);
+                        long groupId = preferences.getLong(SAVED_GROUP_ID_COUNT, 1);
 
                         // Add entries
                         Completable addEntries = Completable.complete();
                         for(int k:adapter.selectedItems)
                             addEntries = addEntries.andThen(viewModel.addEntry(adapter.currentList.get(k).getId(),
-                                    new CashBox.Entry(amount, info, Calendar.getInstance())));
+                                    new CashBox.Entry(amount, inputInfo.getText().toString().trim(),
+                                            Calendar.getInstance(),groupId)));
                         viewModel.addDisposable(addEntries.subscribeOn(Schedulers.io())
                                 .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(dialogInterface::dismiss));
+                                .subscribe(() -> {
+                                    dialogInterface.dismiss();
+                                    preferences.edit()
+                                            .putLong(SAVED_GROUP_ID_COUNT,groupId+1)
+                                            .apply();
+                                }));
                     }
                 } catch (NumberFormatException e) {
                     layoutAmount.setError(getString(R.string.errorMessageAmount));
@@ -980,7 +990,6 @@ public class CashBoxManagerFragment extends Fragment {
                     return true; //to consume the touch action so it does not count as a click on the view
                 } else { //While in edit mode/action mode
                     if (onStartDragListener != null && event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-                        toggleSelectedCashBox(getAdapterPosition(), false);
                         onStartDragListener.onStartDrag(this);
                         return true;
                     } else
