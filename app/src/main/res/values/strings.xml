@@ -22,8 +22,6 @@
     <string name="cashBox_changeNameButton">Change Name</string>
     <string name="cashBox_cloneButton">Clone</string>
     <string name="nameInUse">Name already in use</string>
-    <string name="randomChooser_helpTitle">"Random Chooser Help"</string>
-    <string name="cashBoxManager_helpTitle">"Cash Box Manager Help"</string>
     <string name="enterInitCashDialog">Initial Cash</string>
     <string name="newEntry">New Entry</string>
     <string name="newGroupEntry">New Group Entry</string>
@@ -106,17 +104,20 @@
 
     <!--About and help-->
     <string name="appHelpTitle">Available Utilities</string>
-    <string name="appHelpMessage"><b>Random Chooser:</b> perfect for when you need to get a randomly ordered list or flip a coin.
-        \n<b>Debt Manager:</b> it will help you remember when a friend borrowed money from you, just in case he "accidentally" forgets.
+    <string name="appHelpMessage">
+        -\t<b>Random Chooser:</b> perfect for when you need to get a randomly ordered list or flip a coin.
+        \n-\t<b>Debt Manager:</b> it will help you remember when a friend borrowed money from you, just in case he "accidentally" forgets.
     </string>
-    <string name="cashBoxManager_help">List of added CashBoxes.
-        \nPress the floating button to add a new CashBox or group entries
-        \nSwipe left to delete a CashBox.
-        \nSwipe right to modify a CashBox.
-        \nSelect a CashBox by clicking it.
-        \nLong press a CashBox to enter edit mode.
-        \nIn edit mode you select a CashBox to add a periodical entry.
+    <string name="cashBoxManager_helpTitle">"Cash Box Manager Help"</string>
+    <string name="cashBoxManager_help">
+        -\tPress the floating button to add a new CashBox or group entries
+        \n-\tSwipe left to send a CashBox to the recycle bin.
+        \n-\tSwipe right to modify a CashBox.
+        \n-\tSelect a CashBox by clicking it.
+        \n-\tLong press a CashBox to enter edit mode.
+        \n-\tIn edit mode you select a CashBox to add a periodical entry.
     </string>
+    <string name="randomChooser_helpTitle">"Random Chooser Help"</string>
     <string name="randomChooser_help">Roll The Dice: returns a randomly chosen item from the list.
         \nShuffle List: shuffles the list.
         \nTo delete an entry, slide the item to the left.
@@ -124,11 +125,11 @@
     </string>
     <string name="changesVersions">
         <b>2.4.0</b>
-        \n-\tGroup entries can be modified or deleted as a whole.
-        \n-\tDeleted CashBoxes go to the CashBox Recycle Bin.
         \n-\tChoose date of new entry.
         \n-\tChoose start date and delay of periodic entries.
-        \n-\tBug fixes.
+        \n-\tDeleted CashBoxes go to the CashBox Recycle Bin.
+        \n-\tGroup entries can be modified or deleted as a whole.
+        \n-\tLandscape mode is now more useful.
     </string>
 
 

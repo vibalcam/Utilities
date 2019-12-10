@@ -16,13 +16,30 @@ import com.vibal.utilities.modelsNew.PeriodicEntryPojo;
 import com.vibal.utilities.util.Converters;
 
 @Database(entities = {CashBoxInfo.class, CashBox.Entry.class,
-        PeriodicEntryPojo.PeriodicEntryWorkInfo.class}, version = 3, exportSchema = false)
+        PeriodicEntryPojo.PeriodicEntryWorkInfo.class}, version = 2, exportSchema = false)
 @TypeConverters(Converters.class)
 public abstract class UtilitiesDatabase extends RoomDatabase {
     static final Migration MIGRATION_1_2 = new Migration(1, 2) {
         @Override
         public void migrate(@NonNull SupportSQLiteDatabase database) {
-            // New Table entries
+            // New Table CashBoxInfo
+            database.execSQL("CREATE TABLE new_cashBoxesInfo_table (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "name TEXT NOT NULL COLLATE NOCASE, " +
+                    "orderId INTEGER NOT NULL, " +
+                    "deleted INTEGER NOT NULL DEFAULT 0)");
+            database.execSQL("INSERT INTO new_cashBoxesInfo_table (id,name,orderId) " +
+                    "SELECT id, name, orderId FROM cashBoxesInfo_table");
+            database.execSQL("DROP TABLE cashBoxesInfo_table");
+            database.execSQL("ALTER TABLE new_cashBoxesInfo_table RENAME TO cashBoxesInfo_table");
+
+            // Create Indexes
+            database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_cashBoxesInfo_table_name " +
+                    "ON cashBoxesInfo_table (name)");
+            database.execSQL("CREATE INDEX IF NOT EXISTS index_cashBoxesInfo_table_deleted " +
+                    "ON cashBoxesInfo_table (deleted)");
+
+            // New Table Entries
             database.execSQL("CREATE TABLE new_entries_table (" +
                     "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
                     "cashBoxId INTEGER NOT NULL, " +
@@ -42,28 +59,7 @@ public abstract class UtilitiesDatabase extends RoomDatabase {
                     "ON entries_table (cashBoxId)");
         }
     };
-    static final Migration MIGRATION_2_3 = new Migration(2, 3) {
-        @Override
-        public void migrate(@NonNull SupportSQLiteDatabase database) {
-            // New Table entries
-            database.execSQL("CREATE TABLE new_cashBoxesInfo_table (" +
-                    "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
-                    "name TEXT NOT NULL COLLATE NOCASE, " +
-                    "orderId INTEGER NOT NULL, " +
-                    "deleted INTEGER NOT NULL DEFAULT 0)");
-            database.execSQL("INSERT INTO new_cashBoxesInfo_table (id,name,orderId) " +
-                    "SELECT id, name, orderId FROM cashBoxesInfo_table");
-            database.execSQL("DROP TABLE cashBoxesInfo_table");
-            database.execSQL("ALTER TABLE new_cashBoxesInfo_table RENAME TO cashBoxesInfo_table");
 
-            // Create Indexes
-            database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_cashBoxesInfo_table_name " +
-                    "ON cashBoxesInfo_table (name)");
-            database.execSQL("CREATE INDEX IF NOT EXISTS index_cashBoxesInfo_table_deleted " +
-                    "ON cashBoxesInfo_table (deleted)");
-
-        }
-    };
     private static UtilitiesDatabase INSTANCE = null;
 
     @NonNull
@@ -71,7 +67,7 @@ public abstract class UtilitiesDatabase extends RoomDatabase {
         if (INSTANCE == null) {
             INSTANCE = Room.databaseBuilder(context.getApplicationContext(), UtilitiesDatabase.class,
                     "utilities_database")
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                    .addMigrations(MIGRATION_1_2)
 //                    .fallbackToDestructiveMigration()
 //                    .addCallback(roomCallback)
                     .build();
