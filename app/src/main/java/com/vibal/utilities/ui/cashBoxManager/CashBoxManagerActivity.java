@@ -27,7 +27,7 @@ public class CashBoxManagerActivity extends AppCompatActivity {
     /**
      * Group Notification for CashBoxManager
      */
-    public static final String NOTIFICATION_GROUP_KEY_CASHBOX = "com.vibal.utilities.CASHBOX";
+    public static final String NOTIFICATION_GROUP_KEY_CASHBOX = "com.vibal.utilities.NOTIFICATION_GROUP_CASHBOX";
 
     /**
      * Shared Preferences Key for CashBoxManager
@@ -36,7 +36,11 @@ public class CashBoxManagerActivity extends AppCompatActivity {
     /**
      * Next free group id for use (returned id is not in use, +1 when save new one)
      */
-    public static final String SAVED_GROUP_ID_COUNT = "com.vibal.utilities.cashBoxManager.GROUP_ID_COUNT";
+    public static final String GROUP_ID_COUNT_KEY = "com.vibal.utilities.cashBoxManager.GROUP_ID_COUNT";
+    /**
+     * Next free group id for use (returned id is not in use, +1 when save new one)
+     */
+    public static final String GROUP_ADD_MODE_KEY = "com.vibal.utilities.cashBoxManager.GROUP_ADD_MODE";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -58,7 +62,7 @@ public class CashBoxManagerActivity extends AppCompatActivity {
         } else {
             View viewLand = findViewById(R.id.containerItem);
             FragmentManager fragmentManager = getSupportFragmentManager();
-            if(viewLand != null && viewLand.getVisibility()==View.VISIBLE &&
+            if (viewLand != null && viewLand.getVisibility() == View.VISIBLE &&
                     fragmentManager.findFragmentById(R.id.container) instanceof CashBoxItemFragment) {
                 fragmentManager.popBackStack();
                 fragmentManager.beginTransaction()
@@ -78,9 +82,8 @@ public class CashBoxManagerActivity extends AppCompatActivity {
         intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
         int[] ids = AppWidgetManager.getInstance(getApplicationContext())
                 .getAppWidgetIds(new ComponentName(getApplicationContext(), CashBoxWidgetProvider.class));
-        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS,ids);
+        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
         sendBroadcast(intent);
-//        LogUtil.debug(TAG,"Updated Widgets");
     }
 
     @Override

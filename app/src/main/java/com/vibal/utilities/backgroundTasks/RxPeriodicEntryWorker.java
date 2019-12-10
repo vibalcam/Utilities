@@ -15,9 +15,9 @@ import androidx.work.WorkerParameters;
 
 import com.vibal.utilities.App;
 import com.vibal.utilities.R;
-import com.vibal.utilities.db.PeriodicEntryPojo;
 import com.vibal.utilities.db.UtilitiesDatabase;
 import com.vibal.utilities.modelsNew.CashBox;
+import com.vibal.utilities.modelsNew.PeriodicEntryPojo;
 import com.vibal.utilities.ui.cashBoxManager.CashBoxItemFragment;
 import com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity;
 import com.vibal.utilities.util.LogUtil;

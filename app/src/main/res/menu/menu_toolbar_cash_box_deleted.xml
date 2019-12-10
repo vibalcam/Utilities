@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_deleted_deleteAll"
+        android:icon="@drawable/delete"
+        app:showAsAction="ifRoom"
+        android:title="@string/action_reset" />
+
+    <item
+        android:id="@+id/action_deleted_restoreAll"
+        android:icon="@drawable/ic_restore_white_24dp"
+        app:showAsAction="ifRoom"
+        android:title="@string/action_restoreAll" />
+
+    <item
+        android:id="@+id/action_deleted_settings"
+        android:icon="@drawable/settings_outline"
+        app:showAsAction="never"
+        android:title="@string/settings"/>
+</menu>

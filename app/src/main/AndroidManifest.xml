@@ -39,8 +39,13 @@
             android:label="@string/title_activity_settings" />
 
         <activity
+            android:name=".ui.cashBoxManager.CashBoxDeletedActivity"
+            android:label="@string/title_deletedCashBox"
+            android:theme="@style/AppTheme.NoActionBar"/>
+
+        <activity
             android:name=".ui.cashBoxManager.CashBoxPeriodicActivity"
-            android:label="@string/main_cashBoxManager"
+            android:label="@string/title_periodicEntry"
             android:theme="@style/AppTheme.NoActionBar"/>
 
         <activity android:name=".ui.cashBoxManager.CashBoxManagerActivity"

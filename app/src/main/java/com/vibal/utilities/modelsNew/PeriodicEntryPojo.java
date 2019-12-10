@@ -1,4 +1,4 @@
-package com.vibal.utilities.db;
+package com.vibal.utilities.modelsNew;
 
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
@@ -147,46 +147,59 @@ public class PeriodicEntryPojo implements DiffDbUsable<PeriodicEntryPojo> {
         private PeriodicEntryWorkInfo workInfo;
         private OneTimeWorkRequest workRequest;
 
+        /**
+         * Create PeriodicEntryWorkRequest
+         *
+         * @param cashBoxId      id of the cashBox where the entries will be added
+         * @param amount         amount of the entries
+         * @param info           info of the entries
+         * @param repeatInterval interval between each entry
+         * @param repetitions    number of entries to be added
+         * @param delay          true if there should be a delay before the first entry,
+         *                       false otherwise
+         */
         public PeriodicEntryWorkRequest(long cashBoxId, double amount, String info,
-                                        long repeatInterval, int repetitions) {
+                                        long repeatInterval, int repetitions, long delay) {
             //Create the periodic task
             Constraints constraints = new Constraints.Builder()
                     .setRequiresBatteryNotLow(true)
                     .build();
-            workRequest = new OneTimeWorkRequest.Builder(RxPeriodicEntryWorker.class)
+            OneTimeWorkRequest.Builder builder = new OneTimeWorkRequest.Builder(RxPeriodicEntryWorker.class)
                     .setConstraints(constraints)
-//                    .setInitialDelay(repeatInterval, TIME_UNIT)
                     .addTag(RxPeriodicEntryWorker.TAG_PERIODIC)
-                    .addTag(String.format(Locale.US, RxPeriodicEntryWorker.TAG_CASHBOX_ID, cashBoxId))
-                    .build();
+                    .addTag(String.format(Locale.US, RxPeriodicEntryWorker.TAG_CASHBOX_ID, cashBoxId));
+            if (delay >= 0)
+                builder.setInitialDelay(delay, TIME_UNIT);
+            workRequest = builder.build();
+
             //Create the PeriodicEntryWorkInfo
             workInfo = new PeriodicEntryWorkInfo(workRequest.getId(), cashBoxId, amount, info,
-                    repeatInterval+1, repetitions); // repeat interval + starting
-
-
-//        private PeriodicEntryWorkInfo workInfo;
-//        private PeriodicWorkRequest workRequest;
-//
-//        public PeriodicEntryWorkRequest(long cashBoxId, double amount, String info,
-//                                        long repeatInterval, int repetitions) {
-//            //Create the periodic task
-//            Constraints constraints = new Constraints.Builder()
-////                    .setRequiresBatteryNotLow(true)
-////                    .setRequiresDeviceIdle(true)
-//                    .build();
-//            workRequest = new PeriodicWorkRequest.Builder(RxPeriodicEntryWorker.class,
-//                    repeatInterval, TIME_UNIT)
-//                    .setConstraints(constraints)
-//                    .addTag(RxPeriodicEntryWorker.TAG_PERIODIC)
-//                    .addTag(String.format(Locale.US, RxPeriodicEntryWorker.TAG_CASHBOX_ID, cashBoxId))
-//                    .build();
-//            //Create the PeriodicEntryWorkInfo
-//            workInfo = new PeriodicEntryWorkInfo(workRequest.getWorkId(),cashBoxId, amount, info, repeatInterval, repetitions);
+                    repeatInterval, repetitions + 1); // repetitions + starting
         }
 
+        /**
+         * Create PeriodicEntryWorkRequest without initial delay
+         *
+         * @param cashBoxId      id of the cashBox where the entries will be added
+         * @param amount         amount of the entries
+         * @param info           info of the entries
+         * @param repeatInterval interval between each entry
+         * @param repetitions    number of entries to be added
+         */
+        public PeriodicEntryWorkRequest(long cashBoxId, double amount, String info,
+                                        long repeatInterval, int repetitions) {
+            this(cashBoxId, amount, info, repeatInterval, repetitions, 0);
+        }
+
+        /**
+         * Create PeriodicEntryWorkRequest from a work info with an initial delay equal to the
+         * repeat interval
+         *
+         * @param workInfo workInfo from which the workRequest will be built
+         */
         public PeriodicEntryWorkRequest(@NonNull PeriodicEntryWorkInfo workInfo) {
             this(workInfo.getCashBoxId(), workInfo.getAmount(), workInfo.getInfo(),
-                    workInfo.getRepeatInterval(), workInfo.getRepetitions());
+                    workInfo.getRepeatInterval(), workInfo.getRepetitions(), workInfo.getRepeatInterval());
             this.workInfo.setId(workInfo.getId());
         }
 
@@ -197,9 +210,5 @@ public class PeriodicEntryPojo implements DiffDbUsable<PeriodicEntryPojo> {
         public OneTimeWorkRequest getWorkRequest() {
             return workRequest;
         }
-
-        //        public PeriodicWorkRequest getWorkRequest() {
-//            return workRequest;
-//        }
     }
 }

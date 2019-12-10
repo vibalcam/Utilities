@@ -10,6 +10,9 @@
     <dimen name="marginRV_name_cash">5dp</dimen>
     <dimen name="marginRV_date_amount">5dp</dimen>
 
+    <!--CB Item-->
+    <dimen name="marginItemRecyclerView">50dp</dimen>
+
     <!--FAB-->
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="standard_23">23dp</dimen>

@@ -7,6 +7,11 @@
         app:showAsAction="ifRoom"
         android:title="@string/settings" />
     <item
+        android:id="@+id/action_main_versions"
+        android:icon="@drawable/ic_new_releases_white_24dp"
+        app:showAsAction="ifRoom"
+        android:title="@string/action_versions" />
+    <item
         android:id="@+id/action_main_help"
         android:icon="@drawable/help"
         app:showAsAction="ifRoom"

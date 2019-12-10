@@ -6,23 +6,17 @@
     <string name="main_cashBoxManager">CashBox Manager</string>
     <string name="titleCBM">CashBoxes</string>
     <string name="title_periodicEntry">Periodic Entries</string>
-    <string name="title_deletedCashBox">Deleted CashBoxes</string>
+    <string name="title_deletedCashBox">Recycle Bin</string>
     <string name="title_activity_settings">Settings</string>
 
     <string name="settings">Settings</string>
-    <string name="action_help">Help</string>
     <string name="action_about">About this app</string>
     <string name="add">Add</string>
     <string name="roll">Roll The Dice</string>
     <string name="shuffle">Shuffle List</string>
     <string name="randomChooser_title">Contestants</string>
     <string name="button_gotIt">Got it!</string>
-    <string name="snackbarEntriesDeleted">%d deleted</string>
     <string name="snackbarEntryModified">Entry modified</string>
-    <string name="undo">Undo</string>
-    <string name="confirmDeleteAllDialog">Confirm Delete All</string>
-    <string name="confirmDeleteDialogConfirm">Delete</string>
-    <string name="cancelDialog">Cancel</string>
     <string name="createCashBoxDialog">Create</string>
     <string name="enterNameDialog">Name</string>
     <string name="cashBox_changeNameButton">Change Name</string>
@@ -35,8 +29,6 @@
     <string name="newGroupEntry">New Group Entry</string>
     <string name="modifyEntry">Modify Entry</string>
     <string name="addEntryDialog">Add Entry</string>
-    <string name="enterAmountDialog">Amount</string>
-    <string name="enterInfoDialog">Info</string>
     <string name="item_totalCash">Total Cash</string>
     <string name="outOfRange">Out of range</string>
     <string name="required">*Required</string>
@@ -46,12 +38,28 @@
     <string name="helperEnterNameDialog">Max. 15 characters</string>
     <string name="contentDescriptionLogoMain">App\'s logo</string>
 
-    <!--CashBox Fragment-->
+    <!--Menu Actions-->
+    <string name="action_help">Help</string>
+    <string name="action_versions">What\'s New?</string>
+
+    <!--Dialogs and SnackBars-->
+    <string name="confirmDeleteAllDialog">Confirm Delete All</string>
+    <string name="confirmRestoreAllDialog">Confirm Restore All</string>
+    <string name="confirmRecycleAllDialog">Confirm Move All to Recycle Bin</string>
+    <string name="cancelDialog">Cancel</string>
+    <string name="confirmDeleteDialogConfirm">Delete</string>
+    <string name="undo">Undo</string>
+    <string name="snackbarEntriesDeleted">%d deleted</string>
+    <string name="snackbarEntriesMoveToRecycle">%d moved to recycle bin</string>
+    <string name="snackbarEntriesRestored">%d restored</string>
+
+    <!--CashBox Manager Fragment-->
     <string name="no_cashbox_selected">No CashBox Selected</string>
     <string name="hintAddGroupDialog">Total Amount</string>
 
     <!--CashBox Manager Menu-->
     <string name="menuCBM_showPeriodic">Periodic Tasks</string>
+    <string name="menuCBM_recycleBin">Recycle Bin</string>
 
     <!--CashBox Manager Contextual Menu-->
     <string name="contextualMenu_CBMDuplicate">Duplicate</string>
@@ -63,6 +71,9 @@
     <string name="groupEntryIndividual">This entry</string>
     <string name="titleGroupEntryModify">Modify Group Entry</string>
     <string name="messageGroupModify">Modify all entries in group?</string>
+    <string name="enterDateDialog">%d/%d/%d</string>
+    <string name="enterInfoDialog">Info</string>
+    <string name="enterAmountDialog">Amount</string>
 
     <!--CashBox Item Menu-->
     <string name="action_reset">Delete All</string>
@@ -99,15 +110,25 @@
         \n<b>Debt Manager:</b> it will help you remember when a friend borrowed money from you, just in case he "accidentally" forgets.
     </string>
     <string name="cashBoxManager_help">List of added CashBoxes.
+        \nPress the floating button to add a new CashBox or group entries
         \nSwipe left to delete a CashBox.
         \nSwipe right to modify a CashBox.
         \nSelect a CashBox by clicking it.
         \nLong press a CashBox to enter edit mode.
+        \nIn edit mode you select a CashBox to add a periodical entry.
     </string>
     <string name="randomChooser_help">Roll The Dice: returns a randomly chosen item from the list.
         \nShuffle List: shuffles the list.
         \nTo delete an entry, slide the item to the left.
         \nTo delete all entries, click the trashcan symbol at the top of the app.
+    </string>
+    <string name="changesVersions">
+        <b>2.4.0</b>
+        \n-\tGroup entries can be modified or deleted as a whole.
+        \n-\tDeleted CashBoxes go to the CashBox Recycle Bin.
+        \n-\tChoose date of new entry.
+        \n-\tChoose start date and delay of periodic entries.
+        \n-\tBug fixes.
     </string>
 
 
@@ -128,10 +149,6 @@
     <string name="pref_notifyPeriodic">Notification Periodic</string>
     <string name="pref_summaryOn_notifyPeriodic">Notify when a periodic entry has been added</string>
     <string name="pref_summaryOff_notifyPeriodic">Do not notify when a periodic entry has been added</string>
-    <string name="pref_title_groupAddBehaviour">Group Add Behaviour</string>
-    <string name="groupAddBehaviour_value_noDiv">noDiv</string>
-    <string name="groupAddBehaviour_defaultValue_divSelected">divSelected</string>
-    <string name="groupAddBehaviour_value_divSelectedPlusOne">divSelectedPlusOne</string>
 
     <!--CashBox Manager Widget-->
     <string name="emptyCashBoxManager">No CashBoxes added</string>

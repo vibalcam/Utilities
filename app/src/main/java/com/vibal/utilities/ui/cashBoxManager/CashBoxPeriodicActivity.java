@@ -30,8 +30,9 @@ import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.android.material.textview.MaterialTextView;
 import com.vibal.utilities.R;
-import com.vibal.utilities.db.PeriodicEntryPojo;
+import com.vibal.utilities.modelsNew.PeriodicEntryPojo;
 import com.vibal.utilities.modelsNew.PeriodicEntryWorkViewModel;
 import com.vibal.utilities.ui.settings.SettingsActivity;
 import com.vibal.utilities.ui.swipeController.CashBoxAdapterSwipable;
@@ -120,24 +121,29 @@ public class CashBoxPeriodicActivity extends AppCompatActivity {
     }
 
     private void deleteAll() {
-        if (adapter.getItemCount() == 0) {
-            Toast.makeText(this, "No entries to delete", Toast.LENGTH_SHORT).show();
+        int count = adapter.getItemCount();
+        if (count == 0) {
+            Toast.makeText(this, "No entries to recycle", Toast.LENGTH_SHORT).show();
             return;
         }
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(R.string.confirmDeleteAllDialog)
-                .setMessage("Are you sure you want to delete all entries? This action CANNOT be undone")
+                .setMessage("Are you sure you want to send all entries to the recycle bin?")
                 .setNegativeButton(R.string.cancelDialog, null)
                 .setPositiveButton(R.string.confirmDeleteDialogConfirm, (DialogInterface dialog, int which) ->
                         viewModel.addDisposable(viewModel.deleteAllPeriodicEntryWorks()
                                 .subscribeOn(Schedulers.io())
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(integer -> Toast.makeText(this,
-                                        "Deleted all entries", Toast.LENGTH_SHORT).show())))
+                                        getString(R.string.snackbarEntriesDeleted, count),
+                                        Toast.LENGTH_SHORT)
+                                        .show())))
                 .show();
     }
 
-    public class CashBoxPeriodicRecyclerAdapter extends RecyclerView.Adapter<CashBoxPeriodicRecyclerAdapter.ViewHolder> implements CashBoxAdapterSwipable {
+    public class CashBoxPeriodicRecyclerAdapter
+            extends RecyclerView.Adapter<CashBoxPeriodicRecyclerAdapter.ViewHolder>
+            implements CashBoxAdapterSwipable {
         private static final boolean SWIPE_ENABLED = true;
         private static final boolean DRAG_ENABLED = false;
 
@@ -148,10 +154,10 @@ public class CashBoxPeriodicActivity extends AppCompatActivity {
 
         void submitList(@NonNull List<PeriodicEntryPojo> newList) {
             viewModel.addDisposable(Single.create((SingleOnSubscribe<List<PeriodicEntryPojo>>) emitter -> {
-                        for(PeriodicEntryPojo pojo:toDelete)
-                            newList.remove(pojo);
-                        emitter.onSuccess(newList);
-                    }).map(periodicEntryPojos -> DiffUtil.calculateDiff(
+                for (PeriodicEntryPojo pojo : toDelete)
+                    newList.remove(pojo);
+                emitter.onSuccess(newList);
+            }).map(periodicEntryPojos -> DiffUtil.calculateDiff(
                     new DiffCallback<>(currentList, periodicEntryPojos), false))
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
@@ -175,7 +181,8 @@ public class CashBoxPeriodicActivity extends AppCompatActivity {
         @NonNull
         @Override
         public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.cash_box_periodic_item, parent, false);
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.cash_box_periodic_item,
+                    parent, false);
             return new ViewHolder(view);
         }
 
@@ -239,7 +246,7 @@ public class CashBoxPeriodicActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onItemModify(int position) {
+        public void onItemSecondaryAction(int position) {
             PeriodicEntryPojo.PeriodicEntryWorkInfo workInfo = currentList.get(position).getWorkInfo();
 
             AlertDialog dialog = new AlertDialog.Builder(CashBoxPeriodicActivity.this)
@@ -257,6 +264,10 @@ public class CashBoxPeriodicActivity extends AppCompatActivity {
                 TextInputEditText inputPeriod = ((AlertDialog) dialogInterface).findViewById(R.id.reminder_inputTextPeriod);
                 TextInputEditText inputRepetitions = ((AlertDialog) dialogInterface).findViewById(R.id.reminder_inputTextRepetitions);
                 TextInputLayout layoutRepetitions = ((AlertDialog) dialogInterface).findViewById(R.id.reminder_inputLayoutRepetitions);
+
+                // Not show Date Picker
+                MaterialTextView inputDate = ((AlertDialog) dialogInterface).findViewById(R.id.inputDate);
+                inputDate.setVisibility(View.GONE);
 
                 //Set to the current values
                 inputInfo.setText(workInfo.getInfo());
@@ -301,6 +312,8 @@ public class CashBoxPeriodicActivity extends AppCompatActivity {
                 });
             });
             dialog.show();
+
+            notifyItemChanged(position);   // since the item is deleted from swipping we have to show it back again
         }
 
         public class ViewHolder extends RecyclerView.ViewHolder {

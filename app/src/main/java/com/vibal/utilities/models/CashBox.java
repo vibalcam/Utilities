@@ -228,7 +228,7 @@ public class CashBox implements Serializable, Parcelable {
                 .append("*");
         for (Entry entry : entries)
             builder.append("\n\n")
-                    .append(entry.toString(currencyFormat,dateFormat));
+                    .append(entry.toString(currencyFormat, dateFormat));
         builder.append("\n*TotalCash: ")
                 .append(currencyFormat.format(cash))
                 .append("*");
@@ -287,7 +287,7 @@ public class CashBox implements Serializable, Parcelable {
         @Override
         @NonNull
         public String toString() {
-            return toString(NumberFormat.getCurrencyInstance(),DateFormat.getDateInstance(DateFormat.SHORT));
+            return toString(NumberFormat.getCurrencyInstance(), DateFormat.getDateInstance(DateFormat.SHORT));
         }
 
         @NonNull

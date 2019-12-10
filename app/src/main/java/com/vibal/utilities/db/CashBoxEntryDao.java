@@ -9,6 +9,7 @@ import androidx.room.Update;
 
 import com.vibal.utilities.modelsNew.CashBox;
 
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
 
@@ -36,14 +37,14 @@ public interface CashBoxEntryDao {
     Completable update(CashBox.Entry entry);
 
     @Query("UPDATE entries_table " +
-            "SET amount=:amount,info=:info " +
+            "SET amount=:amount,info=:info,date=:date " +
             "WHERE id=:id")
-    Completable modify(long id, double amount, String info);
+    Completable modify(long id, double amount, String info, Calendar date);
 
     @Query("UPDATE entries_table " +
-            "SET amount=:amount,info=:info " +
+            "SET amount=:amount,info=:info,date=:date " +
             "WHERE groupId!=0 AND groupId=:groupId")
-    Completable modifyGroup(long groupId, double amount, String info);
+    Completable modifyGroup(long groupId, double amount, String info, Calendar date);
 
     @Query("DELETE FROM entries_table " +
             "WHERE groupId!=0 AND groupId=:groupId")

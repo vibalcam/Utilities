@@ -6,6 +6,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 
+import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
@@ -27,10 +28,18 @@ public class CashBoxSwipeController extends ItemTouchHelper.Callback {
     private CashBoxAdapterSwipable adapter;
     private int fromIndex = -1;
     private int toIndex = -1;
+    @DrawableRes
+    private int secondaryActionIcon;
 
-    public CashBoxSwipeController(CashBoxAdapterSwipable adapter, boolean swipeLeftDelete) {
+    public CashBoxSwipeController(CashBoxAdapterSwipable adapter, boolean swipeLeftDelete,
+                                  @DrawableRes int secondaryActionIcon) {
         this.adapter = adapter;
         this.swipeLeftDelete = swipeLeftDelete;
+        this.secondaryActionIcon = secondaryActionIcon;
+    }
+
+    public CashBoxSwipeController(CashBoxAdapterSwipable adapter, boolean swipeLeftDelete) {
+        this(adapter, swipeLeftDelete, R.drawable.ic_edit_white_24dp);
     }
 
     public void setSwipeLeftDelete(boolean swipeLeftDelete) {
@@ -71,7 +80,7 @@ public class CashBoxSwipeController extends ItemTouchHelper.Callback {
             if (direction == RIGHT ^ swipeLeftDelete)
                 adapter.onItemDelete(viewHolder.getAdapterPosition());
             else
-                adapter.onItemModify(viewHolder.getAdapterPosition());
+                adapter.onItemSecondaryAction(viewHolder.getAdapterPosition());
         }
     }
 
@@ -89,7 +98,7 @@ public class CashBoxSwipeController extends ItemTouchHelper.Callback {
                 drawable = recyclerView.getContext().getDrawable(R.drawable.delete);
                 paint.setColor(Color.RED);
             } else {    // modify swipe
-                drawable = recyclerView.getContext().getDrawable(R.drawable.ic_edit_white_24dp);
+                drawable = recyclerView.getContext().getDrawable(secondaryActionIcon);
                 paint.setColor(Color.BLUE);
             }
             if (Math.abs(dX) < rectTotal.width() * SWIPE_THRESHOLD)

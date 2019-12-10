@@ -1,4 +1,4 @@
-package com.vibal.utilities.db;
+package com.vibal.utilities.modelsNew;
 
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
@@ -11,7 +11,8 @@ import com.vibal.utilities.util.LogUtil;
 
 import static androidx.room.ColumnInfo.NOCASE;
 
-@Entity(tableName = "cashBoxesInfo_table", indices = {@Index(value = "name", unique = true)})
+@Entity(tableName = "cashBoxesInfo_table", indices = {@Index(value = "name", unique = true),
+        @Index(value = "deleted")})
 public class CashBoxInfo implements Cloneable {
     @Ignore
     public static final int NO_CASHBOX = 0;
@@ -26,17 +27,23 @@ public class CashBoxInfo implements Cloneable {
     @ColumnInfo(collate = NOCASE)
     private String name;
     private long orderId = NO_ORDER_ID;
+    @ColumnInfo(defaultValue = "0")
+    private boolean deleted = false;
 
+    public CashBoxInfo(long id, @NonNull String name, long orderId, boolean deleted) {
+        this.id = id;
+        this.name = name;
+        this.orderId = orderId;
+        this.deleted = deleted;
+    }
+
+    @Ignore
     public CashBoxInfo(@NonNull String name) throws IllegalArgumentException {
         setName(name);
     }
 
     public long getId() {
         return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
     }
 
     @NonNull
@@ -64,8 +71,12 @@ public class CashBoxInfo implements Cloneable {
         return orderId;
     }
 
-    public void setOrderId(long orderId) {
-        this.orderId = orderId;
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
     }
 
     @Override

@@ -16,6 +16,6 @@ public interface CashBoxAdapterSwipable {
     default void onItemDelete(int position) {
     }
 
-    default void onItemModify(int position) {
+    default void onItemSecondaryAction(int position) {
     }
 }

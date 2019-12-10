@@ -16,17 +16,9 @@
     </string-array>
 
     <!--CashBox Preferences-->
-    <string-array name="groupAddBehaviour_values">
-        <!--Introduced amount to selected-->
-        <item>@string/groupAddBehaviour_value_noDiv</item>
-        <!--amount / number of selected-->
-        <item>@string/groupAddBehaviour_defaultValue_divSelected</item>
-        <!--amount / (number of selected + 1)-->
-        <item>@string/groupAddBehaviour_value_divSelectedPlusOne</item>
-    </string-array>
-
+        <!--Don't change order without changing Java code-->
     <string-array name="groupAddBehaviour_entries">
-        <item>Introduced amount to selected</item>
+        <item>Introduced amount to all</item>
         <item>amount / number of selected</item>
         <item>amount / (number of selected + 1)</item>
     </string-array>

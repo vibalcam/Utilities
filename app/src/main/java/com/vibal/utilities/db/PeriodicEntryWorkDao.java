@@ -7,6 +7,8 @@ import androidx.room.Insert;
 import androidx.room.Query;
 import androidx.room.Update;
 
+import com.vibal.utilities.modelsNew.PeriodicEntryPojo;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -41,4 +43,10 @@ public interface PeriodicEntryWorkDao {
 
     @Query("DELETE FROM periodicWork_table")
     Single<Integer> deleteAll();
+
+    @Query("DELETE FROM periodicWork_table " +
+            "WHERE cashBoxId IN (SELECT id " +
+            "FROM cashBoxesInfo_table " +
+            "WHERE deleted=1)")
+    Completable deleteInactive();
 }
