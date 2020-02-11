@@ -42,7 +42,7 @@ import com.google.android.material.textview.MaterialTextView;
 import com.vibal.utilities.R;
 import com.vibal.utilities.backgroundTasks.ReminderReceiver;
 import com.vibal.utilities.modelsNew.CashBox;
-import com.vibal.utilities.modelsNew.CashBoxViewModel;
+import com.vibal.utilities.viewModels.CashBoxViewModel;
 import com.vibal.utilities.ui.settings.SettingsActivity;
 import com.vibal.utilities.ui.swipeController.CashBoxAdapterSwipable;
 import com.vibal.utilities.ui.swipeController.CashBoxSwipeController;
@@ -171,17 +171,18 @@ public class CashBoxItemFragment extends Fragment {
         adapter = new CashBoxItemRecyclerAdapter();
         rvCashBoxItem.setAdapter(adapter);
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(Objects.requireNonNull(getContext()));
-        CashBoxSwipeController swipeController = new CashBoxSwipeController(adapter,
-                preferences.getBoolean("swipeLeftDelete", true));
+//        CashBoxSwipeController swipeController = new CashBoxSwipeController(adapter,
+//                preferences.getBoolean("swipeLeftDelete", true));
+        CashBoxSwipeController swipeController = new CashBoxSwipeController(adapter, preferences);
         (new ItemTouchHelper(swipeController)).attachToRecyclerView(rvCashBoxItem);
         rvCashBoxItem.addItemDecoration(new DividerItemDecoration(getContext(), layoutManager.getOrientation()));
 
         //Register listener for settings change
-        preferenceChangeListener = (sharedPreferences, s) -> {
-            if (s.equals("swipeLeftDelete"))
-                swipeController.setSwipeLeftDelete(sharedPreferences.getBoolean("swipeLeftDelete", true));
-        };
-        preferences.registerOnSharedPreferenceChangeListener(preferenceChangeListener);
+//        preferenceChangeListener = (sharedPreferences, s) -> {
+//            if (s.equals("swipeLeftDelete"))
+//                swipeController.setSwipeLeftDelete(sharedPreferences.getBoolean("swipeLeftDelete", true));
+//        };
+//        preferences.registerOnSharedPreferenceChangeListener(preferenceChangeListener);
 
         LogUtil.debug(TAG, "on create:");
         return view;
@@ -328,15 +329,6 @@ public class CashBoxItemFragment extends Fragment {
     }
 
     private void scheduleReminder(@NonNull Calendar c) {
-        //Enable boot receiver
-        if (sharedPrefNot.getAll().isEmpty()) {
-//            ComponentName receiver = new ComponentName(getContext(), ReminderReceiver.class);
-//            PackageManager pm = getContext().getPackageManager();
-//            pm.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-//                    PackageManager.DONT_KILL_APP);
-            ReminderReceiver.setBootReceiverEnabled(getContext(), true);
-        }
-
         //Set up the alarm manager for the notification
         long cashBoxId = viewModel.getCurrentCashBoxId();
         long timeInMillis = c.getTimeInMillis();
@@ -352,6 +344,16 @@ public class CashBoxItemFragment extends Fragment {
         //Add reminder to Notification SharedPreferences
         sharedPrefNot.edit().putLong(Long.toString(cashBoxId), timeInMillis).apply();
         setIconNotification(true);
+
+        //Enable boot receiver
+//        if (!sharedPrefNot.getAll().isEmpty()) {
+//            ComponentName receiver = new ComponentName(getContext(), ReminderReceiver.class);
+//            PackageManager pm = getContext().getPackageManager();
+//            pm.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+//                    PackageManager.DONT_KILL_APP);
+            ReminderReceiver.setBootReceiverEnabled(getContext(), true);
+            LogUtil.debug(TAG,"New reminders");
+//        }
     }
 
     private void cancelReminder() {
@@ -372,6 +374,7 @@ public class CashBoxItemFragment extends Fragment {
 //            pm.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
 //                    PackageManager.DONT_KILL_APP);
             ReminderReceiver.setBootReceiverEnabled(getContext(), false);
+            LogUtil.debug(TAG,"No more reminders");
         }
     }
 
@@ -541,7 +544,8 @@ public class CashBoxItemFragment extends Fragment {
 
                 // Set up Date Picker
                 Util.TextViewDatePickerClickListener calendarListener =
-                        new Util.TextViewDatePickerClickListener(getContext(), inputDate, true);
+                        new Util.TextViewDatePickerClickListener(getContext(), inputDate,
+                                modifiedEntry.getDate(),true);
                 inputDate.setOnClickListener(calendarListener);
 
                 inputInfo.setText(modifiedEntry.getInfo());

@@ -1,4 +1,4 @@
-package com.vibal.utilities.modelsNew;
+package com.vibal.utilities.viewModels;
 
 import android.app.Application;
 
@@ -9,6 +9,9 @@ import androidx.work.WorkManager;
 
 import com.vibal.utilities.backgroundTasks.RxPeriodicEntryWorker;
 import com.vibal.utilities.db.CashBoxRepository;
+import com.vibal.utilities.modelsNew.CashBox;
+import com.vibal.utilities.modelsNew.CashBoxInfo;
+import com.vibal.utilities.modelsNew.PeriodicEntryPojo;
 import com.vibal.utilities.util.LogUtil;
 
 import java.util.ArrayList;

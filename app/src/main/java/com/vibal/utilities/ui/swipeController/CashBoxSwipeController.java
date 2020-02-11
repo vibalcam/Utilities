@@ -1,5 +1,6 @@
 package com.vibal.utilities.ui.swipeController;
 
+import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -19,6 +20,7 @@ import static androidx.recyclerview.widget.ItemTouchHelper.DOWN;
 import static androidx.recyclerview.widget.ItemTouchHelper.LEFT;
 import static androidx.recyclerview.widget.ItemTouchHelper.RIGHT;
 import static androidx.recyclerview.widget.ItemTouchHelper.UP;
+import static com.vibal.utilities.ui.settings.SettingsActivity.KEY_SWIPE_LEFT_DELETE;
 
 public class CashBoxSwipeController extends ItemTouchHelper.Callback {
     private static final String TAG = "PruebaSwipeController";
@@ -26,6 +28,7 @@ public class CashBoxSwipeController extends ItemTouchHelper.Callback {
 
     private boolean swipeLeftDelete;
     private CashBoxAdapterSwipable adapter;
+    private SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener;
     private int fromIndex = -1;
     private int toIndex = -1;
     @DrawableRes
@@ -38,8 +41,28 @@ public class CashBoxSwipeController extends ItemTouchHelper.Callback {
         this.secondaryActionIcon = secondaryActionIcon;
     }
 
+    public CashBoxSwipeController(CashBoxAdapterSwipable adapter, SharedPreferences preferences,
+                                  @DrawableRes int secondaryActionIcon) {
+        this(adapter,preferences.getBoolean(KEY_SWIPE_LEFT_DELETE, true),secondaryActionIcon);
+        setPreferenceChangeListener(preferences);
+    }
+
     public CashBoxSwipeController(CashBoxAdapterSwipable adapter, boolean swipeLeftDelete) {
         this(adapter, swipeLeftDelete, R.drawable.ic_edit_white_24dp);
+    }
+
+    public CashBoxSwipeController(CashBoxAdapterSwipable adapter, SharedPreferences preferences) {
+        this(adapter,preferences.getBoolean(KEY_SWIPE_LEFT_DELETE, true));
+        setPreferenceChangeListener(preferences);
+    }
+
+    private void setPreferenceChangeListener(SharedPreferences preferences) {
+        // Set up preference listener for swipe direction
+        preferenceChangeListener = (sharedPreferences, s) -> {
+            if (s.equals(KEY_SWIPE_LEFT_DELETE))
+                setSwipeLeftDelete(sharedPreferences.getBoolean(KEY_SWIPE_LEFT_DELETE, true));
+        };
+        preferences.registerOnSharedPreferenceChangeListener(preferenceChangeListener);
     }
 
     public void setSwipeLeftDelete(boolean swipeLeftDelete) {

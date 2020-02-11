@@ -11,6 +11,10 @@ import androidx.preference.PreferenceFragmentCompat;
 import com.vibal.utilities.R;
 
 public class SettingsActivity extends AppCompatActivity {
+    public static String KEY_DEFAULT_START = "defaultStart";
+    public static String KEY_PLAY_ABOUT_SONG = "playAboutSong";
+    public static String KEY_SWIPE_LEFT_DELETE = "swipeLeftDelete";
+    public static String KEY_NOTIFY_PERIODIC = "notifyPeriodic";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

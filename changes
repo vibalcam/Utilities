@@ -1,0 +1,7 @@
+- PreferencesListener for SwipeController in SwipeController. Activities give preference.
+- Settings: added preference keys as static
+- Moved to ViewModels to package viewModels
+- CashBoxManagerFragment: hide and show fab animation in edit mode
+- CashBoxManagerFragment: moved edit mode's ActionMode to the top with the rest of ActionModes
+- Created OnlineCashBoxInfo for holding the online CashBoxes
+- CashBoxItemFragment: changed default date when modifying to the existing date

@@ -33,6 +33,7 @@ import static com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity.EXTRA
 public class ReminderReceiver extends BroadcastReceiver {
     public static final String REMINDER_PREFERENCE = "com.vibal.utilities.NOTIFICATION_PREFERENCE";
     private static final String TAG = "PruebaReminderReceiver";
+    private static boolean enabled = false;
 
     public static void setAlarm(@NonNull AlarmManager alarmManager, Context context, long cashBoxId, long timeInMillis) {
         Intent intentAlarm = new Intent(context, ReminderReceiver.class);
@@ -43,24 +44,31 @@ public class ReminderReceiver extends BroadcastReceiver {
     }
 
     public static void setBootReceiverEnabled(@NonNull Context context, boolean enable) {
-        ComponentName receiver = new ComponentName(context, ReminderReceiver.class);
-        PackageManager pm = context.getPackageManager();
-        if (enable)
-            pm.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-                    PackageManager.DONT_KILL_APP);
-        else
-            pm.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-                    PackageManager.DONT_KILL_APP);
+        //todo safe enabled in preference
+        if(enable!=enabled) { //only if not already in that state
+            LogUtil.debug(TAG, "Enable receiver " + enabled + " to "  + enable);
+            ComponentName receiver = new ComponentName(context, ReminderReceiver.class);
+            PackageManager pm = context.getPackageManager();
+            if (enable)
+                pm.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                        PackageManager.DONT_KILL_APP);
+            else
+                pm.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                        PackageManager.DONT_KILL_APP);
+            enabled = enable;
+        }
     }
 
     @Override
     public void onReceive(@NonNull Context context, @NonNull Intent intent) {
+        LogUtil.debug(TAG, "On Receive: " + intent.getAction());
         String action = intent.getAction();
         SharedPreferences sharedPref = context.getSharedPreferences(REMINDER_PREFERENCE,
                 Context.MODE_PRIVATE);
         //If reboot completed, reset the alarms
         if (action != null && action.equals(Intent.ACTION_BOOT_COMPLETED)) {
             LogUtil.debug(TAG, "Rescheduling alarms");
+            enabled = true; //boot receiver is enabled if it got into here
             AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
             //Intent intentAlarm;
             for (Map.Entry<String, ?> entry : sharedPref.getAll().entrySet()) {
@@ -78,6 +86,8 @@ public class ReminderReceiver extends BroadcastReceiver {
             }
         } else { //Show notification reminder
             long cashBoxId = intent.getLongExtra(EXTRA_CASHBOX_ID, CashBoxInfo.NO_CASHBOX);
+
+            //todo remove reminder once it has ringed
 
             //Get info of the CashBox
             Disposable disposable = UtilitiesDatabase.getInstance(context).cashBoxDao()

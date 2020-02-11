@@ -33,7 +33,7 @@ import com.google.android.material.textfield.TextInputLayout;
 import com.google.android.material.textview.MaterialTextView;
 import com.vibal.utilities.R;
 import com.vibal.utilities.modelsNew.PeriodicEntryPojo;
-import com.vibal.utilities.modelsNew.PeriodicEntryWorkViewModel;
+import com.vibal.utilities.viewModels.PeriodicEntryWorkViewModel;
 import com.vibal.utilities.ui.settings.SettingsActivity;
 import com.vibal.utilities.ui.swipeController.CashBoxAdapterSwipable;
 import com.vibal.utilities.ui.swipeController.CashBoxSwipeController;
@@ -91,9 +91,12 @@ public class CashBoxPeriodicActivity extends AppCompatActivity {
         adapter = new CashBoxPeriodicRecyclerAdapter();
         rvPeriodicEntry.setAdapter(adapter);
         new ItemTouchHelper(new CashBoxSwipeController(adapter,
-                PreferenceManager.getDefaultSharedPreferences(this)
-                        .getBoolean("swipeLeftDelete", true)))
+                PreferenceManager.getDefaultSharedPreferences(this)))
                 .attachToRecyclerView(rvPeriodicEntry);
+//        new ItemTouchHelper(new CashBoxSwipeController(adapter,
+//                PreferenceManager.getDefaultSharedPreferences(this)
+//                        .getBoolean("swipeLeftDelete", true)))
+//                .attachToRecyclerView(rvPeriodicEntry);
     }
 
     @Override
