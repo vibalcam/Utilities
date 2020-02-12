@@ -328,54 +328,35 @@ public class CashBoxItemFragment extends Fragment {
                     .show();
     }
 
-    private void scheduleReminder(@NonNull Calendar c) {
-        //Set up the alarm manager for the notification
+    private void scheduleReminder(@NonNull Calendar calendar) {
         long cashBoxId = viewModel.getCurrentCashBoxId();
-        long timeInMillis = c.getTimeInMillis();
-//        AlarmManager alarmManager = (AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE);
-//        Intent intentAlarm = new Intent(getContext(), ReminderReceiver.class);
-//        intentAlarm.putExtra(CashBoxManagerActivity.EXTRA_CASHBOX_ID, cashBoxId);
-//        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, c.getTimeInMillis(),
-//                PendingIntent.getBroadcast(getContext(), REMINDER_ID, intentAlarm,0));
-        ReminderReceiver.setAlarm((AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE),
-                getContext(), cashBoxId, timeInMillis);
-        Toast.makeText(getContext(), "New Reminder Set", Toast.LENGTH_SHORT).show();
-
+        long timeInMillis = calendar.getTimeInMillis();
+        //Enable boot receiver
+        ReminderReceiver.setBootReceiverEnabled(getContext(), true);
         //Add reminder to Notification SharedPreferences
         sharedPrefNot.edit().putLong(Long.toString(cashBoxId), timeInMillis).apply();
         setIconNotification(true);
 
-        //Enable boot receiver
-//        if (!sharedPrefNot.getAll().isEmpty()) {
-//            ComponentName receiver = new ComponentName(getContext(), ReminderReceiver.class);
-//            PackageManager pm = getContext().getPackageManager();
-//            pm.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-//                    PackageManager.DONT_KILL_APP);
-            ReminderReceiver.setBootReceiverEnabled(getContext(), true);
-            LogUtil.debug(TAG,"New reminders");
-//        }
+        //Set up the alarm manager for the notification
+        ReminderReceiver.setAlarm((AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE),
+                getContext(), cashBoxId, timeInMillis);
+        Toast.makeText(getContext(), "New Reminder Set", Toast.LENGTH_SHORT).show();
     }
 
     private void cancelReminder() {
         //Delete reminder from Notifications SharedPreference
-        sharedPrefNot.edit().remove(Long.toString(viewModel.getCurrentCashBoxId())).apply();
+        long cashBoxId = viewModel.getCurrentCashBoxId();
+        sharedPrefNot.edit().remove(Long.toString(cashBoxId)).apply();
         setIconNotification(false);
 
         //Cancel alarm
-        AlarmManager alarmManager = (AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE);
-        Intent intentAlarm = new Intent(getContext(), ReminderReceiver.class);
-        alarmManager.cancel(PendingIntent.getBroadcast(getContext(), REMINDER_ID, intentAlarm, 0));
+        ReminderReceiver.cancelAlarm((AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE),
+                getContext(),cashBoxId);
         Toast.makeText(getContext(), "Reminder Cancelled", Toast.LENGTH_SHORT).show();
 
-        //Disable boot receiver
-        if (sharedPrefNot.getAll().isEmpty()) {
-//            ComponentName receiver = new ComponentName(getContext(), ReminderReceiver.class);
-//            PackageManager pm = getContext().getPackageManager();
-//            pm.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-//                    PackageManager.DONT_KILL_APP);
+        //Disable boot receiver if there are no other alarms
+        if (sharedPrefNot.getAll().isEmpty())
             ReminderReceiver.setBootReceiverEnabled(getContext(), false);
-            LogUtil.debug(TAG,"No more reminders");
-        }
     }
 
     @OnClick(R.id.fabCBItem)

@@ -124,6 +124,9 @@
         \nTo delete all entries, click the trashcan symbol at the top of the app.
     </string>
     <string name="changesVersions">
+        <b>2.4.1</b>
+        \n-\tFixed reminders so they remain even after boot.
+        \n-\tMinor bug fixes.
         <b>2.4.0</b>
         \n-\tChoose date of new entry.
         \n-\tChoose start date and delay of periodic entries.
