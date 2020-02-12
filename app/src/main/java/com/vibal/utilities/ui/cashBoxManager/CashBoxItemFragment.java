@@ -2,7 +2,6 @@ package com.vibal.utilities.ui.cashBoxManager;
 
 import android.app.AlarmManager;
 import android.app.DatePickerDialog;
-import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -42,13 +41,14 @@ import com.google.android.material.textview.MaterialTextView;
 import com.vibal.utilities.R;
 import com.vibal.utilities.backgroundTasks.ReminderReceiver;
 import com.vibal.utilities.modelsNew.CashBox;
-import com.vibal.utilities.viewModels.CashBoxViewModel;
 import com.vibal.utilities.ui.settings.SettingsActivity;
 import com.vibal.utilities.ui.swipeController.CashBoxAdapterSwipable;
 import com.vibal.utilities.ui.swipeController.CashBoxSwipeController;
 import com.vibal.utilities.util.DiffCallback;
 import com.vibal.utilities.util.LogUtil;
 import com.vibal.utilities.util.Util;
+import com.vibal.utilities.viewModels.CashBoxViewModel;
+import com.vibal.utilities.workaround.LinearLayoutManagerWrapper;
 
 import java.text.DateFormat;
 import java.text.NumberFormat;
@@ -166,7 +166,8 @@ public class CashBoxItemFragment extends Fragment {
         //Set up RecyclerView
 //        rvCashBoxItem.setNestedScrollingEnabled(true);
         rvCashBoxItem.setHasFixedSize(true);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
+//        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
+        LinearLayoutManager layoutManager = new LinearLayoutManagerWrapper(getContext()); // Workaround for recycler error
         rvCashBoxItem.setLayoutManager(layoutManager);
         adapter = new CashBoxItemRecyclerAdapter();
         rvCashBoxItem.setAdapter(adapter);
@@ -176,13 +177,6 @@ public class CashBoxItemFragment extends Fragment {
         CashBoxSwipeController swipeController = new CashBoxSwipeController(adapter, preferences);
         (new ItemTouchHelper(swipeController)).attachToRecyclerView(rvCashBoxItem);
         rvCashBoxItem.addItemDecoration(new DividerItemDecoration(getContext(), layoutManager.getOrientation()));
-
-        //Register listener for settings change
-//        preferenceChangeListener = (sharedPreferences, s) -> {
-//            if (s.equals("swipeLeftDelete"))
-//                swipeController.setSwipeLeftDelete(sharedPreferences.getBoolean("swipeLeftDelete", true));
-//        };
-//        preferences.registerOnSharedPreferenceChangeListener(preferenceChangeListener);
 
         LogUtil.debug(TAG, "on create:");
         return view;
@@ -351,7 +345,7 @@ public class CashBoxItemFragment extends Fragment {
 
         //Cancel alarm
         ReminderReceiver.cancelAlarm((AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE),
-                getContext(),cashBoxId);
+                getContext(), cashBoxId);
         Toast.makeText(getContext(), "Reminder Cancelled", Toast.LENGTH_SHORT).show();
 
         //Disable boot receiver if there are no other alarms
@@ -428,10 +422,6 @@ public class CashBoxItemFragment extends Fragment {
                 viewHolder.rvItemAmount.setTextColor(getActivity().getColor(R.color.colorPositiveNumber));
             // CashBoxInfo
             viewHolder.rvItemInfo.setText(entry.printInfo());
-//            if (entry.getInfo().isEmpty())
-//                viewHolder.rvItemInfo.setText(R.string.noInfoEntered);
-//            else
-//                viewHolder.rvItemInfo.setText(entry.getInfo());
             // Date
             viewHolder.rvItemDate.setText(dateFormat.format(entry.getDate().getTime()));
         }
@@ -526,7 +516,7 @@ public class CashBoxItemFragment extends Fragment {
                 // Set up Date Picker
                 Util.TextViewDatePickerClickListener calendarListener =
                         new Util.TextViewDatePickerClickListener(getContext(), inputDate,
-                                modifiedEntry.getDate(),true);
+                                modifiedEntry.getDate(), true);
                 inputDate.setOnClickListener(calendarListener);
 
                 inputInfo.setText(modifiedEntry.getInfo());

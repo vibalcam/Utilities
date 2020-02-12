@@ -26,10 +26,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.vibal.utilities.R;
 import com.vibal.utilities.modelsNew.CashBox;
-import com.vibal.utilities.viewModels.CashBoxDeletedViewModel;
 import com.vibal.utilities.ui.settings.SettingsActivity;
 import com.vibal.utilities.ui.swipeController.CashBoxAdapterSwipable;
 import com.vibal.utilities.ui.swipeController.CashBoxSwipeController;
+import com.vibal.utilities.viewModels.CashBoxDeletedViewModel;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;

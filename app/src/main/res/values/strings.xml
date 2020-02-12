@@ -126,6 +126,7 @@
     <string name="changesVersions">
         <b>2.4.1</b>
         \n-\tFixed reminders so they remain even after boot.
+        \n-\tFixed bug that made the app consistently crash.
         \n-\tMinor bug fixes.
         <b>2.4.0</b>
         \n-\tChoose date of new entry.

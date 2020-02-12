@@ -45,7 +45,6 @@ import com.vibal.utilities.R;
 import com.vibal.utilities.models.CashBoxManager;
 import com.vibal.utilities.modelsNew.CashBox;
 import com.vibal.utilities.modelsNew.CashBoxInfo;
-import com.vibal.utilities.viewModels.CashBoxViewModel;
 import com.vibal.utilities.modelsNew.PeriodicEntryPojo;
 import com.vibal.utilities.ui.settings.SettingsActivity;
 import com.vibal.utilities.ui.swipeController.CashBoxAdapterSwipable;
@@ -54,6 +53,7 @@ import com.vibal.utilities.ui.swipeController.OnStartDragListener;
 import com.vibal.utilities.util.DiffCallback;
 import com.vibal.utilities.util.LogUtil;
 import com.vibal.utilities.util.Util;
+import com.vibal.utilities.viewModels.CashBoxViewModel;
 
 import java.io.File;
 import java.io.IOException;

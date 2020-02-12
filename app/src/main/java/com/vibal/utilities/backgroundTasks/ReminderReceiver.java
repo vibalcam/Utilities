@@ -39,14 +39,14 @@ public class ReminderReceiver extends BroadcastReceiver {
 
     public static void setAlarm(@NonNull AlarmManager alarmManager, Context context, long cashBoxId, long timeInMillis) {
         // Do not set alarm if time is after current, instead call notification
-        if(Calendar.getInstance().getTimeInMillis()>=timeInMillis) {
+        if (Calendar.getInstance().getTimeInMillis() >= timeInMillis) {
             showReminderNotification(context, cashBoxId);
             return;
         }
 
         Intent intentAlarm = new Intent(context, ReminderReceiver.class);
         intentAlarm.putExtra(EXTRA_CASHBOX_ID, cashBoxId);
-        intentAlarm.setAction(String.format(Locale.US,ACTION_REMINDER,cashBoxId));
+        intentAlarm.setAction(String.format(Locale.US, ACTION_REMINDER, cashBoxId));
         alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC, timeInMillis,
                 PendingIntent.getBroadcast(context, CashBoxItemFragment.REMINDER_ID,
                         intentAlarm, 0));
@@ -54,7 +54,7 @@ public class ReminderReceiver extends BroadcastReceiver {
 
     public static void cancelAlarm(@NonNull AlarmManager alarmManager, Context context, long cashBoxId) {
         Intent intentAlarm = new Intent(context, ReminderReceiver.class);
-        intentAlarm.setAction(String.format(Locale.US,ACTION_REMINDER,cashBoxId));
+        intentAlarm.setAction(String.format(Locale.US, ACTION_REMINDER, cashBoxId));
         alarmManager.cancel(PendingIntent.getBroadcast(context, CashBoxItemFragment.REMINDER_ID,
                 intentAlarm, 0));
     }
@@ -64,10 +64,10 @@ public class ReminderReceiver extends BroadcastReceiver {
         ComponentName receiver = new ComponentName(context, ReminderReceiver.class);
         PackageManager pm = context.getPackageManager();
         int enabled = pm.getComponentEnabledSetting(receiver);
-        if (enable && enabled!=PackageManager.COMPONENT_ENABLED_STATE_ENABLED)
+        if (enable && enabled != PackageManager.COMPONENT_ENABLED_STATE_ENABLED)
             pm.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
                     PackageManager.DONT_KILL_APP);
-        else if(!enable && enabled!=PackageManager.COMPONENT_ENABLED_STATE_DISABLED)
+        else if (!enable && enabled != PackageManager.COMPONENT_ENABLED_STATE_DISABLED)
             pm.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
                     PackageManager.DONT_KILL_APP);
     }
@@ -78,7 +78,7 @@ public class ReminderReceiver extends BroadcastReceiver {
                 Context.MODE_PRIVATE);
         sharedPref.edit().remove(Long.toString(cashBoxId)).apply();
 
-        if(sharedPref.getAll().isEmpty())
+        if (sharedPref.getAll().isEmpty())
             setBootReceiverEnabled(context, false);
 
         //Get info of the CashBox
@@ -129,7 +129,7 @@ public class ReminderReceiver extends BroadcastReceiver {
                     editor.remove(entry.getKey());
                     continue;
                 }
-                LogUtil.debug(TAG,"alarm set");
+                LogUtil.debug(TAG, "alarm set");
                 setAlarm(alarmManager, context, Long.parseLong(entry.getKey()), (Long) entry.getValue());
             }
             editor.apply();

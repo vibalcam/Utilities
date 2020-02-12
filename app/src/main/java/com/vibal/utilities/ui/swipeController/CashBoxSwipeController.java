@@ -43,7 +43,7 @@ public class CashBoxSwipeController extends ItemTouchHelper.Callback {
 
     public CashBoxSwipeController(CashBoxAdapterSwipable adapter, SharedPreferences preferences,
                                   @DrawableRes int secondaryActionIcon) {
-        this(adapter,preferences.getBoolean(KEY_SWIPE_LEFT_DELETE, true),secondaryActionIcon);
+        this(adapter, preferences.getBoolean(KEY_SWIPE_LEFT_DELETE, true), secondaryActionIcon);
         setPreferenceChangeListener(preferences);
     }
 
@@ -52,7 +52,7 @@ public class CashBoxSwipeController extends ItemTouchHelper.Callback {
     }
 
     public CashBoxSwipeController(CashBoxAdapterSwipable adapter, SharedPreferences preferences) {
-        this(adapter,preferences.getBoolean(KEY_SWIPE_LEFT_DELETE, true));
+        this(adapter, preferences.getBoolean(KEY_SWIPE_LEFT_DELETE, true));
         setPreferenceChangeListener(preferences);
     }
 
