@@ -26,10 +26,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.vibal.utilities.R;
 import com.vibal.utilities.modelsNew.CashBox;
-import com.vibal.utilities.modelsNew.CashBoxDeletedViewModel;
 import com.vibal.utilities.ui.settings.SettingsActivity;
 import com.vibal.utilities.ui.swipeController.CashBoxAdapterSwipable;
 import com.vibal.utilities.ui.swipeController.CashBoxSwipeController;
+import com.vibal.utilities.viewModels.CashBoxDeletedViewModel;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -82,10 +82,14 @@ public class CashBoxDeletedActivity extends AppCompatActivity {
         adapter = new CashBoxDeletedRecyclerAdapter();
         rvDeleted.setAdapter(adapter);
         new ItemTouchHelper(new CashBoxSwipeController(adapter,
-                PreferenceManager.getDefaultSharedPreferences(this)
-                        .getBoolean("swipeLeftDelete", true),
+                PreferenceManager.getDefaultSharedPreferences(this),
                 R.drawable.ic_restore_white_24dp))
                 .attachToRecyclerView(rvDeleted);
+//        new ItemTouchHelper(new CashBoxSwipeController(adapter,
+//                PreferenceManager.getDefaultSharedPreferences(this)
+//                        .getBoolean("swipeLeftDelete", true),
+//                R.drawable.ic_restore_white_24dp))
+//                .attachToRecyclerView(rvDeleted);
     }
 
     @Override

@@ -26,6 +26,8 @@ import java.util.Calendar;
 
 import io.reactivex.Single;
 
+import static com.vibal.utilities.ui.settings.SettingsActivity.KEY_NOTIFY_PERIODIC;
+
 public class RxPeriodicEntryWorker extends RxWorker {
     public static final String TAG_PERIODIC = "com.vibal.utilities.RxPeriodicEntryWorker.TAG_PERIODIC";
     public static final String TAG_CASHBOX_ID = "com.vibal.utilities.RxPeriodicEntryWorker.TAG_CASHBOX%d";
@@ -101,7 +103,7 @@ public class RxPeriodicEntryWorker extends RxWorker {
     private void showNotification(@NonNull PeriodicEntryPojo periodicEntryPojo) {
         //Check if the notifications are enabled
         if (!PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
-                .getBoolean("notifyPeriodic", false))
+                .getBoolean(KEY_NOTIFY_PERIODIC, false))
             return;
 
         //Set up notification

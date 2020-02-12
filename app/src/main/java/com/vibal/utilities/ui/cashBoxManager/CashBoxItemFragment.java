@@ -2,7 +2,6 @@ package com.vibal.utilities.ui.cashBoxManager;
 
 import android.app.AlarmManager;
 import android.app.DatePickerDialog;
-import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -42,13 +41,14 @@ import com.google.android.material.textview.MaterialTextView;
 import com.vibal.utilities.R;
 import com.vibal.utilities.backgroundTasks.ReminderReceiver;
 import com.vibal.utilities.modelsNew.CashBox;
-import com.vibal.utilities.modelsNew.CashBoxViewModel;
 import com.vibal.utilities.ui.settings.SettingsActivity;
 import com.vibal.utilities.ui.swipeController.CashBoxAdapterSwipable;
 import com.vibal.utilities.ui.swipeController.CashBoxSwipeController;
 import com.vibal.utilities.util.DiffCallback;
 import com.vibal.utilities.util.LogUtil;
 import com.vibal.utilities.util.Util;
+import com.vibal.utilities.viewModels.CashBoxViewModel;
+import com.vibal.utilities.workaround.LinearLayoutManagerWrapper;
 
 import java.text.DateFormat;
 import java.text.NumberFormat;
@@ -166,22 +166,17 @@ public class CashBoxItemFragment extends Fragment {
         //Set up RecyclerView
 //        rvCashBoxItem.setNestedScrollingEnabled(true);
         rvCashBoxItem.setHasFixedSize(true);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
+//        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
+        LinearLayoutManager layoutManager = new LinearLayoutManagerWrapper(getContext()); // Workaround for recycler error
         rvCashBoxItem.setLayoutManager(layoutManager);
         adapter = new CashBoxItemRecyclerAdapter();
         rvCashBoxItem.setAdapter(adapter);
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(Objects.requireNonNull(getContext()));
-        CashBoxSwipeController swipeController = new CashBoxSwipeController(adapter,
-                preferences.getBoolean("swipeLeftDelete", true));
+//        CashBoxSwipeController swipeController = new CashBoxSwipeController(adapter,
+//                preferences.getBoolean("swipeLeftDelete", true));
+        CashBoxSwipeController swipeController = new CashBoxSwipeController(adapter, preferences);
         (new ItemTouchHelper(swipeController)).attachToRecyclerView(rvCashBoxItem);
         rvCashBoxItem.addItemDecoration(new DividerItemDecoration(getContext(), layoutManager.getOrientation()));
-
-        //Register listener for settings change
-        preferenceChangeListener = (sharedPreferences, s) -> {
-            if (s.equals("swipeLeftDelete"))
-                swipeController.setSwipeLeftDelete(sharedPreferences.getBoolean("swipeLeftDelete", true));
-        };
-        preferences.registerOnSharedPreferenceChangeListener(preferenceChangeListener);
 
         LogUtil.debug(TAG, "on create:");
         return view;
@@ -327,52 +322,35 @@ public class CashBoxItemFragment extends Fragment {
                     .show();
     }
 
-    private void scheduleReminder(@NonNull Calendar c) {
-        //Enable boot receiver
-        if (sharedPrefNot.getAll().isEmpty()) {
-//            ComponentName receiver = new ComponentName(getContext(), ReminderReceiver.class);
-//            PackageManager pm = getContext().getPackageManager();
-//            pm.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-//                    PackageManager.DONT_KILL_APP);
-            ReminderReceiver.setBootReceiverEnabled(getContext(), true);
-        }
-
-        //Set up the alarm manager for the notification
+    private void scheduleReminder(@NonNull Calendar calendar) {
         long cashBoxId = viewModel.getCurrentCashBoxId();
-        long timeInMillis = c.getTimeInMillis();
-//        AlarmManager alarmManager = (AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE);
-//        Intent intentAlarm = new Intent(getContext(), ReminderReceiver.class);
-//        intentAlarm.putExtra(CashBoxManagerActivity.EXTRA_CASHBOX_ID, cashBoxId);
-//        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, c.getTimeInMillis(),
-//                PendingIntent.getBroadcast(getContext(), REMINDER_ID, intentAlarm,0));
-        ReminderReceiver.setAlarm((AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE),
-                getContext(), cashBoxId, timeInMillis);
-        Toast.makeText(getContext(), "New Reminder Set", Toast.LENGTH_SHORT).show();
-
+        long timeInMillis = calendar.getTimeInMillis();
+        //Enable boot receiver
+        ReminderReceiver.setBootReceiverEnabled(getContext(), true);
         //Add reminder to Notification SharedPreferences
         sharedPrefNot.edit().putLong(Long.toString(cashBoxId), timeInMillis).apply();
         setIconNotification(true);
+
+        //Set up the alarm manager for the notification
+        ReminderReceiver.setAlarm((AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE),
+                getContext(), cashBoxId, timeInMillis);
+        Toast.makeText(getContext(), "New Reminder Set", Toast.LENGTH_SHORT).show();
     }
 
     private void cancelReminder() {
         //Delete reminder from Notifications SharedPreference
-        sharedPrefNot.edit().remove(Long.toString(viewModel.getCurrentCashBoxId())).apply();
+        long cashBoxId = viewModel.getCurrentCashBoxId();
+        sharedPrefNot.edit().remove(Long.toString(cashBoxId)).apply();
         setIconNotification(false);
 
         //Cancel alarm
-        AlarmManager alarmManager = (AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE);
-        Intent intentAlarm = new Intent(getContext(), ReminderReceiver.class);
-        alarmManager.cancel(PendingIntent.getBroadcast(getContext(), REMINDER_ID, intentAlarm, 0));
+        ReminderReceiver.cancelAlarm((AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE),
+                getContext(), cashBoxId);
         Toast.makeText(getContext(), "Reminder Cancelled", Toast.LENGTH_SHORT).show();
 
-        //Disable boot receiver
-        if (sharedPrefNot.getAll().isEmpty()) {
-//            ComponentName receiver = new ComponentName(getContext(), ReminderReceiver.class);
-//            PackageManager pm = getContext().getPackageManager();
-//            pm.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-//                    PackageManager.DONT_KILL_APP);
+        //Disable boot receiver if there are no other alarms
+        if (sharedPrefNot.getAll().isEmpty())
             ReminderReceiver.setBootReceiverEnabled(getContext(), false);
-        }
     }
 
     @OnClick(R.id.fabCBItem)
@@ -444,10 +422,6 @@ public class CashBoxItemFragment extends Fragment {
                 viewHolder.rvItemAmount.setTextColor(getActivity().getColor(R.color.colorPositiveNumber));
             // CashBoxInfo
             viewHolder.rvItemInfo.setText(entry.printInfo());
-//            if (entry.getInfo().isEmpty())
-//                viewHolder.rvItemInfo.setText(R.string.noInfoEntered);
-//            else
-//                viewHolder.rvItemInfo.setText(entry.getInfo());
             // Date
             viewHolder.rvItemDate.setText(dateFormat.format(entry.getDate().getTime()));
         }
@@ -541,7 +515,8 @@ public class CashBoxItemFragment extends Fragment {
 
                 // Set up Date Picker
                 Util.TextViewDatePickerClickListener calendarListener =
-                        new Util.TextViewDatePickerClickListener(getContext(), inputDate, true);
+                        new Util.TextViewDatePickerClickListener(getContext(), inputDate,
+                                modifiedEntry.getDate(), true);
                 inputDate.setOnClickListener(calendarListener);
 
                 inputInfo.setText(modifiedEntry.getInfo());

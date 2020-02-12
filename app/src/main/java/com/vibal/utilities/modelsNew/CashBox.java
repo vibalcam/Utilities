@@ -136,7 +136,6 @@ public class CashBox {
      * Deep cloneContents of CashBox
      */
     @NonNull
-    @SuppressWarnings("CloneDoesntCallSuperClone")
     public CashBox cloneContents() {
         List<Entry> entryList = new ArrayList<>();
         for (Entry entry : entries)

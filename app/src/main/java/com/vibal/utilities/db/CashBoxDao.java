@@ -44,23 +44,6 @@ public abstract class CashBoxDao {
             "GROUP BY C.id,C.name,C.orderId,C.deleted")
     public abstract Single<CashBox> getCashBoxById(long id);
 
-//    @Query("UPDATE cashBoxesInfo_table " +
-//            "SET orderId=CASE WHEN EXISTS(" +
-//            "SELECT * FROM cashBoxesInfo_table WHERE orderId=:minOrderPos) " +
-//            "THEN orderId+1 ELSE orderId END")
-//    @Query("UPDATE cashBoxesInfo_table " +
-//            "SET orderId=CASE " +
-//            "WHEN EXISTS(" +
-//            "SELECT * FROM cashBoxesInfo_table WHERE orderId=:minOrderPos) " +
-//            "THEN orderId+1 ELSE orderId END")
-//    Completable incrementOrderPos(long minOrderPos);
-
-    //    @Query("UPDATE cashBoxesInfo_table " +
-//            "SET orderId=CASE " +
-//            "WHEN EXISTS(SELECT * FROM cashBoxesInfo_table WHERE orderId=:fromOrderPos) " +
-//            "THEN orderId ELSE (CASE " +
-//            "WHEN id=:cashBoxId THEN :toOrderPos " +
-//            "WHEN orderId BETWEEN :fromOrderPos AND :toOrderPos THEN )")
     //todo mejorar coger from directamente
     @Query("UPDATE cashBoxesInfo_table " +
             "SET orderId=CASE " +
@@ -71,20 +54,6 @@ public abstract class CashBoxDao {
             "WHERE orderId BETWEEN :fromOrderPos AND :toOrderPos " +
             "OR orderId BETWEEN :toOrderPos AND :fromOrderPos")
     abstract Completable moveCashBoxToOrderPos(long cashBoxId, long fromOrderPos, long toOrderPos);
-
-//    @Transaction
-//    MediatorLiveData<CashBox> getCashBoxById(int id) {
-//        LiveData<CashBox.InfoWithCash> cashBoxInfoWithCash = getCashBoxInfoWithCashById(id);
-//        LiveData<List<CashBox.Entry>> entries = getEntriesByCashBoxId(id);
-//
-//        MediatorLiveData<CashBox> liveDataMerger = new MediatorLiveData<>();
-//        liveDataMerger.addSource(cashBoxInfoWithCash,
-//                infoWithCash -> new CashBox(cashBoxInfoWithCash.getValue(),entries.getValue()));
-//        liveDataMerger.addSource(entries,
-//                infoWithCash -> new CashBox(cashBoxInfoWithCash.getValue(),entries.getValue()));
-//
-//        return liveDataMerger;
-//    }
 
     // Get all CashBoxInfo to supply the widget
     @Query("SELECT C.id,C.name,C.orderId,SUM(amount) AS cash,C.deleted " +

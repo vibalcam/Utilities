@@ -45,7 +45,6 @@ import com.vibal.utilities.R;
 import com.vibal.utilities.models.CashBoxManager;
 import com.vibal.utilities.modelsNew.CashBox;
 import com.vibal.utilities.modelsNew.CashBoxInfo;
-import com.vibal.utilities.modelsNew.CashBoxViewModel;
 import com.vibal.utilities.modelsNew.PeriodicEntryPojo;
 import com.vibal.utilities.ui.settings.SettingsActivity;
 import com.vibal.utilities.ui.swipeController.CashBoxAdapterSwipable;
@@ -54,6 +53,7 @@ import com.vibal.utilities.ui.swipeController.OnStartDragListener;
 import com.vibal.utilities.util.DiffCallback;
 import com.vibal.utilities.util.LogUtil;
 import com.vibal.utilities.util.Util;
+import com.vibal.utilities.viewModels.CashBoxViewModel;
 
 import java.io.File;
 import java.io.IOException;
@@ -104,8 +104,10 @@ public class CashBoxManagerFragment extends Fragment {
     private CashBoxViewModel viewModel;
     private CashBoxManagerRecyclerAdapter adapter;
     private boolean isFabOpen = false;
-    private SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener;
+//    private SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener;
 
+    // Contextual toolbars
+    @Nullable
     private ActionMode groupAddActionMode;
     private final ActionMode.Callback groupAddModeCallback = new ActionMode.Callback() {
         private boolean dialogOpened = false;
@@ -163,6 +165,68 @@ public class CashBoxManagerFragment extends Fragment {
         }
     };
 
+    @Nullable
+    private ActionMode actionMode;
+    private final ActionMode.Callback actionModeCallback = new ActionMode.Callback() {
+        @Override
+        public boolean onCreateActionMode(@NonNull ActionMode mode, Menu menu) {
+            mode.getMenuInflater().inflate(R.menu.menu_contextual_toolbar_cash_box_manager, menu);
+
+            //Hide fab
+            fabMain.animate().alpha(0f);
+            fabMain.setVisibility(View.GONE);
+
+            // Notify adapter to show images for dragging
+            adapter.notifyItemRangeChanged(0, adapter.getItemCount());
+            return true;
+        }
+
+        @Override
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            return false;
+        }
+
+        @Override
+        public boolean onActionItemClicked(@NonNull ActionMode mode, @NonNull MenuItem item) {
+            if (adapter.selectedItems.isEmpty()) {
+                Toast.makeText(CashBoxManagerFragment.this.getContext(), "No item selected", Toast.LENGTH_SHORT).show();
+                return true;
+            } else {
+                if (adapter.selectedItems.size() > 1) //should never happen
+                    throw new RuntimeException("Selected Items size has to be 1");
+                int position = adapter.selectedItems.iterator().next();
+
+                //Show fab
+                fabMain.setVisibility(View.VISIBLE);
+                fabMain.animate().alpha(1f);
+
+                switch (item.getItemId()) {
+                    case R.id.action_manager_duplicate:
+                        adapter.showCloneDialog(position);
+                        mode.finish();
+                        return true;
+                    case R.id.action_manager_addPeriodic:
+                        showAddPeriodicDialog(adapter.currentList.get(position));
+                        mode.finish();
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+        }
+
+        @Override
+        public void onDestroyActionMode(ActionMode mode) {
+            actionMode = null;
+            adapter.selectedItems.clear();
+            //Show fab
+            fabMain.setVisibility(View.VISIBLE);
+            fabMain.animate().alpha(1f);
+            // Notify adapter to hide images for dragging
+            adapter.notifyItemRangeChanged(0, adapter.getItemCount());
+        }
+    };
+
     @NonNull
     static CashBoxManagerFragment newInstance() {
         return new CashBoxManagerFragment();
@@ -189,18 +253,20 @@ public class CashBoxManagerFragment extends Fragment {
         adapter = new CashBoxManagerRecyclerAdapter();
         rvCashBoxManager.setAdapter(adapter);
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(Objects.requireNonNull(getContext()));
-        CashBoxSwipeController swipeController = new CashBoxSwipeController(adapter,
-                preferences.getBoolean("swipeLeftDelete", true));
-        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(swipeController);
+//        CashBoxSwipeController swipeController = new CashBoxSwipeController(adapter,
+//                preferences.getBoolean("swipeLeftDelete", true));
+//        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(swipeController);
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new CashBoxSwipeController(adapter,
+                preferences));
         itemTouchHelper.attachToRecyclerView(rvCashBoxManager);
         adapter.setOnStartDragListener(itemTouchHelper::startDrag);
 
         //Register listener for settings change
-        preferenceChangeListener = (sharedPreferences, s) -> {
-            if (s.equals("swipeLeftDelete"))
-                swipeController.setSwipeLeftDelete(sharedPreferences.getBoolean("swipeLeftDelete", true));
-        };
-        preferences.registerOnSharedPreferenceChangeListener(preferenceChangeListener);
+//        preferenceChangeListener = (sharedPreferences, s) -> {
+//            if (s.equals("swipeLeftDelete"))
+//                swipeController.setSwipeLeftDelete(sharedPreferences.getBoolean("swipeLeftDelete", true));
+//        };
+//        preferences.registerOnSharedPreferenceChangeListener(preferenceChangeListener);
 
         LogUtil.debug(TAG, "onCreate: ");
         return view;
@@ -458,8 +524,8 @@ public class CashBoxManagerFragment extends Fragment {
     void showAddDialog() {
         closeFabMenu();
         LogUtil.debug(TAG, "Single add");
-        if (adapter.actionMode != null)
-            adapter.actionMode.finish();
+        if (actionMode != null)
+            actionMode.finish();
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         AlertDialog dialog = builder.setTitle(R.string.newEntry)
@@ -523,8 +589,8 @@ public class CashBoxManagerFragment extends Fragment {
         LogUtil.debug(TAG, "Group add");
 
         //Choose CashBox in group
-        if (adapter.actionMode != null)
-            adapter.actionMode.finish();
+        if (actionMode != null)
+            actionMode.finish();
         if (!adapter.currentList.isEmpty())
             groupAddActionMode = ((AppCompatActivity) getActivity()).startSupportActionMode(groupAddModeCallback);
         else
@@ -688,57 +754,66 @@ public class CashBoxManagerFragment extends Fragment {
         private List<CashBox.InfoWithCash> currentList = new ArrayList<>();
 //        private LinkedList<CashBox.InfoWithCash> toDelete = new LinkedList<>();
 
-        // Contextual toolbar
-        @Nullable
-        private ActionMode actionMode;
-        @NonNull
-        private final ActionMode.Callback actionModeCallback = new ActionMode.Callback() {
-            @Override
-            public boolean onCreateActionMode(@NonNull ActionMode mode, Menu menu) {
-                mode.getMenuInflater().inflate(R.menu.menu_contextual_toolbar_cash_box_manager, menu);
-
-                // Notify adapter to show images for dragging
-                notifyItemRangeChanged(0, CashBoxManagerRecyclerAdapter.this.getItemCount());
-                return true;
-            }
-
-            @Override
-            public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-                return false;
-            }
-
-            @Override
-            public boolean onActionItemClicked(@NonNull ActionMode mode, @NonNull MenuItem item) {
-                if (selectedItems.isEmpty()) {
-                    Toast.makeText(CashBoxManagerFragment.this.getContext(), "No item selected", Toast.LENGTH_SHORT).show();
-                    return true;
-                } else {
-                    if (selectedItems.size() > 1) //should never happen
-                        throw new RuntimeException("Selected Items size has to be 1");
-                    int position = selectedItems.iterator().next();
-                    switch (item.getItemId()) {
-                        case R.id.action_manager_duplicate:
-                            showCloneDialog(position);
-                            mode.finish();
-                            return true;
-                        case R.id.action_manager_addPeriodic:
-                            showAddPeriodicDialog(currentList.get(position));
-                            mode.finish();
-                            return true;
-                        default:
-                            return false;
-                    }
-                }
-            }
-
-            @Override
-            public void onDestroyActionMode(ActionMode mode) {
-                actionMode = null;
-                selectedItems.clear();
-                // Notify adapter to hide images for dragging
-                notifyItemRangeChanged(0, CashBoxManagerRecyclerAdapter.this.getItemCount());
-            }
-        };
+//        // Contextual toolbar
+//        @Nullable
+//        private ActionMode actionMode;
+//        @NonNull
+//        private final ActionMode.Callback actionModeCallback = new ActionMode.Callback() {
+//            @Override
+//            public boolean onCreateActionMode(@NonNull ActionMode mode, Menu menu) {
+//                mode.getMenuInflater().inflate(R.menu.menu_contextual_toolbar_cash_box_manager, menu);
+//
+//                //Hide fab
+//                fabMain.animate().alpha(0f);
+//                fabMain.setVisibility(View.GONE);
+//
+//                // Notify adapter to show images for dragging
+//                notifyItemRangeChanged(0, CashBoxManagerRecyclerAdapter.this.getItemCount());
+//                return true;
+//            }
+//
+//            @Override
+//            public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+//                return false;
+//            }
+//
+//            @Override
+//            public boolean onActionItemClicked(@NonNull ActionMode mode, @NonNull MenuItem item) {
+//                if (selectedItems.isEmpty()) {
+//                    Toast.makeText(CashBoxManagerFragment.this.getContext(), "No item selected", Toast.LENGTH_SHORT).show();
+//                    return true;
+//                } else {
+//                    if (selectedItems.size() > 1) //should never happen
+//                        throw new RuntimeException("Selected Items size has to be 1");
+//                    int position = selectedItems.iterator().next();
+//
+//                    //Show fab
+//                    fabMain.setVisibility(View.VISIBLE);
+//                    fabMain.animate().alpha(1f);
+//
+//                    switch (item.getItemId()) {
+//                        case R.id.action_manager_duplicate:
+//                            showCloneDialog(position);
+//                            mode.finish();
+//                            return true;
+//                        case R.id.action_manager_addPeriodic:
+//                            showAddPeriodicDialog(currentList.get(position));
+//                            mode.finish();
+//                            return true;
+//                        default:
+//                            return false;
+//                    }
+//                }
+//            }
+//
+//            @Override
+//            public void onDestroyActionMode(ActionMode mode) {
+//                actionMode = null;
+//                selectedItems.clear();
+//                // Notify adapter to hide images for dragging
+//                notifyItemRangeChanged(0, CashBoxManagerRecyclerAdapter.this.getItemCount());
+//            }
+//        };
 
         void setOnStartDragListener(OnStartDragListener onStartDragListener) {
             this.onStartDragListener = onStartDragListener;

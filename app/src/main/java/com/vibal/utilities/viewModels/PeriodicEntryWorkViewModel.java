@@ -1,4 +1,4 @@
-package com.vibal.utilities.modelsNew;
+package com.vibal.utilities.viewModels;
 
 import android.app.Application;
 
@@ -7,6 +7,7 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 
 import com.vibal.utilities.db.CashBoxRepository;
+import com.vibal.utilities.modelsNew.PeriodicEntryPojo;
 import com.vibal.utilities.util.LogUtil;
 
 import java.util.List;
