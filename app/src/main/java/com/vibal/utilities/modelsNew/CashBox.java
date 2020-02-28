@@ -199,7 +199,7 @@ public class CashBox {
             this(name, 0);
         }
 
-        public InfoWithCash(CashBoxInfo cashBoxInfo, double cash) {
+        public InfoWithCash(@NonNull CashBoxInfo cashBoxInfo, double cash) {
             this.cashBoxInfo = cashBoxInfo;
             this.cash = cash;
         }
@@ -219,7 +219,7 @@ public class CashBox {
             return cash;
         }
 
-        @Nullable
+        @NonNull
         public CashBoxInfo getCashBoxInfo() {
             return cashBoxInfo;
         }
@@ -273,7 +273,8 @@ public class CashBox {
 
         @Override
         public boolean areContentsTheSame(@NonNull InfoWithCash newItem) {
-            return this.cash == newItem.cash && this.equals(newItem);
+            return this.cash == newItem.cash &&
+                    this.cashBoxInfo.areContentsTheSame(newItem.cashBoxInfo);
         }
 
         @Nullable

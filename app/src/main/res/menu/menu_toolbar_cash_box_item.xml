@@ -12,8 +12,12 @@
         app:showAsAction="ifRoom"
         android:title="@string/menu_item_reminderOff" />
     <item
+        android:id="@+id/action_item_currency"
+        app:showAsAction="never"
+        android:title="@string/menu_item_currency" />
+    <item
         android:id="@+id/action_item_share"
-        android:title="@string/menu_item_Share"
+        android:title="@string/menu_item_share"
         app:showAsAction="never"
         app:actionProviderClass="androidx.appcompat.widget.ShareActionProvider" />
     <item

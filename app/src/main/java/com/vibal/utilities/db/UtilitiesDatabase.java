@@ -16,10 +16,10 @@ import com.vibal.utilities.modelsNew.PeriodicEntryPojo;
 import com.vibal.utilities.util.Converters;
 
 @Database(entities = {CashBoxInfo.class, CashBox.Entry.class,
-        PeriodicEntryPojo.PeriodicEntryWorkInfo.class}, version = 2, exportSchema = false)
+        PeriodicEntryPojo.PeriodicEntryWorkInfo.class}, version = 3, exportSchema = false)
 @TypeConverters(Converters.class)
 public abstract class UtilitiesDatabase extends RoomDatabase {
-    static final Migration MIGRATION_1_2 = new Migration(1, 2) {
+    private static final Migration MIGRATION_1_2 = new Migration(1, 2) {
         @Override
         public void migrate(@NonNull SupportSQLiteDatabase database) {
             // New Table CashBoxInfo
@@ -60,6 +60,13 @@ public abstract class UtilitiesDatabase extends RoomDatabase {
         }
     };
 
+    private static final Migration MIGRATION_2_3 = new Migration(2, 3) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE cashBoxesInfo_table ADD COLUMN currency TEXT DEFAULT ''");
+        }
+    };
+
     private static UtilitiesDatabase INSTANCE = null;
 
     @NonNull
@@ -67,7 +74,7 @@ public abstract class UtilitiesDatabase extends RoomDatabase {
         if (INSTANCE == null) {
             INSTANCE = Room.databaseBuilder(context.getApplicationContext(), UtilitiesDatabase.class,
                     "utilities_database")
-                    .addMigrations(MIGRATION_1_2)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
 //                    .fallbackToDestructiveMigration()
 //                    .addCallback(roomCallback)
                     .build();

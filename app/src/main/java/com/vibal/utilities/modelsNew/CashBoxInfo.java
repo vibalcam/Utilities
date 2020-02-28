@@ -9,6 +9,9 @@ import androidx.room.PrimaryKey;
 
 import com.vibal.utilities.util.LogUtil;
 
+import java.util.Currency;
+import java.util.Locale;
+
 import static androidx.room.ColumnInfo.NOCASE;
 
 @Entity(tableName = "cashBoxesInfo_table", indices = {@Index(value = "name", unique = true),
@@ -23,18 +26,24 @@ public class CashBoxInfo implements Cloneable {
 
     @PrimaryKey(autoGenerate = true)
     private long id;
+
     @NonNull
     @ColumnInfo(collate = NOCASE)
     private String name;
+
     private long orderId = NO_ORDER_ID;
     @ColumnInfo(defaultValue = "0")
     private boolean deleted = false;
 
-    public CashBoxInfo(long id, @NonNull String name, long orderId, boolean deleted) {
+    @ColumnInfo(defaultValue = "")
+    private Currency currency = Currency.getInstance(Locale.getDefault());
+
+    public CashBoxInfo(long id, @NonNull String name, long orderId, boolean deleted, Currency currency) {
         this.id = id;
         this.name = name;
         this.orderId = orderId;
         this.deleted = deleted;
+        this.currency = currency;
     }
 
     @Ignore
@@ -75,8 +84,16 @@ public class CashBoxInfo implements Cloneable {
         return deleted;
     }
 
+    public Currency getCurrency() {
+        return currency;
+    }
+
     public void setDeleted(boolean deleted) {
         this.deleted = deleted;
+    }
+
+    public void setCurrency(Currency currency) {
+        this.currency = currency;
     }
 
     @Override
@@ -84,6 +101,10 @@ public class CashBoxInfo implements Cloneable {
         if (obj instanceof CashBoxInfo)
             return ((CashBoxInfo) obj).getName().equalsIgnoreCase(this.getName());
         return false;
+    }
+
+    public boolean areContentsTheSame(@NonNull CashBoxInfo other) {
+        return this.equals(other) && this.currency.equals(other.currency);
     }
 
     @Override
@@ -111,6 +132,7 @@ public class CashBoxInfo implements Cloneable {
         CashBoxInfo cashBoxInfo = clone();
         cashBoxInfo.id = NO_CASHBOX;
         cashBoxInfo.orderId = NO_ORDER_ID;
+        // Currency and deleted are maintained
         return cashBoxInfo;
     }
 

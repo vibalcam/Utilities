@@ -23,6 +23,17 @@
         android:visibility="gone"/>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabCBM_periodicAdd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/standard_23"
+        android:visibility="gone"
+        android:rotation="90"
+        app:fabSize="mini"
+        app:srcCompat="@drawable/ic_schedule_black_24dp" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabCBM_groupAdd"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

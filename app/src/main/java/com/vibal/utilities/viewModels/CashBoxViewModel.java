@@ -17,6 +17,7 @@ import com.vibal.utilities.util.LogUtil;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Currency;
 import java.util.List;
 import java.util.Locale;
 
@@ -84,6 +85,14 @@ public class CashBoxViewModel extends AndroidViewModel {
         return repository.updateCashBoxInfo(changedCashBoxInfo);
     }
 
+    public Completable setCurrency(long cashBoxId, @NonNull Currency currency) {
+        return repository.setCashBoxCurrency(cashBoxId, currency);
+    }
+
+    public Completable setCurrentCashBoxCurrency(@NonNull Currency currency) {
+        return setCurrency(currentCashBoxId, currency);
+    }
+
     public Completable recycleCashBoxInfo(@NonNull CashBox.InfoWithCash infoWithCash) {
         CashBoxInfo cashBoxInfo = infoWithCash.getCashBoxInfo();
         //Cancel works associated with the CashBox
@@ -141,6 +150,7 @@ public class CashBoxViewModel extends AndroidViewModel {
     }
 
     private Completable addAllEntries(long cashBoxId, @NonNull Collection<CashBox.Entry> entries) {
+        LogUtil.debug(TAG, entries.toString());
         ArrayList<CashBox.Entry> entryArrayList = new ArrayList<>();
         for (CashBox.Entry entry : entries)
             entryArrayList.add(entry.getEntryWithCashBoxId(cashBoxId));

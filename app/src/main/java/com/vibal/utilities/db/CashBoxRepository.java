@@ -15,6 +15,7 @@ import com.vibal.utilities.util.LogUtil;
 
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Currency;
 import java.util.List;
 import java.util.UUID;
 
@@ -94,6 +95,10 @@ public class CashBoxRepository {
         return cashBoxDao.update(cashBoxInfo);
     }
 
+    public Completable setCashBoxCurrency(long cashBoxId, @NonNull Currency currency) {
+        return cashBoxDao.setCashBoxCurrency(cashBoxId, currency);
+    }
+
     public Completable moveCashBoxInfo(@NonNull CashBox.InfoWithCash infoWithCash, long toOrderPos) {
         return cashBoxDao.moveCashBoxToOrderPos(infoWithCash.getCashBoxInfo().getId(),
                 infoWithCash.getCashBoxInfo().getOrderId(), toOrderPos);
@@ -110,6 +115,8 @@ public class CashBoxRepository {
     public Single<Integer> clearRecycleBin() {
         return cashBoxDao.clearRecycleBin();
     }
+
+    // Entries
 
     public Completable insertEntry(CashBox.Entry entry) {
         return cashBoxEntryDao.insert(entry);

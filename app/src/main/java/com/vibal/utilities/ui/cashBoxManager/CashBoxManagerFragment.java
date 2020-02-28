@@ -89,11 +89,16 @@ import static com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity.NO_AC
 
 public class CashBoxManagerFragment extends Fragment {
     private static final String TAG = "PruebaManagerFragment";
+    private static final int EDIT_MODE = 0;
+    private static final int GROUP_ADD_MODE = 1;
+    private static final int PERIODIC_ADD_MODE = 2;
 
     @BindView(R.id.lyCBM)
     CoordinatorLayout coordinatorLayout;
     @BindView(R.id.fabCBM_main)
     FloatingActionButton fabMain;
+    @BindView(R.id.fabCBM_periodicAdd)
+    FloatingActionButton fabPeriodicAdd;
     @BindView(R.id.fabCBM_groupAdd)
     FloatingActionButton fabGroupAdd;
     @BindView(R.id.fabCBM_singleAdd)
@@ -104,17 +109,62 @@ public class CashBoxManagerFragment extends Fragment {
     private CashBoxViewModel viewModel;
     private CashBoxManagerRecyclerAdapter adapter;
     private boolean isFabOpen = false;
-//    private SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener;
 
     // Contextual toolbars
+    private int actionModeType = EDIT_MODE;
     @Nullable
-    private ActionMode groupAddActionMode;
+    private ActionMode actionMode;
+    private final ActionMode.Callback periodicAddModeCallback = new ActionMode.Callback() {
+        @Override
+        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+            mode.getMenuInflater().inflate(R.menu.menu_contextual_confirm, menu);
+            mode.setTitle("Choose CashBox:");
+            //Hide fab
+            fabMain.animate().alpha(0f);
+            fabMain.setVisibility(View.GONE);
+            // Notify adapter to hide images for choosing
+            adapter.notifyItemRangeChanged(0, adapter.getItemCount());
+            return true;
+        }
+
+        @Override
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            return false;
+        }
+
+        @Override
+        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+            if (adapter.selectedItems.isEmpty()) {
+                Toast.makeText(getContext(), "No items selected", Toast.LENGTH_SHORT).show();
+                return true;
+            } else if (adapter.selectedItems.size() > 1) { //should never happen
+                throw new RuntimeException("Selected Items size has to be 1");
+            } else if (item.getItemId() == R.id.action_confirm) {
+                showAddPeriodicDialog(adapter.currentList.get(adapter.selectedItems.iterator().next()));
+                mode.finish();
+                return true;
+            } else
+                return false;
+        }
+
+        @Override
+        public void onDestroyActionMode(ActionMode mode) {
+            actionMode = null;
+            //Show fab
+            fabMain.setVisibility(View.VISIBLE);
+            fabMain.animate().alpha(1f);
+            //If menu was not clicked, clear selection and notify adapter to show images again
+            adapter.selectedItems.clear();
+            adapter.notifyItemRangeChanged(0, adapter.getItemCount());
+            LogUtil.debug(TAG, "" + adapter.getItemCount() + adapter.selectedItems.toString());
+        }
+    };
     private final ActionMode.Callback groupAddModeCallback = new ActionMode.Callback() {
         private boolean dialogOpened = false;
 
         @Override
         public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-            mode.getMenuInflater().inflate(R.menu.menu_contextual_group_add_cbm, menu);
+            mode.getMenuInflater().inflate(R.menu.menu_contextual_confirm, menu);
             mode.setTitle("Choose CashBoxes:");
             //Hide fab
             fabMain.animate().alpha(0f);
@@ -131,51 +181,38 @@ public class CashBoxManagerFragment extends Fragment {
 
         @Override
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-            if (item.getItemId() == R.id.action_add_group_done) {
-                if (adapter.selectedItems.size() > 0) {
-                    dialogOpened = true;
-                    showGroupAddDialog();
-                } else
-                    Toast.makeText(getContext(), "No items selected", Toast.LENGTH_SHORT).show();
+            if (adapter.selectedItems.isEmpty()) {
+                Toast.makeText(getContext(), "No items selected", Toast.LENGTH_SHORT).show();
+                return true;
+            } else if (item.getItemId() == R.id.action_confirm) {
+                dialogOpened = true;
+                showGroupAddDialog();
                 mode.finish();
                 return true;
-            }
-            return false;
+            } else
+                return false;
         }
 
         @Override
         public void onDestroyActionMode(ActionMode mode) {
-            groupAddActionMode = null;
+            actionMode = null;
             //Show fab
             fabMain.setVisibility(View.VISIBLE);
             fabMain.animate().alpha(1f);
             //If menu was not clicked, clear selection and notify adapter to show images again
-            if (!dialogOpened)
+            if (!dialogOpened) // if dialog opened do not delete selection, the dialog will do it
                 adapter.selectedItems.clear();
-            LogUtil.debug(TAG, "" + adapter.getItemCount() + adapter.selectedItems.toString());
             adapter.notifyItemRangeChanged(0, adapter.getItemCount());
-//            if(!dialogOpened) {
-//                for(Integer k:adapter.selectedItems) {
-//                    adapter.selectedItems.remove(k);
-//                    adapter.notifyItemChanged(k);
-//                }
-////                adapter.selectedItems.clear();
-////                adapter.notifyItemRangeChanged(0, adapter.getItemCount());
-//            }
+            LogUtil.debug(TAG, "" + adapter.getItemCount() + adapter.selectedItems.toString());
         }
     };
-
-    @Nullable
-    private ActionMode actionMode;
-    private final ActionMode.Callback actionModeCallback = new ActionMode.Callback() {
+    private final ActionMode.Callback editModeCallback = new ActionMode.Callback() {
         @Override
         public boolean onCreateActionMode(@NonNull ActionMode mode, Menu menu) {
             mode.getMenuInflater().inflate(R.menu.menu_contextual_toolbar_cash_box_manager, menu);
-
             //Hide fab
             fabMain.animate().alpha(0f);
             fabMain.setVisibility(View.GONE);
-
             // Notify adapter to show images for dragging
             adapter.notifyItemRangeChanged(0, adapter.getItemCount());
             return true;
@@ -189,40 +226,26 @@ public class CashBoxManagerFragment extends Fragment {
         @Override
         public boolean onActionItemClicked(@NonNull ActionMode mode, @NonNull MenuItem item) {
             if (adapter.selectedItems.isEmpty()) {
-                Toast.makeText(CashBoxManagerFragment.this.getContext(), "No item selected", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "No item selected", Toast.LENGTH_SHORT).show();
                 return true;
-            } else {
-                if (adapter.selectedItems.size() > 1) //should never happen
-                    throw new RuntimeException("Selected Items size has to be 1");
-                int position = adapter.selectedItems.iterator().next();
-
-                //Show fab
-                fabMain.setVisibility(View.VISIBLE);
-                fabMain.animate().alpha(1f);
-
-                switch (item.getItemId()) {
-                    case R.id.action_manager_duplicate:
-                        adapter.showCloneDialog(position);
-                        mode.finish();
-                        return true;
-                    case R.id.action_manager_addPeriodic:
-                        showAddPeriodicDialog(adapter.currentList.get(position));
-                        mode.finish();
-                        return true;
-                    default:
-                        return false;
-                }
-            }
+            } else if (adapter.selectedItems.size() > 1) //should never happen
+                throw new RuntimeException("Selected Items size has to be 1");
+            else if (item.getItemId() == R.id.action_manager_duplicate) {
+                adapter.showCloneDialog(adapter.selectedItems.iterator().next());
+                mode.finish();
+                return true;
+            } else
+                return false;
         }
 
         @Override
         public void onDestroyActionMode(ActionMode mode) {
             actionMode = null;
-            adapter.selectedItems.clear();
             //Show fab
             fabMain.setVisibility(View.VISIBLE);
             fabMain.animate().alpha(1f);
             // Notify adapter to hide images for dragging
+            adapter.selectedItems.clear();
             adapter.notifyItemRangeChanged(0, adapter.getItemCount());
         }
     };
@@ -393,7 +416,7 @@ public class CashBoxManagerFragment extends Fragment {
                         R.string.cashBoxManager_help).show();
                 return true;
             case R.id.action_manager_edit:
-                adapter.showActionMode();
+                startActionMode(EDIT_MODE);
                 return true;
             case R.id.action_manager_showPeriodic:
                 startActivity(new Intent(getContext(), CashBoxPeriodicActivity.class));
@@ -445,6 +468,34 @@ public class CashBoxManagerFragment extends Fragment {
                     .commit();
     }
 
+    private boolean startActionMode(int type) {
+        if (adapter.currentList.isEmpty()) { // Check if there are any CashBoxes
+            Toast.makeText(getContext(), "No available CashBoxes", Toast.LENGTH_SHORT).show();
+            return false;
+        } else if (actionMode != null) { // Check if already running
+            if (actionModeType == type)
+                return false;
+            else
+                actionMode.finish();
+        }
+
+        // Start action mode
+        actionModeType = type;
+        switch (type) {
+            case EDIT_MODE:
+                actionMode = ((AppCompatActivity) getActivity()).startSupportActionMode(editModeCallback);
+                return true;
+            case GROUP_ADD_MODE:
+                actionMode = ((AppCompatActivity) getActivity()).startSupportActionMode(groupAddModeCallback);
+                return true;
+            case PERIODIC_ADD_MODE:
+                actionMode = ((AppCompatActivity) getActivity()).startSupportActionMode(periodicAddModeCallback);
+                return true;
+            default:
+                return false;
+        }
+    }
+
     private void deleteAll() {
         int count = adapter.getItemCount();
         if (count == 0) {
@@ -478,6 +529,7 @@ public class CashBoxManagerFragment extends Fragment {
         LogUtil.debug(TAG, "Open FAB Menu");
         //Open FAB Menu
         isFabOpen = true;
+        fabPeriodicAdd.setVisibility(View.VISIBLE);
         fabGroupAdd.setVisibility(View.VISIBLE);
         fabSingleAdd.setVisibility(View.VISIBLE);
         viewBgFabMenu.setVisibility(View.VISIBLE);
@@ -485,11 +537,14 @@ public class CashBoxManagerFragment extends Fragment {
         //Animate
         fabMain.animate().rotation(135f);
         viewBgFabMenu.animate().alpha(1f);
-        fabGroupAdd.animate()
+        fabPeriodicAdd.animate()
                 .translationY(-getResources().getDimension(R.dimen.standard_55))
                 .rotation(0f);
-        fabSingleAdd.animate()
+        fabGroupAdd.animate()
                 .translationY(-getResources().getDimension(R.dimen.standard_100))
+                .rotation(0f);
+        fabSingleAdd.animate()
+                .translationY(-getResources().getDimension(R.dimen.standard_145))
                 .rotation(0f);
     }
 
@@ -500,6 +555,9 @@ public class CashBoxManagerFragment extends Fragment {
         //Animate
         fabMain.animate().rotation(0f);
         viewBgFabMenu.animate().alpha(0f);
+        fabPeriodicAdd.animate()
+                .translationY(0f)
+                .rotation(90f);
         fabGroupAdd.animate()
                 .translationY(0f)
                 .rotation(90f);
@@ -511,6 +569,7 @@ public class CashBoxManagerFragment extends Fragment {
                     public void onAnimationEnd(Animator animation) {
                         if (!isFabOpen) {
                             LogUtil.debug(TAG, "Hide fabs");
+                            fabPeriodicAdd.setVisibility(View.GONE);
                             fabGroupAdd.setVisibility(View.GONE);
                             fabSingleAdd.setVisibility(View.GONE);
                             viewBgFabMenu.setVisibility(View.GONE);
@@ -523,9 +582,9 @@ public class CashBoxManagerFragment extends Fragment {
     @OnClick(R.id.fabCBM_singleAdd)
     void showAddDialog() {
         closeFabMenu();
-        LogUtil.debug(TAG, "Single add");
         if (actionMode != null)
             actionMode.finish();
+        LogUtil.debug(TAG, "Single add");
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         AlertDialog dialog = builder.setTitle(R.string.newEntry)
@@ -583,18 +642,16 @@ public class CashBoxManagerFragment extends Fragment {
 
     @OnClick(R.id.fabCBM_groupAdd)
     void showContextualModeGroupAdd() {
-        closeFabMenu();
-        if (groupAddActionMode != null)
-            return;
         LogUtil.debug(TAG, "Group add");
+        closeFabMenu();
+        startActionMode(GROUP_ADD_MODE);
+    }
 
-        //Choose CashBox in group
-        if (actionMode != null)
-            actionMode.finish();
-        if (!adapter.currentList.isEmpty())
-            groupAddActionMode = ((AppCompatActivity) getActivity()).startSupportActionMode(groupAddModeCallback);
-        else
-            Toast.makeText(getContext(), "No available CashBoxes", Toast.LENGTH_SHORT).show();
+    @OnClick(R.id.fabCBM_periodicAdd)
+    void showContextualModePeriodicAdd() {
+        LogUtil.debug(TAG, "Periodic add");
+        closeFabMenu();
+        startActionMode(PERIODIC_ADD_MODE);
     }
 
     private void showGroupAddDialog() {
@@ -680,7 +737,6 @@ public class CashBoxManagerFragment extends Fragment {
         dialog.show();
     }
 
-    // todo change into fab
     private void showAddPeriodicDialog(@NonNull CashBox.InfoWithCash infoWithCash) {
         AlertDialog dialog = new AlertDialog.Builder(getContext())
                 .setTitle(R.string.periodic_dialog_newPeriodic)
@@ -748,72 +804,10 @@ public class CashBoxManagerFragment extends Fragment {
         private static final String TAG = "PruebaManagerActivity";
 
         private final NumberFormat currencyFormat = NumberFormat.getCurrencyInstance();
-        private final Set<Integer> selectedItems = new HashSet<>();
+        private Set<Integer> selectedItems = new HashSet<>();
         private OnStartDragListener onStartDragListener;
         @NonNull
         private List<CashBox.InfoWithCash> currentList = new ArrayList<>();
-//        private LinkedList<CashBox.InfoWithCash> toDelete = new LinkedList<>();
-
-//        // Contextual toolbar
-//        @Nullable
-//        private ActionMode actionMode;
-//        @NonNull
-//        private final ActionMode.Callback actionModeCallback = new ActionMode.Callback() {
-//            @Override
-//            public boolean onCreateActionMode(@NonNull ActionMode mode, Menu menu) {
-//                mode.getMenuInflater().inflate(R.menu.menu_contextual_toolbar_cash_box_manager, menu);
-//
-//                //Hide fab
-//                fabMain.animate().alpha(0f);
-//                fabMain.setVisibility(View.GONE);
-//
-//                // Notify adapter to show images for dragging
-//                notifyItemRangeChanged(0, CashBoxManagerRecyclerAdapter.this.getItemCount());
-//                return true;
-//            }
-//
-//            @Override
-//            public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-//                return false;
-//            }
-//
-//            @Override
-//            public boolean onActionItemClicked(@NonNull ActionMode mode, @NonNull MenuItem item) {
-//                if (selectedItems.isEmpty()) {
-//                    Toast.makeText(CashBoxManagerFragment.this.getContext(), "No item selected", Toast.LENGTH_SHORT).show();
-//                    return true;
-//                } else {
-//                    if (selectedItems.size() > 1) //should never happen
-//                        throw new RuntimeException("Selected Items size has to be 1");
-//                    int position = selectedItems.iterator().next();
-//
-//                    //Show fab
-//                    fabMain.setVisibility(View.VISIBLE);
-//                    fabMain.animate().alpha(1f);
-//
-//                    switch (item.getItemId()) {
-//                        case R.id.action_manager_duplicate:
-//                            showCloneDialog(position);
-//                            mode.finish();
-//                            return true;
-//                        case R.id.action_manager_addPeriodic:
-//                            showAddPeriodicDialog(currentList.get(position));
-//                            mode.finish();
-//                            return true;
-//                        default:
-//                            return false;
-//                    }
-//                }
-//            }
-//
-//            @Override
-//            public void onDestroyActionMode(ActionMode mode) {
-//                actionMode = null;
-//                selectedItems.clear();
-//                // Notify adapter to hide images for dragging
-//                notifyItemRangeChanged(0, CashBoxManagerRecyclerAdapter.this.getItemCount());
-//            }
-//        };
 
         void setOnStartDragListener(OnStartDragListener onStartDragListener) {
             this.onStartDragListener = onStartDragListener;
@@ -839,13 +833,14 @@ public class CashBoxManagerFragment extends Fragment {
                         diffResult.dispatchUpdatesTo(CashBoxManagerRecyclerAdapter.this);
 
                         //Update selectedCashBoxes
-                        int temp;
-                        for (Integer k : selectedItems) {
-                            selectedItems.remove(k);
-                            temp = diffResult.convertOldPositionToNew(k);
-                            if (temp != DiffUtil.DiffResult.NO_POSITION)
-                                selectedItems.add(temp);
-                        }
+//                        int temp;
+//                        Set<Integer> tempSet = new HashSet<>();
+//                        for (Integer k : selectedItems) {
+//                            temp = diffResult.convertOldPositionToNew(k);
+//                            if (temp != DiffUtil.DiffResult.NO_POSITION)
+//                                tempSet.add(temp);
+//                        }
+//                        selectedItems = tempSet;
                     }));
 
 
@@ -891,19 +886,23 @@ public class CashBoxManagerFragment extends Fragment {
 
             // Enable or disable dragging
             if (isDragEnabled()) {
-                viewHolder.reorderImage.setVisibility(View.VISIBLE);
-                viewHolder.reorderImage.setImageResource(R.drawable.reorder_horizontal_gray_24dp);
+                // Image show reorder
+                viewHolder.image.setVisibility(View.VISIBLE);
+                viewHolder.image.setImageResource(R.drawable.reorder_horizontal_gray_24dp);
                 viewHolder.rvAmount.setVisibility(View.GONE);
-            } else if (groupAddActionMode != null) {
-                viewHolder.reorderImage.setVisibility(View.GONE);
+            } else if (actionMode != null && actionModeType == GROUP_ADD_MODE) {
+                viewHolder.image.setVisibility(View.GONE);
                 viewHolder.rvAmount.setVisibility(View.GONE);
             } else {
-                viewHolder.reorderImage.setVisibility(View.VISIBLE);
-                viewHolder.reorderImage.setImageResource(R.drawable.ic_add);
+                // Image show add
+                viewHolder.image.setVisibility(View.VISIBLE);
+                viewHolder.image.setImageResource(R.drawable.ic_add);
+                // Amount show
                 viewHolder.rvAmount.setVisibility(View.VISIBLE);
+                currencyFormat.setCurrency(cashBoxInfo.getCashBoxInfo().getCurrency());
                 viewHolder.rvAmount.setText(currencyFormat.format(cashBoxInfo.getCash()));
-                int colorRes = cashBoxInfo.getCash() < 0 ? R.color.colorNegativeNumber : R.color.colorPositiveNumber;
-                viewHolder.rvAmount.setTextColor(getActivity().getColor(colorRes));
+                viewHolder.rvAmount.setTextColor(getActivity().getColor(cashBoxInfo.getCash() < 0 ?
+                        R.color.colorNegativeNumber : R.color.colorPositiveNumber));
             }
 
             // Update if item selected
@@ -915,7 +914,7 @@ public class CashBoxManagerFragment extends Fragment {
 
         @Override
         public boolean isDragEnabled() {
-            return actionMode != null;
+            return actionMode != null && actionModeType == EDIT_MODE;
         }
 
         @Override
@@ -933,6 +932,10 @@ public class CashBoxManagerFragment extends Fragment {
             // In order for the animations to not occur, oldList and newList have to be the same
             CashBox.InfoWithCash infoWithCash = currentList.remove(fromPosition);
             currentList.add(toPosition, infoWithCash);
+            // Since we are manually changing the lists, manually change selectedCashBoxes
+            if (selectedItems.remove(fromPosition))
+                selectedItems.add(toPosition);
+
             viewModel.addDisposable(viewModel.moveCashBox(infoWithCash, toPosition)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
@@ -956,40 +959,6 @@ public class CashBoxManagerFragment extends Fragment {
                             getString(R.string.snackbarEntriesMoveToRecycle, 1),
                             Toast.LENGTH_SHORT)
                             .show()));
-
-
-//            if (actionMode != null)
-//                actionMode.finish();
-////            if(selectedViewHolder!=null && selectedViewHolder.getAdapterPosition()==position)
-////                selectedViewHolder=null;
-////            CashBox.InfoWithCash deletedCashBoxInfo = currentList.remove(position);
-////            notifyItemRemoved(position);
-//            CashBox.InfoWithCash removed = currentList.get(position);
-//            List<CashBox.InfoWithCash> list = new ArrayList<>(currentList);
-//            toDelete.add(removed);
-//            submitList(new ArrayList<>(currentList));
-//            Snackbar.make(coordinatorLayout,
-//                    getString(R.string.snackbarEntriesDeleted, 1), Snackbar.LENGTH_LONG)
-//                    .setAction(R.string.undo, v -> {
-//                        toDelete.removeFirst();
-//                        submitList(list);
-////                        currentList.add(position, deletedCashBoxInfo);
-////                        notifyItemInserted(position);
-//                    }).addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
-//                @Override
-//                public void onDismissed(Snackbar transientBottomBar, int event) {
-//                    super.onDismissed(transientBottomBar, event);
-//
-//                    if (event != DISMISS_EVENT_ACTION) {
-//                        LogUtil.debug(TAG, "Delete CashBox");
-////                        viewModel.addDisposable(viewModel.recycleCashBoxInfo(deletedCashBoxInfo)
-//                        viewModel.addDisposable(viewModel.recycleCashBoxInfo(toDelete.removeFirst())
-//                                .subscribeOn(Schedulers.io())
-//                                .observeOn(AndroidSchedulers.mainThread())
-//                                .subscribe());
-//                    }
-//                }
-//            }).show();
         }
 
         @Override
@@ -1097,22 +1066,13 @@ public class CashBoxManagerFragment extends Fragment {
             notifyItemChanged(position);
         }
 
-        boolean showActionMode() {
-            if (actionMode != null)
-                return false;
-            if (groupAddActionMode != null)
-                groupAddActionMode.finish();
-            actionMode = ((AppCompatActivity) getActivity()).startSupportActionMode(actionModeCallback);
-            return true;
-        }
-
         public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
             @BindView(R.id.rvName)
             TextView rvName;
             @BindView(R.id.rvAmount)
             TextView rvAmount;
             @BindView(R.id.reorderImage)
-            ImageView reorderImage;
+            ImageView image;
 
             ViewHolder(@NonNull View view) {
                 super(view);
@@ -1141,11 +1101,12 @@ public class CashBoxManagerFragment extends Fragment {
 
             @Override
             public void onClick(View v) {
-                if (groupAddActionMode != null)
-                    toggleSelectedCashBox(getAdapterPosition(), true);
-                else if (actionMode != null)
-                    toggleSelectedCashBox(getAdapterPosition(), false);
-                else {
+                if (actionMode != null) {
+                    if (actionModeType == GROUP_ADD_MODE)
+                        toggleSelectedCashBox(getAdapterPosition(), true);
+                    else if (actionModeType == EDIT_MODE || actionModeType == PERIODIC_ADD_MODE)
+                        toggleSelectedCashBox(getAdapterPosition(), false);
+                } else {
                     if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
                         toggleSelectedCashBox(getAdapterPosition(), false);
                     swapToItemFragment(currentList.get(getAdapterPosition()).getCashBoxInfo().getId());
@@ -1155,7 +1116,7 @@ public class CashBoxManagerFragment extends Fragment {
             @Override
             public boolean onLongClick(View v) {
                 toggleSelectedCashBox(getAdapterPosition(), false);
-                showActionMode();
+                startActionMode(EDIT_MODE);
                 return true;
             }
         }

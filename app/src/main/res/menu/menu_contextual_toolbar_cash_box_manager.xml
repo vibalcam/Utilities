@@ -6,9 +6,4 @@
         android:title="@string/contextualMenu_CBMDuplicate"
         app:showAsAction="ifRoom"
         android:icon="@drawable/ic_copy_white_24dp" />
-    <item
-        android:id="@+id/action_manager_addPeriodic"
-        android:title="@string/periodic_menu_title"
-        app:showAsAction="ifRoom"
-        android:icon="@drawable/ic_schedule_white_24dp" />
 </menu>

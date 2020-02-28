@@ -14,6 +14,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -54,6 +55,7 @@ import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Currency;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -80,7 +82,7 @@ public class CashBoxItemFragment extends Fragment {
     private SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener;
     private CashBoxItemRecyclerAdapter adapter;
     @NonNull
-    private NumberFormat formatCurrency = NumberFormat.getCurrencyInstance();
+    private final NumberFormat formatCurrency = NumberFormat.getCurrencyInstance();
     private CashBoxViewModel viewModel;
     private ShareActionProvider shareActionProvider;
     private SharedPreferences sharedPrefNot;
@@ -166,7 +168,6 @@ public class CashBoxItemFragment extends Fragment {
         //Set up RecyclerView
 //        rvCashBoxItem.setNestedScrollingEnabled(true);
         rvCashBoxItem.setHasFixedSize(true);
-//        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
         LinearLayoutManager layoutManager = new LinearLayoutManagerWrapper(getContext()); // Workaround for recycler error
         rvCashBoxItem.setLayoutManager(layoutManager);
         adapter = new CashBoxItemRecyclerAdapter();
@@ -201,6 +202,11 @@ public class CashBoxItemFragment extends Fragment {
                 actionBar.setTitle(cashBox.getName());
 
             // Update data
+            Currency cashBoxCurrency = cashBox.getInfoWithCash().getCashBoxInfo().getCurrency();
+            if (!Objects.equals(formatCurrency.getCurrency(), cashBoxCurrency)) {
+                formatCurrency.setCurrency(cashBox.getInfoWithCash().getCashBoxInfo().getCurrency());
+                adapter.notifyItemRangeChanged(0, adapter.getItemCount());
+            }
             adapter.submitList(cashBox.getEntries());
             updateCash(cashBox.getCash());
 
@@ -270,12 +276,60 @@ public class CashBoxItemFragment extends Fragment {
             case R.id.action_item_reminder:
                 showReminderDialog();
                 return true;
+            case R.id.action_item_currency:
+                showCurrencyChooser();
+                return true;
             case R.id.action_item_settings:
                 startActivity(new Intent(getContext(), SettingsActivity.class));
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    // Order them and show symbol when possible
+    private void showCurrencyChooser() {
+        // Adapter to show currencies
+        ArrayAdapter<Currency> arrayAdapter = new ArrayAdapter<Currency>(getContext(),
+                R.layout.dialog_currency_chooser, new ArrayList<>(Currency.getAvailableCurrencies())) {
+            @NonNull
+            @Override
+            public Currency getItem(int position) {
+                return Objects.requireNonNull(super.getItem(position));
+            }
+
+            @NonNull
+            @Override
+            public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+                TextView view = (TextView) super.getView(position, convertView, parent);
+                Currency currency = Objects.requireNonNull(getItem(position));
+                view.setText(getString(R.string.display_currency_list, currency.getDisplayName(),
+                        currency.getSymbol()));
+                return view;
+            }
+        };
+
+        // Sort the adapter
+        arrayAdapter.sort((o1, o2) -> {
+            // If both currencies have symbols defined or do not have them, it returns the
+            // compareTo method otherwise, it returns as smaller the one with the symbol defined
+            if ((o1.getSymbol().equals(o1.getCurrencyCode())) == (o2.getSymbol().equals(o2.getCurrencyCode())))
+                return o1.getCurrencyCode().compareTo(o2.getCurrencyCode());
+            else // returns as bigger the one with a symbol defined
+                return o1.getSymbol().equals(o1.getCurrencyCode()) ? 1 : -1;
+        });
+
+        new AlertDialog.Builder(getContext())
+                .setTitle(getString(R.string.currency_dialog_title))
+                .setSingleChoiceItems(arrayAdapter, -1, (dialog, which) -> {
+                    dialog.dismiss();
+                    LogUtil.debug(TAG, arrayAdapter.getItem(which).getCurrencyCode());
+                    viewModel.addDisposable(
+                            viewModel.setCurrentCashBoxCurrency(arrayAdapter.getItem(which))
+                                    .subscribeOn(Schedulers.io())
+                                    .observeOn(AndroidSchedulers.mainThread())
+                                    .subscribe());
+                }).show();
     }
 
     private void showReminderDialog() {
@@ -365,7 +419,7 @@ public class CashBoxItemFragment extends Fragment {
             return;
         }
 
-        List<CashBox.Entry> deletedEntries = adapter.currentList;
+        List<CashBox.Entry> deletedEntries = new ArrayList<>(adapter.currentList);
         viewModel.addDisposable(viewModel.deleteAllEntriesFromCurrentCashBox()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -537,17 +591,20 @@ public class CashBoxItemFragment extends Fragment {
                             String info = inputInfo.getText().toString().trim();
                             double amount = Util.parseExpression(input);
 
+                            // Not a group entry
                             if (modifiedEntry.getGroupId() == CashBox.Entry.NO_GROUP)
                                 modifyEntry(modifiedEntry, dialogInterface, amount, info,
                                         calendarListener.getCalendar());
-                            else {
+                            else { // Group entry
                                 AlertDialog dialogGroup = new AlertDialog.Builder(getContext())
                                         .setTitle(R.string.titleGroupEntryModify)
                                         .setMessage(R.string.messageGroupModify)
+                                        // Modify only this entry
                                         .setNegativeButton(R.string.groupEntryIndividual,
                                                 (dialogInterfaceGroup, i) -> modifyEntry(modifiedEntry,
                                                         dialogInterface, amount, info,
                                                         calendarListener.getCalendar()))
+                                        // Modify all entries of the group
                                         .setPositiveButton(R.string.groupEntryAll, (dialogInterfaceGroup, i) ->
                                                 viewModel.addDisposable(viewModel.getGroupEntries(modifiedEntry)
                                                         .flatMap(entries -> viewModel.modifyGroupEntry(

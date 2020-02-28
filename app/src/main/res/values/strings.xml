@@ -77,10 +77,15 @@
     <string name="action_reset">Delete All</string>
     <string name="menu_item_reminderOn">Cancel Reminder</string>
     <string name="menu_item_reminderOff">Set Reminder</string>
-    <string name="menu_item_Share">Share</string>
+    <string name="menu_item_share">Share</string>
+    <string name="menu_item_currency">Currency</string>
 
     <!--CashBox Deleted Menu-->
     <string name="action_restoreAll">Restore All</string>
+
+    <!--CashBox Currency Dialog-->
+    <string name="currency_dialog_title">Choose Currency</string>
+    <string name="display_currency_list">%s (%s)</string>
 
     <!--CashBox Reminder-->
     <string name="reminder_dialog_invalid_date">Trying to go back in time, uh?</string>
@@ -128,7 +133,7 @@
         \n-\tFixed reminders so they remain even after boot.
         \n-\tFixed bug that made the app consistently crash.
         \n-\tMinor bug fixes.
-        <b>2.4.0</b>
+        \n<b>2.4.0</b>
         \n-\tChoose date of new entry.
         \n-\tChoose start date and delay of periodic entries.
         \n-\tDeleted CashBoxes go to the CashBox Recycle Bin.

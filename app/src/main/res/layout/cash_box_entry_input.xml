@@ -58,7 +58,7 @@
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/inputTextInfo"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:textColor="@android:color/black"
             android:inputType="textMultiLine"
             android:allowUndo="true" />
