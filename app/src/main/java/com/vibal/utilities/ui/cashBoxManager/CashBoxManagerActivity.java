@@ -6,17 +6,28 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.viewpager.widget.ViewPager;
 
+import com.google.android.material.tabs.TabLayout;
 import com.vibal.utilities.R;
+import com.vibal.utilities.models.CashBoxManager;
+import com.vibal.utilities.util.LogUtil;
 import com.vibal.utilities.widget.CashBoxWidgetProvider;
 
 import java.util.Objects;
 
-public class CashBoxManagerActivity extends AppCompatActivity {
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
+public class CashBoxManagerActivity extends AppCompatActivity implements TabLayout.OnTabSelectedListener {
+//public class CashBoxManagerActivity extends AppCompatActivity {
     // Extras for intents
     public static final String EXTRA_CASHBOX_ID = "com.vibal.utilities.cashBoxId";
     public static final String EXTRA_ACTION = "com.vibal.utilities.ui.cashBoxManager.action";
@@ -42,10 +53,14 @@ public class CashBoxManagerActivity extends AppCompatActivity {
      */
     public static final String GROUP_ADD_MODE_KEY = "com.vibal.utilities.cashBoxManager.GROUP_ADD_MODE";
 
+    @BindView(R.id.container)
+    ViewPager viewPager;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.cash_box_manager_activity);
+        setContentView(R.layout.cash_box_manager_activity); //todo land view
+        ButterKnife.bind(this);
 
         //Cancel reminder notifications if any
         NotificationManagerCompat.from(this).cancelAll();
@@ -71,12 +86,19 @@ public class CashBoxManagerActivity extends AppCompatActivity {
                         .commitNow();
             }
         }
+
+        // Set up TabLayout
+        viewPager.setAdapter(new MenusPagerAdapter(getSupportFragmentManager()));
+//        ((ViewPager) findViewById(R.id.container)).setAdapter(
+//                new MenusPagerAdapter(getSupportFragmentManager()));
+        ((TabLayout) findViewById(R.id.CB_tabs)).addOnTabSelectedListener(this);
+//        ((TabLayout) findViewById(R.id.CB_tabs)).setupWithViewPager(viewPager);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        //update app widget
+        // Update app widget
         //todo update app widget
         Intent intent = new Intent(this, CashBoxWidgetProvider.class);
         intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
@@ -90,5 +112,55 @@ public class CashBoxManagerActivity extends AppCompatActivity {
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
+    }
+
+    @Override
+    public void onTabSelected(TabLayout.Tab tab) {
+        LogUtil.debug("Prueba", "Position: "+tab.getPosition());
+//        FragmentManager fragmentManager = getSupportFragmentManager();
+//        switch (tab.getPosition()) {
+//            case 0:
+//
+//        }
+        viewPager.setCurrentItem(tab.getPosition(),true);
+    }
+
+    @Override
+    public void onTabUnselected(TabLayout.Tab tab) { // nothing to do
+    }
+
+    @Override
+    public void onTabReselected(TabLayout.Tab tab) { // nothing to do
+    }
+
+    private static class MenusPagerAdapter extends FragmentPagerAdapter {
+
+        private MenusPagerAdapter(@NonNull FragmentManager fm) {
+            super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
+        }
+
+        private MenusPagerAdapter(@NonNull FragmentManager fm, int behavior) {
+            super(fm, behavior);
+        }
+
+        @NonNull
+        @Override
+        public Fragment getItem(int position) {
+            LogUtil.debug("Prueba","Position get Item: "+position); //todo put fragments
+            return CashBoxManagerFragment.newInstance();
+//            switch (position) {
+//                case 0:
+//                    return CashBoxManagerFragment.newInstance();
+//                case 1:
+//                    return CashBoxManagerFragment.newInstance();
+//                default: // should never happen
+//                    throw new IllegalArgumentException("No fragment associated to position");
+//            }
+        }
+
+        @Override
+        public int getCount() {
+            return 4;
+        }
     }
 }

@@ -73,16 +73,14 @@ public class CashBoxItemFragment extends Fragment {
     public static final int REMINDER_ID = 1;
     private static final double MAX_SHOW_CASH = 99999999;
     private static final String TAG = "PruebaItemFragment";
-
+    @NonNull
+    private final NumberFormat formatCurrency = NumberFormat.getCurrencyInstance();
     @BindView(R.id.itemCash)
     TextView itemCash;
     @BindView(R.id.rvCashBoxItem)
     RecyclerView rvCashBoxItem;
-
     private SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener;
     private CashBoxItemRecyclerAdapter adapter;
-    @NonNull
-    private final NumberFormat formatCurrency = NumberFormat.getCurrencyInstance();
     private CashBoxViewModel viewModel;
     private ShareActionProvider shareActionProvider;
     private SharedPreferences sharedPrefNot;

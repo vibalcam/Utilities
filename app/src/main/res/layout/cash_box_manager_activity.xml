@@ -10,20 +10,44 @@
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/AppTheme.AppBarOverlay">
+        android:theme="@style/AppTheme.AppBarOverlay"
+        android:elevation="4dp">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
-            android:elevation="4dp"
             app:popupTheme="@style/AppTheme.PopupOverlay"
             app:titleTextColor="@android:color/white"
             app:navigationIcon="@drawable/home"/>
+
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/CB_tabs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/AppTheme.TabLayout"
+            app:tabMode="auto">
+            <com.google.android.material.tabs.TabItem
+                android:layout_height="0dp"
+                android:layout_width="0dp"
+                android:text="@string/menuCBM_manager" />
+            <com.google.android.material.tabs.TabItem
+                android:layout_height="0dp"
+                android:layout_width="0dp"
+                android:text="@string/menuCBM_recycleBin" />
+            <com.google.android.material.tabs.TabItem
+                android:layout_height="0dp"
+                android:layout_width="0dp"
+                android:text="@string/menuCBM_showPeriodic" />
+            <com.google.android.material.tabs.TabItem
+                android:layout_height="0dp"
+                android:layout_width="0dp"
+                android:text="@string/menuCBM_notifications" />
+        </com.google.android.material.tabs.TabLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <FrameLayout
+    <com.vibal.utilities.util.CashBoxViewPager
         android:id="@+id/container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

@@ -58,6 +58,8 @@
     <!--CashBox Manager Menu-->
     <string name="menuCBM_showPeriodic">Periodic Tasks</string>
     <string name="menuCBM_recycleBin">Recycle Bin</string>
+    <string name="menuCBM_manager">Manager</string>
+    <string name="menuCBM_notifications">Notifications</string>
 
     <!--CashBox Manager Contextual Menu-->
     <string name="contextualMenu_CBMDuplicate">Duplicate</string>
@@ -115,12 +117,11 @@
     </string>
     <string name="cashBoxManager_helpTitle">"Cash Box Manager Help"</string>
     <string name="cashBoxManager_help">
-        -\tPress the floating button to add a new CashBox or group entries
+        -\tPress the floating button to add a new CashBox, group entries or periodical entry.
         \n-\tSwipe left to send a CashBox to the recycle bin.
         \n-\tSwipe right to modify a CashBox.
         \n-\tSelect a CashBox by clicking it.
         \n-\tLong press a CashBox to enter edit mode.
-        \n-\tIn edit mode you select a CashBox to add a periodical entry.
     </string>
     <string name="randomChooser_helpTitle">"Random Chooser Help"</string>
     <string name="randomChooser_help">Roll The Dice: returns a randomly chosen item from the list.
@@ -129,7 +130,9 @@
         \nTo delete all entries, click the trashcan symbol at the top of the app.
     </string>
     <string name="changesVersions">
-        <b>2.4.1</b>
+        <b>2.4.2</b>
+        \n-\tAdded option to choose the display currency of a CashBox.
+        \n<b>2.4.1</b>
         \n-\tFixed reminders so they remain even after boot.
         \n-\tFixed bug that made the app consistently crash.
         \n-\tMinor bug fixes.

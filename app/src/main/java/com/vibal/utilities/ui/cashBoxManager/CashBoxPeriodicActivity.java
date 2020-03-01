@@ -54,7 +54,7 @@ import io.reactivex.SingleOnSubscribe;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
-public class CashBoxPeriodicActivity extends AppCompatActivity {
+public class CashBoxPeriodicActivity extends AppCompatActivity { //todo to fragment
     @BindView(R.id.lyCBPeriodic)
     CoordinatorLayout coordinatorLayout;
 

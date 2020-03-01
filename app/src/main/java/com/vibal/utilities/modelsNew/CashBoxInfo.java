@@ -84,12 +84,12 @@ public class CashBoxInfo implements Cloneable {
         return deleted;
     }
 
-    public Currency getCurrency() {
-        return currency;
-    }
-
     public void setDeleted(boolean deleted) {
         this.deleted = deleted;
+    }
+
+    public Currency getCurrency() {
+        return currency;
     }
 
     public void setCurrency(Currency currency) {

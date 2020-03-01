@@ -36,7 +36,7 @@ import butterknife.ButterKnife;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
-public class CashBoxDeletedActivity extends AppCompatActivity {
+public class CashBoxDeletedActivity extends AppCompatActivity { //todo to fragment
     private final DiffUtil.ItemCallback<CashBox.InfoWithCash> DIFF_CALLBACK =
             new DiffUtil.ItemCallback<CashBox.InfoWithCash>() {
                 @Override
