@@ -27,7 +27,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class CashBoxManagerActivity extends AppCompatActivity implements TabLayout.OnTabSelectedListener, PagerActivity {
-//public class CashBoxManagerActivity extends AppCompatActivity {
+    //public class CashBoxManagerActivity extends AppCompatActivity {
     // Extras for intents
     public static final String EXTRA_CASHBOX_ID = "com.vibal.utilities.cashBoxId";
     public static final String EXTRA_ACTION = "com.vibal.utilities.ui.cashBoxManager.action";
@@ -92,7 +92,7 @@ public class CashBoxManagerActivity extends AppCompatActivity implements TabLayo
 
         // Set up TabLayout
         pager.setAdapter(new MenusPagerAdapter(getSupportFragmentManager()));
-        if(tabs!=null)
+        if (tabs != null)
             tabs.addOnTabSelectedListener(this);
     }
 
@@ -122,10 +122,10 @@ public class CashBoxManagerActivity extends AppCompatActivity implements TabLayo
 
     @Override
     public void onBackPressed() {
-        LogUtil.debug("Prueba","Current item " + pager.getCurrentItem());
+        LogUtil.debug("Prueba", "Current item " + pager.getCurrentItem());
         Fragment fragment = getPagerFragment(pager.getCurrentItem());
-        if(fragment instanceof PagerFragment) {
-            if(((PagerFragment) fragment).onBackPressed())
+        if (fragment instanceof PagerFragment) {
+            if (((PagerFragment) fragment).onBackPressed())
                 return;
         }
         super.onBackPressed();
@@ -139,15 +139,15 @@ public class CashBoxManagerActivity extends AppCompatActivity implements TabLayo
 
     @Override
     public void setTabLayoutVisibility(int visibility) {
-        if(tabs != null)
+        if (tabs != null)
             tabs.setVisibility(visibility);
     }
 
     // Implementing TabLayout.OnTabSelectedListener
     @Override
     public void onTabSelected(@NonNull TabLayout.Tab tab) {
-        LogUtil.debug("PruebaViewPager", "Position: "+tab.getPosition());
-        pager.setCurrentItem(tab.getPosition(),true);
+        LogUtil.debug("PruebaViewPager", "Position: " + tab.getPosition());
+        pager.setCurrentItem(tab.getPosition(), true);
     }
 
     @Override
@@ -167,7 +167,7 @@ public class CashBoxManagerActivity extends AppCompatActivity implements TabLayo
         @NonNull
         @Override
         public Fragment getItem(int position) {
-            LogUtil.debug("PruebaViewPager","Position get Item: "+position);
+            LogUtil.debug("PruebaViewPager", "Position get Item: " + position);
             switch (position) {
                 case 0:
                     return CashBoxViewFragment.newInstance(position);

@@ -130,8 +130,9 @@
         \nTo delete all entries, click the trashcan symbol at the top of the app.
     </string>
     <string name="changesVersions">
-        <b>Last version</b>
+        <b>2.4.3</b>
         \n-\tAdded tabs to easily navigate to recycle bin and periodic entries.
+        \n-\tFixed memory bugs.
         \n<b>2.4.2</b>
         \n-\tAdded option to choose the display currency of a CashBox.
         \n<b>2.4.1</b>

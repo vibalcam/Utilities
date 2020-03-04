@@ -10,15 +10,15 @@ public abstract class PagerFragment extends Fragment {
     private int pagerPosition = -1;
 
     protected void setPositionAsArgument(int pagerPosition) {
-        Bundle bundle = getArguments()!=null ? getArguments() : new Bundle();
-        bundle.putInt(PAGER_POSITION_ARG,pagerPosition);
+        Bundle bundle = getArguments() != null ? getArguments() : new Bundle();
+        bundle.putInt(PAGER_POSITION_ARG, pagerPosition);
         setArguments(bundle);
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if(getArguments()!=null)
+        if (getArguments() != null)
             pagerPosition = getArguments().getInt(PAGER_POSITION_ARG, -1);
     }
 
@@ -28,14 +28,14 @@ public abstract class PagerFragment extends Fragment {
 
     protected boolean isOptionsMenuActive() {
         // If this fragment is not currently showing
-        if(getActivity() instanceof PagerActivity) {
-             return ((PagerActivity) getActivity()).getCurrentPagerPosition() == pagerPosition;
+        if (getActivity() instanceof PagerActivity) {
+            return ((PagerActivity) getActivity()).getCurrentPagerPosition() == pagerPosition;
         } else // if no pager position, return true
             return true;
     }
 
     protected void setTabLayoutVisibility(int visibility) {
-        if((getActivity() instanceof PagerActivity))
+        if ((getActivity() instanceof PagerActivity))
             ((PagerActivity) getActivity()).setTabLayoutVisibility(visibility);
     }
 

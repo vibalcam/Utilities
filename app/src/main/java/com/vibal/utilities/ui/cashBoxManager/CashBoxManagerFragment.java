@@ -406,12 +406,12 @@ public class CashBoxManagerFragment extends PagerFragment {
     @Override
     public void onResume() {
         super.onResume();
-        LogUtil.debug("PruebaView",getParentFragmentManager().getFragments().toString());
+        LogUtil.debug("PruebaView", getParentFragmentManager().getFragments().toString());
     }
 
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        if(!isOptionsMenuActive())
+        if (!isOptionsMenuActive())
             return;
         super.onCreateOptionsMenu(menu, inflater);
 
@@ -420,7 +420,7 @@ public class CashBoxManagerFragment extends PagerFragment {
         inflater.inflate(R.menu.menu_toolbar_cash_box_manager, menu);
 
         //Set Toolbar title
-        if (getParentFragmentManager().getFragments().size()<2)
+        if (getParentFragmentManager().getFragments().size() < 2)
             ((AppCompatActivity) requireActivity()).getSupportActionBar().setTitle(R.string.titleCBM);
     }
 
@@ -455,7 +455,7 @@ public class CashBoxManagerFragment extends PagerFragment {
     private void doIntentAction() {
         Intent intent = requireActivity().getIntent();
         int action = intent == null ? NO_ACTION : intent.getIntExtra(EXTRA_ACTION, NO_ACTION);
-        if(intent!=null)
+        if (intent != null)
             intent.removeExtra(EXTRA_ACTION); //So it only triggers once
 
         LogUtil.debug(TAG, "" + (action == ACTION_ADD_CASHBOX) + " " + (action == ACTION_DETAILS));
@@ -1080,7 +1080,7 @@ public class CashBoxManagerFragment extends PagerFragment {
                 if (actionMode == null) { //Normal behavior
                     if (event.getActionMasked() == MotionEvent.ACTION_UP)
                         CashBoxItemFragment.getAddEntryDialog(currentList.get(getAdapterPosition()).getId(),
-                                requireContext(), viewModel,compositeDisposable)
+                                requireContext(), viewModel, compositeDisposable)
                                 .show();
                     return true; //to consume the touch action so it does not count as a click on the view
                 } else { //While in edit mode/action mode

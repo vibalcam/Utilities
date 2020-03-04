@@ -236,7 +236,7 @@ public class CashBoxItemFragment extends PagerFragment {
 
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        if(!isOptionsMenuActive())
+        if (!isOptionsMenuActive())
             return;
         super.onCreateOptionsMenu(menu, inflater);
 

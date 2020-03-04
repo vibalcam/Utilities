@@ -44,7 +44,7 @@ public class CashBoxViewFragment extends PagerFragment {
 
         // Logic for landscape mode
         FragmentManager fragmentManager = getChildFragmentManager();
-        LogUtil.debug(TAG,fragmentManager.getFragments().toString());
+        LogUtil.debug(TAG, fragmentManager.getFragments().toString());
         if (savedInstanceState == null) {
             fragmentManager.beginTransaction()
                     .replace(R.id.container, CashBoxManagerFragment.newInstance(getPagerPosition()))
@@ -60,19 +60,19 @@ public class CashBoxViewFragment extends PagerFragment {
                         .replace(R.id.containerItem, CashBoxItemFragment.newInstance(getPagerPosition()))
                         .replace(R.id.container, CashBoxManagerFragment.newInstance(getPagerPosition()))
                         .commitNow();
-            } else if((fragment = fragmentManager.findFragmentById(R.id.containerItem)) != null) {
+            } else if ((fragment = fragmentManager.findFragmentById(R.id.containerItem)) != null) {
                 // Remove the ItemFragment that is not being used anymore
                 fragmentManager.beginTransaction()
                         .remove(fragment)
                         .commitNow();
             }
         }
-        LogUtil.debug(TAG,fragmentManager.getFragments().toString());
+        LogUtil.debug(TAG, fragmentManager.getFragments().toString());
     }
 
     @Override
     public boolean onBackPressed() {
-        if(!isAdded())
+        if (!isAdded())
             return false;
 
         LogUtil.debug(TAG, "funciona " + getChildFragmentManager().getBackStackEntryCount());

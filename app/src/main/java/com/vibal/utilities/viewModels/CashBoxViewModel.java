@@ -63,7 +63,7 @@ public class CashBoxViewModel extends AndroidViewModel {
 
     public void setCurrentCashBoxId(long currentCashBoxId) {
         // If different, get the current cashbox
-        if(this.getCurrentCashBoxId() != currentCashBoxId)
+        if (this.getCurrentCashBoxId() != currentCashBoxId)
             cashBox = repository.getOrderedCashBox(currentCashBoxId);
         // Change current cashbox id
 //        this.currentCashBoxId = currentCashBoxId;
