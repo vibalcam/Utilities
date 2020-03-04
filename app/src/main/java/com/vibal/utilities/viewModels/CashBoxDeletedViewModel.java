@@ -9,21 +9,18 @@ import androidx.lifecycle.LiveData;
 import com.vibal.utilities.db.CashBoxRepository;
 import com.vibal.utilities.modelsNew.CashBox;
 import com.vibal.utilities.modelsNew.CashBoxInfo;
-import com.vibal.utilities.util.LogUtil;
 
 import java.util.List;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
-import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.disposables.Disposable;
 
 public class CashBoxDeletedViewModel extends AndroidViewModel {
     private static final String TAG = "PruebaCashBoxDeletedViewModel";
 
     private CashBoxRepository repository;
     private LiveData<List<CashBox.InfoWithCash>> cashBoxesInfo;
-    private CompositeDisposable compositeDisposable = new CompositeDisposable();
+//    private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     public CashBoxDeletedViewModel(@NonNull Application application) {
         super(application);
@@ -53,14 +50,14 @@ public class CashBoxDeletedViewModel extends AndroidViewModel {
         return repository.clearRecycleBin();
     }
 
-    public void addDisposable(Disposable disposable) {
-        compositeDisposable.add(disposable);
-    }
-
-    @Override
-    protected void onCleared() {
-        super.onCleared();
-        compositeDisposable.clear();
-        LogUtil.debug(TAG, "onCleared: clearing disposable");
-    }
+//    public void addDisposable(Disposable disposable) {
+//        compositeDisposable.add(disposable);
+//    }
+//
+//    @Override
+//    protected void onCleared() {
+//        super.onCleared();
+//        compositeDisposable.clear();
+//        LogUtil.debug(TAG, "onCleared: clearing disposable");
+//    }
 }

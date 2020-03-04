@@ -10,46 +10,76 @@
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/AppTheme.AppBarOverlay">
+        android:theme="@style/AppTheme.AppBarOverlay"
+        android:elevation="4dp">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
-            android:elevation="4dp"
             app:popupTheme="@style/AppTheme.PopupOverlay"
             app:titleTextColor="@android:color/white"
             app:navigationIcon="@drawable/home"/>
+
+<!--        <com.google.android.material.tabs.TabLayout-->
+<!--            android:id="@+id/CB_tabs"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            style="@style/AppTheme.TabLayout"-->
+<!--            app:tabMode="auto">-->
+<!--            <com.google.android.material.tabs.TabItem-->
+<!--                android:layout_height="0dp"-->
+<!--                android:layout_width="0dp"-->
+<!--                android:text="@string/menuCBM_manager" />-->
+<!--            <com.google.android.material.tabs.TabItem-->
+<!--                android:layout_height="0dp"-->
+<!--                android:layout_width="0dp"-->
+<!--                android:text="@string/menuCBM_recycleBin" />-->
+<!--            <com.google.android.material.tabs.TabItem-->
+<!--                android:layout_height="0dp"-->
+<!--                android:layout_width="0dp"-->
+<!--                android:text="@string/menuCBM_showPeriodic" />-->
+<!--            &lt;!&ndash;            <com.google.android.material.tabs.TabItem&ndash;&gt;-->
+<!--            &lt;!&ndash;                android:layout_height="0dp"&ndash;&gt;-->
+<!--            &lt;!&ndash;                android:layout_width="0dp"&ndash;&gt;-->
+<!--            &lt;!&ndash;                android:text="@string/menuCBM_notifications" />&ndash;&gt;-->
+<!--        </com.google.android.material.tabs.TabLayout>-->
     </com.google.android.material.appbar.AppBarLayout>
 
-    <LinearLayout
+<!--    <LinearLayout-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent"-->
+<!--        android:baselineAligned="false"-->
+<!--        app:layout_behavior="@string/appbar_scrolling_view_behavior">-->
+<!--        <FrameLayout-->
+<!--            android:id="@+id/container"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="match_parent"-->
+<!--            android:layout_weight="1"/>-->
+
+<!--        <View-->
+<!--            android:layout_width="1dp"-->
+<!--            android:layout_height="match_parent"-->
+<!--            android:background="@color/colorDivider"/>-->
+
+<!--        <FrameLayout-->
+<!--            android:id="@+id/containerItem"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="match_parent"-->
+<!--            android:layout_weight="1">-->
+<!--            <TextView-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_gravity="center"-->
+<!--                android:text="@string/no_cashbox_selected"-->
+<!--                android:textAppearance="?android:attr/textAppearanceMedium" />-->
+<!--        </FrameLayout>-->
+<!--    </LinearLayout>-->
+
+    <com.vibal.utilities.util.CashBoxViewPager
+        android:id="@+id/CB_viewPager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:baselineAligned="false"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
-        <FrameLayout
-            android:id="@+id/container"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1"/>
-
-        <View
-            android:layout_width="1dp"
-            android:layout_height="match_parent"
-            android:background="@color/colorDivider"/>
-
-        <FrameLayout
-            android:id="@+id/containerItem"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="@string/no_cashbox_selected"
-                android:textAppearance="?android:attr/textAppearanceMedium" />
-        </FrameLayout>
-    </LinearLayout>
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

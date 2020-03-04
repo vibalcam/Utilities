@@ -1,9 +1,1 @@
-- CashBoxItemFragment: Fixed delete all
-- CashBoxManagerFragment: Substitute action modes for a single action mode and variable that holds
-    the type of the currently active action mode
-- CashBoxManagerFragment: change periodic add into fab with its own action mode
-- cash_box_entry_input: modified TextInputEditText info height from match_parent to wrap_content so
-    it expands when text is entered
-- Added currency to CashBoxInfo: also added to UtilitiesDatabase (Migration_2_3), CashBoxDao,
-    OnlineCashBoxInfo, CashBoxRepository and CashBoxViewModel
-- Added option to choose currency to CashBoxItemFragment (changes also show in CashBoxManagerFragment)
+-
