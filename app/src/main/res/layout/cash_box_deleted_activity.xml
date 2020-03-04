@@ -5,22 +5,22 @@
     android:id="@+id/lyCBDeleted"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.cashBoxManager.CashBoxDeletedActivity">
+    tools:context=".ui.cashBoxManager.CashBoxDeletedFragment">
 
-    <com.google.android.material.appbar.AppBarLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:theme="@style/AppTheme.AppBarOverlay">
+<!--    <com.google.android.material.appbar.AppBarLayout-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:theme="@style/AppTheme.AppBarOverlay">-->
 
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbarCBDeleted"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            android:elevation="4dp"
-            app:popupTheme="@style/AppTheme.PopupOverlay"
-            app:titleTextColor="@android:color/white" />
-    </com.google.android.material.appbar.AppBarLayout>
+<!--        <androidx.appcompat.widget.Toolbar-->
+<!--            android:id="@+id/toolbarCBDeleted"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="?attr/actionBarSize"-->
+<!--            android:background="?attr/colorPrimary"-->
+<!--            android:elevation="4dp"-->
+<!--            app:popupTheme="@style/AppTheme.PopupOverlay"-->
+<!--            app:titleTextColor="@android:color/white" />-->
+<!--    </com.google.android.material.appbar.AppBarLayout>-->
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvCashBoxDeleted"

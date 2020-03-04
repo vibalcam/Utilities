@@ -1,2 +1,6 @@
-- Created CashBoxViewPager to not allow dragging to change fragment.
-- TabLayout and ViewPager to change between cashBox menus.
+- Changed Periodic and Deleted Activities to Fragments
+- Added CashBoxViewFragment to hold Manager and Item fragments
+- Changed fragments to adjust to ViewPager
+- Created PagerActivity and PagerFragment to hold general implementations for ViewPager
+- TabLayout not showing in landscape or when in action mode
+- Toolbar title gives preference to item fragment than to manager when in landscape

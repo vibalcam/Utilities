@@ -4,7 +4,6 @@ import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -17,7 +16,8 @@ import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.material.tabs.TabLayout;
 import com.vibal.utilities.R;
-import com.vibal.utilities.models.CashBoxManager;
+import com.vibal.utilities.ui.PagerActivity;
+import com.vibal.utilities.ui.PagerFragment;
 import com.vibal.utilities.util.LogUtil;
 import com.vibal.utilities.widget.CashBoxWidgetProvider;
 
@@ -26,7 +26,7 @@ import java.util.Objects;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class CashBoxManagerActivity extends AppCompatActivity implements TabLayout.OnTabSelectedListener {
+public class CashBoxManagerActivity extends AppCompatActivity implements TabLayout.OnTabSelectedListener, PagerActivity {
 //public class CashBoxManagerActivity extends AppCompatActivity {
     // Extras for intents
     public static final String EXTRA_CASHBOX_ID = "com.vibal.utilities.cashBoxId";
@@ -53,13 +53,16 @@ public class CashBoxManagerActivity extends AppCompatActivity implements TabLayo
      */
     public static final String GROUP_ADD_MODE_KEY = "com.vibal.utilities.cashBoxManager.GROUP_ADD_MODE";
 
-    @BindView(R.id.container)
-    ViewPager viewPager;
+    @BindView(R.id.CB_viewPager)
+    ViewPager pager;
+    @Nullable
+    @BindView(R.id.CB_tabs)
+    TabLayout tabs;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.cash_box_manager_activity); //todo land view
+        setContentView(R.layout.cash_box_manager_activity);
         ButterKnife.bind(this);
 
         //Cancel reminder notifications if any
@@ -69,30 +72,28 @@ public class CashBoxManagerActivity extends AppCompatActivity implements TabLayo
         setSupportActionBar(findViewById(R.id.toolbar));
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
-        if (savedInstanceState == null) {
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.container, CashBoxManagerFragment.newInstance())
-                    .commitNow();
-        } else {
-            View viewLand = findViewById(R.id.containerItem);
-            FragmentManager fragmentManager = getSupportFragmentManager();
-            if (viewLand != null && viewLand.getVisibility() == View.VISIBLE &&
-                    fragmentManager.findFragmentById(R.id.container) instanceof CashBoxItemFragment) {
-                fragmentManager.popBackStack();
-                fragmentManager.beginTransaction()
-                        .replace(R.id.containerItem, CashBoxItemFragment.newInstance())
-                        .replace(R.id.container, CashBoxManagerFragment.newInstance())
-                        .commitNow();
-            }
-        }
+//        if (savedInstanceState == null) {
+//            getSupportFragmentManager()
+//                    .beginTransaction()
+//                    .replace(R.id.container, CashBoxManagerFragment.newInstance())
+//                    .commitNow();
+//        } else {
+//            View viewLand = findViewById(R.id.containerItem);
+//            FragmentManager fragmentManager = getSupportFragmentManager();
+//            if (viewLand != null && viewLand.getVisibility() == View.VISIBLE &&
+//                    fragmentManager.findFragmentById(R.id.container) instanceof CashBoxItemFragment) {
+//                fragmentManager.popBackStack();
+//                fragmentManager.beginTransaction()
+//                        .replace(R.id.containerItem, CashBoxItemFragment.newInstance())
+//                        .replace(R.id.container, CashBoxManagerFragment.newInstance())
+//                        .commitNow();
+//            }
+//        }
 
         // Set up TabLayout
-        viewPager.setAdapter(new MenusPagerAdapter(getSupportFragmentManager()));
-//        ((ViewPager) findViewById(R.id.container)).setAdapter(
-//                new MenusPagerAdapter(getSupportFragmentManager()));
-        ((TabLayout) findViewById(R.id.CB_tabs)).addOnTabSelectedListener(this);
-//        ((TabLayout) findViewById(R.id.CB_tabs)).setupWithViewPager(viewPager);
+        pager.setAdapter(new MenusPagerAdapter(getSupportFragmentManager()));
+        if(tabs!=null)
+            tabs.addOnTabSelectedListener(this);
     }
 
     @Override
@@ -114,15 +115,39 @@ public class CashBoxManagerActivity extends AppCompatActivity implements TabLayo
         setIntent(intent);
     }
 
+    private Fragment getPagerFragment(int position) {
+        return getSupportFragmentManager().findFragmentByTag("android:switcher:" + pager.getId() +
+                ":" + position);
+    }
+
     @Override
-    public void onTabSelected(TabLayout.Tab tab) {
-        LogUtil.debug("Prueba", "Position: "+tab.getPosition());
-//        FragmentManager fragmentManager = getSupportFragmentManager();
-//        switch (tab.getPosition()) {
-//            case 0:
-//
-//        }
-        viewPager.setCurrentItem(tab.getPosition(),true);
+    public void onBackPressed() {
+        LogUtil.debug("Prueba","Current item " + pager.getCurrentItem());
+        Fragment fragment = getPagerFragment(pager.getCurrentItem());
+        if(fragment instanceof PagerFragment) {
+            if(((PagerFragment) fragment).onBackPressed())
+                return;
+        }
+        super.onBackPressed();
+    }
+
+    // Implementing PagerActivity
+    @Override
+    public int getCurrentPagerPosition() {
+        return pager.getCurrentItem();
+    }
+
+    @Override
+    public void setTabLayoutVisibility(int visibility) {
+        if(tabs != null)
+            tabs.setVisibility(visibility);
+    }
+
+    // Implementing TabLayout.OnTabSelectedListener
+    @Override
+    public void onTabSelected(@NonNull TabLayout.Tab tab) {
+        LogUtil.debug("PruebaViewPager", "Position: "+tab.getPosition());
+        pager.setCurrentItem(tab.getPosition(),true);
     }
 
     @Override
@@ -139,28 +164,25 @@ public class CashBoxManagerActivity extends AppCompatActivity implements TabLayo
             super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
         }
 
-        private MenusPagerAdapter(@NonNull FragmentManager fm, int behavior) {
-            super(fm, behavior);
-        }
-
         @NonNull
         @Override
         public Fragment getItem(int position) {
-            LogUtil.debug("Prueba","Position get Item: "+position); //todo put fragments
-            return CashBoxManagerFragment.newInstance();
-//            switch (position) {
-//                case 0:
-//                    return CashBoxManagerFragment.newInstance();
-//                case 1:
-//                    return CashBoxManagerFragment.newInstance();
-//                default: // should never happen
-//                    throw new IllegalArgumentException("No fragment associated to position");
-//            }
+            LogUtil.debug("PruebaViewPager","Position get Item: "+position);
+            switch (position) {
+                case 0:
+                    return CashBoxViewFragment.newInstance(position);
+                case 1:
+                    return CashBoxDeletedFragment.newInstance(position);
+                case 2:
+                    return CashBoxPeriodicFragment.newInstance(position);
+                default: // should never happen
+                    throw new IllegalArgumentException("No fragment associated to position");
+            }
         }
 
         @Override
         public int getCount() {
-            return 4;
+            return 3;
         }
     }
 }

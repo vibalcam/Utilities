@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,9 +14,9 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DiffUtil;
@@ -26,9 +27,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.vibal.utilities.R;
 import com.vibal.utilities.modelsNew.CashBox;
+import com.vibal.utilities.ui.PagerFragment;
 import com.vibal.utilities.ui.settings.SettingsActivity;
 import com.vibal.utilities.ui.swipeController.CashBoxAdapterSwipable;
 import com.vibal.utilities.ui.swipeController.CashBoxSwipeController;
+import com.vibal.utilities.util.LogUtil;
 import com.vibal.utilities.viewModels.CashBoxDeletedViewModel;
 
 import butterknife.BindView;
@@ -36,7 +39,7 @@ import butterknife.ButterKnife;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
-public class CashBoxDeletedActivity extends AppCompatActivity { //todo to fragment
+public class CashBoxDeletedFragment extends PagerFragment {
     private final DiffUtil.ItemCallback<CashBox.InfoWithCash> DIFF_CALLBACK =
             new DiffUtil.ItemCallback<CashBox.InfoWithCash>() {
                 @Override
@@ -57,54 +60,72 @@ public class CashBoxDeletedActivity extends AppCompatActivity { //todo to fragme
     private CashBoxDeletedRecyclerAdapter adapter;
     private CashBoxDeletedViewModel viewModel;
 
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.cash_box_deleted_activity);
-        ButterKnife.bind(this);
-
-        // Set ViewModel
-        viewModel = new ViewModelProvider(this).get(CashBoxDeletedViewModel.class);
-        viewModel.getCashBoxesInfo().observe(this, infoWithCashes -> adapter.submitList(infoWithCashes));
-
-        // Set Toolbar as ActionBar
-        setSupportActionBar(findViewById(R.id.toolbarCBDeleted));
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setTitle(R.string.title_deletedCashBox);
-            actionBar.setDisplayHomeAsUpEnabled(true);
-        }
-
-        // Set up RecyclerView
-        RecyclerView rvDeleted = findViewById(R.id.rvCashBoxDeleted);
-        rvDeleted.setHasFixedSize(true);
-        rvDeleted.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new CashBoxDeletedRecyclerAdapter();
-        rvDeleted.setAdapter(adapter);
-        new ItemTouchHelper(new CashBoxSwipeController(adapter,
-                PreferenceManager.getDefaultSharedPreferences(this),
-                R.drawable.ic_restore_white_24dp))
-                .attachToRecyclerView(rvDeleted);
-//        new ItemTouchHelper(new CashBoxSwipeController(adapter,
-//                PreferenceManager.getDefaultSharedPreferences(this)
-//                        .getBoolean("swipeLeftDelete", true),
-//                R.drawable.ic_restore_white_24dp))
-//                .attachToRecyclerView(rvDeleted);
+    static CashBoxDeletedFragment newInstance(int pagerPosition) {
+        CashBoxDeletedFragment fragment = new CashBoxDeletedFragment();
+        fragment.setPositionAsArgument(pagerPosition);
+        return fragment;
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        super.onCreateOptionsMenu(menu);
-        getMenuInflater().inflate(R.menu.menu_toolbar_cash_box_deleted, menu);
-        return true;
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // Fragment has options menu
+        setHasOptionsMenu(true);
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.cash_box_deleted_activity, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        ButterKnife.bind(this, view);
+
+        // Set up RecyclerView
+        RecyclerView rvDeleted = view.findViewById(R.id.rvCashBoxDeleted);
+        rvDeleted.setHasFixedSize(true);
+        rvDeleted.setLayoutManager(new LinearLayoutManager(getContext()));
+        adapter = new CashBoxDeletedRecyclerAdapter();
+        rvDeleted.setAdapter(adapter);
+        new ItemTouchHelper(new CashBoxSwipeController(adapter,
+                PreferenceManager.getDefaultSharedPreferences(requireContext()),
+                R.drawable.ic_restore_white_24dp))
+                .attachToRecyclerView(rvDeleted);
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        // Set ViewModel
+        viewModel = new ViewModelProvider(this).get(CashBoxDeletedViewModel.class);
+        viewModel.getCashBoxesInfo().observe(getViewLifecycleOwner(), infoWithCashes ->
+                adapter.submitList(infoWithCashes));
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        if(!isOptionsMenuActive())
+            return;
+        super.onCreateOptionsMenu(menu, inflater);
+
+        LogUtil.debug("PruebaOptionsMenu", "Deleted");
+        menu.clear();
+        inflater.inflate(R.menu.menu_toolbar_cash_box_deleted, menu);
+
+        // Set Toolbar title
+        ((AppCompatActivity) requireActivity()).getSupportActionBar().setTitle(R.string.title_deletedCashBox);
     }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
-            case android.R.id.home:
-                onBackPressed();
-                return true;
+//            case android.R.id.home:
+//                onBackPressed();
+//                return true;
             case R.id.action_deleted_deleteAll:
                 deleteAll();
                 return true;
@@ -112,7 +133,7 @@ public class CashBoxDeletedActivity extends AppCompatActivity { //todo to fragme
                 restoreAll();
                 return true;
             case R.id.action_deleted_settings:
-                startActivity(new Intent(this, SettingsActivity.class));
+                startActivity(new Intent(getContext(), SettingsActivity.class));
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -122,10 +143,10 @@ public class CashBoxDeletedActivity extends AppCompatActivity { //todo to fragme
     private void deleteAll() {
         int count = adapter.getItemCount();
         if (count == 0) {
-            Toast.makeText(this, "No entries to delete", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "No entries to delete", Toast.LENGTH_SHORT).show();
             return;
         }
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle(R.string.confirmDeleteAllDialog)
                 .setMessage("Are you sure you want to delete all entries? This action CANNOT be undone")
                 .setNegativeButton(R.string.cancelDialog, null)
@@ -133,7 +154,7 @@ public class CashBoxDeletedActivity extends AppCompatActivity { //todo to fragme
                         viewModel.addDisposable(viewModel.clearRecycleBin()
                                 .subscribeOn(Schedulers.io())
                                 .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(integer -> Toast.makeText(this,
+                                .subscribe(integer -> Toast.makeText(getContext(),
                                         getString(R.string.snackbarEntriesDeleted, count),
                                         Toast.LENGTH_SHORT)
                                         .show())))
@@ -143,10 +164,10 @@ public class CashBoxDeletedActivity extends AppCompatActivity { //todo to fragme
     private void restoreAll() {
         int count = adapter.getItemCount();
         if (count == 0) {
-            Toast.makeText(this, "No entries to restore", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "No entries to restore", Toast.LENGTH_SHORT).show();
             return;
         }
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle(R.string.confirmRestoreAllDialog)
                 .setMessage("Are you sure you want to restore all CashBoxes?")
                 .setNegativeButton(R.string.cancelDialog, null)
@@ -154,7 +175,7 @@ public class CashBoxDeletedActivity extends AppCompatActivity { //todo to fragme
                         viewModel.addDisposable(viewModel.restoreAll()
                                 .subscribeOn(Schedulers.io())
                                 .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(integer -> Toast.makeText(this,
+                                .subscribe(integer -> Toast.makeText(getContext(),
                                         getString(R.string.snackbarEntriesRestored, count),
                                         Toast.LENGTH_SHORT)
                                         .show())))
@@ -184,7 +205,7 @@ public class CashBoxDeletedActivity extends AppCompatActivity { //todo to fragme
             CashBox.InfoWithCash infoWithCash = getItem(position);
             viewHolder.rvName.setText(infoWithCash.getCashBoxInfo().getName());
             int colorRes = infoWithCash.getCash() < 0 ? R.color.colorNegativeNumber : R.color.colorPositiveNumber;
-            viewHolder.rvAmount.setTextColor(getColor(colorRes));
+            viewHolder.rvAmount.setTextColor(getContext().getColor(colorRes));
         }
 
         @Override
@@ -202,7 +223,7 @@ public class CashBoxDeletedActivity extends AppCompatActivity { //todo to fragme
             viewModel.addDisposable(viewModel.delete(getItem(position))
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(() -> Toast.makeText(CashBoxDeletedActivity.this,
+                    .subscribe(() -> Toast.makeText(getContext(),
                             getString(R.string.snackbarEntriesDeleted, 1), Toast.LENGTH_SHORT)
                             .show()));
         }
@@ -212,7 +233,7 @@ public class CashBoxDeletedActivity extends AppCompatActivity { //todo to fragme
             viewModel.addDisposable(viewModel.restore(getItem(position))
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(() -> Toast.makeText(CashBoxDeletedActivity.this,
+                    .subscribe(() -> Toast.makeText(getContext(),
                             getString(R.string.snackbarEntriesRestored, 1), Toast.LENGTH_SHORT)
                             .show()));
         }

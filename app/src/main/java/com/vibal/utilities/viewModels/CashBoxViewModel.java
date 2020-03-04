@@ -34,7 +34,8 @@ public class CashBoxViewModel extends AndroidViewModel {
     private WorkManager workManager;
     private CashBoxRepository repository;
     private LiveData<List<CashBox.InfoWithCash>> cashBoxesInfo;
-    private long currentCashBoxId = NO_CASHBOX;
+    private LiveData<CashBox> cashBox;
+//    private long currentCashBoxId = NO_CASHBOX;
     @NonNull
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
@@ -51,16 +52,23 @@ public class CashBoxViewModel extends AndroidViewModel {
 
     @NonNull
     public LiveData<CashBox> getCurrentCashBox() {
-        LogUtil.debug(TAG, "Id cashBox: " + currentCashBoxId);
-        return repository.getOrderedCashBox(currentCashBoxId);
+        LogUtil.debug(TAG, "Id cashBox: " + getCurrentCashBoxId());
+//        return repository.getOrderedCashBox(currentCashBoxId);
+        return cashBox;
     }
 
     public long getCurrentCashBoxId() {
-        return currentCashBoxId;
+//        return currentCashBoxId;
+        return cashBox == null || cashBox.getValue() == null ? NO_CASHBOX :
+                cashBox.getValue().getInfoWithCash().getId();
     }
 
     public void setCurrentCashBoxId(long currentCashBoxId) {
-        this.currentCashBoxId = currentCashBoxId;
+        // If different, get the current cashbox
+        if(this.getCurrentCashBoxId() != currentCashBoxId)
+            cashBox = repository.getOrderedCashBox(currentCashBoxId);
+        // Change current cashbox id
+//        this.currentCashBoxId = currentCashBoxId;
     }
 
     public Single<CashBox> getCashBox(long id) {
@@ -90,7 +98,7 @@ public class CashBoxViewModel extends AndroidViewModel {
     }
 
     public Completable setCurrentCashBoxCurrency(@NonNull Currency currency) {
-        return setCurrency(currentCashBoxId, currency);
+        return setCurrency(getCurrentCashBoxId(), currency);
     }
 
     public Completable recycleCashBoxInfo(@NonNull CashBox.InfoWithCash infoWithCash) {
@@ -138,7 +146,7 @@ public class CashBoxViewModel extends AndroidViewModel {
     }
 
     public Completable addEntryToCurrentCashBox(@NonNull CashBox.Entry entry) {
-        return addEntry(currentCashBoxId, entry);
+        return addEntry(getCurrentCashBoxId(), entry);
     }
 
     public Completable addEntry(long cashBoxId, @NonNull CashBox.Entry entry) {
@@ -146,7 +154,7 @@ public class CashBoxViewModel extends AndroidViewModel {
     }
 
     public Completable addAllEntriesToCurrentCashBox(@NonNull List<CashBox.Entry> entries) {
-        return addAllEntries(currentCashBoxId, entries);
+        return addAllEntries(getCurrentCashBoxId(), entries);
     }
 
     private Completable addAllEntries(long cashBoxId, @NonNull Collection<CashBox.Entry> entries) {
@@ -174,7 +182,7 @@ public class CashBoxViewModel extends AndroidViewModel {
     }
 
     public Single<Integer> deleteAllEntriesFromCurrentCashBox() {
-        return repository.deleteAllEntries(currentCashBoxId);
+        return repository.deleteAllEntries(getCurrentCashBoxId());
     }
 
     public Completable addPeriodicEntryWorkRequest(@NonNull PeriodicEntryPojo.PeriodicEntryWorkRequest workRequest) {

@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,10 +15,10 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DiffUtil;
@@ -33,6 +34,7 @@ import com.google.android.material.textfield.TextInputLayout;
 import com.google.android.material.textview.MaterialTextView;
 import com.vibal.utilities.R;
 import com.vibal.utilities.modelsNew.PeriodicEntryPojo;
+import com.vibal.utilities.ui.PagerFragment;
 import com.vibal.utilities.ui.settings.SettingsActivity;
 import com.vibal.utilities.ui.swipeController.CashBoxAdapterSwipable;
 import com.vibal.utilities.ui.swipeController.CashBoxSwipeController;
@@ -54,69 +56,86 @@ import io.reactivex.SingleOnSubscribe;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
-public class CashBoxPeriodicActivity extends AppCompatActivity { //todo to fragment
+public class CashBoxPeriodicFragment extends PagerFragment {
     @BindView(R.id.lyCBPeriodic)
     CoordinatorLayout coordinatorLayout;
 
     private PeriodicEntryWorkViewModel viewModel;
     private CashBoxPeriodicRecyclerAdapter adapter;
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.cash_box_periodic_activity);
-        ButterKnife.bind(this);
-
-        // Set ViewModel
-        viewModel = new ViewModelProvider(this).get(PeriodicEntryWorkViewModel.class);
-        viewModel.getPeriodicEntries().observe(this, periodicEntryPojos -> {
-            LogUtil.debug("Prueba", "New list submitted");
-            adapter.submitList(periodicEntryPojos);
-        });
-
-        //Set Toolbar as ActionBar
-        setSupportActionBar(findViewById(R.id.toolbarCBPeriodic));
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setTitle(R.string.title_periodicEntry);
-            actionBar.setDisplayHomeAsUpEnabled(true);
-        }
-
-        //Set up the RecyclerView
-        RecyclerView rvPeriodicEntry = findViewById(R.id.rvCashBoxPeriodic);
-        rvPeriodicEntry.setHasFixedSize(true);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-        rvPeriodicEntry.setLayoutManager(layoutManager);
-        rvPeriodicEntry.addItemDecoration(new DividerItemDecoration(this, layoutManager.getOrientation()));
-        adapter = new CashBoxPeriodicRecyclerAdapter();
-        rvPeriodicEntry.setAdapter(adapter);
-        new ItemTouchHelper(new CashBoxSwipeController(adapter,
-                PreferenceManager.getDefaultSharedPreferences(this)))
-                .attachToRecyclerView(rvPeriodicEntry);
-//        new ItemTouchHelper(new CashBoxSwipeController(adapter,
-//                PreferenceManager.getDefaultSharedPreferences(this)
-//                        .getBoolean("swipeLeftDelete", true)))
-//                .attachToRecyclerView(rvPeriodicEntry);
+    @NonNull
+    static CashBoxPeriodicFragment newInstance(int pagerPosition) {
+        CashBoxPeriodicFragment fragment = new CashBoxPeriodicFragment();
+        fragment.setPositionAsArgument(pagerPosition);
+        return fragment;
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        super.onCreateOptionsMenu(menu);
-        getMenuInflater().inflate(R.menu.menu_toolbar_cash_box_periodic, menu);
-        return true;
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // Fragment has options menu
+        setHasOptionsMenu(true);
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.cash_box_periodic_activity, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        ButterKnife.bind(this, view);
+
+        //Set up the RecyclerView
+        RecyclerView rvPeriodicEntry = view.findViewById(R.id.rvCashBoxPeriodic);
+        rvPeriodicEntry.setHasFixedSize(true);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
+        rvPeriodicEntry.setLayoutManager(layoutManager);
+        rvPeriodicEntry.addItemDecoration(new DividerItemDecoration(getContext(), layoutManager.getOrientation()));
+        adapter = new CashBoxPeriodicRecyclerAdapter();
+        rvPeriodicEntry.setAdapter(adapter);
+        new ItemTouchHelper(new CashBoxSwipeController(adapter,
+                PreferenceManager.getDefaultSharedPreferences(getContext())))
+                .attachToRecyclerView(rvPeriodicEntry);
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        // Set ViewModel
+        viewModel = new ViewModelProvider(this).get(PeriodicEntryWorkViewModel.class);
+        viewModel.getPeriodicEntries().observe(getViewLifecycleOwner(), periodicEntryPojos -> {
+            LogUtil.debug("Prueba", "New list submitted");
+            adapter.submitList(periodicEntryPojos);
+        });
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        if(!isOptionsMenuActive())
+            return;
+        super.onCreateOptionsMenu(menu, inflater);
+        menu.clear();
+        inflater.inflate(R.menu.menu_toolbar_cash_box_periodic, menu);
+
+        // Title Toolbar
+        ((AppCompatActivity) requireActivity()).getSupportActionBar().setTitle(R.string.title_periodicEntry);
     }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
-            case android.R.id.home:
-                onBackPressed();
-                return true;
+//            case android.R.id.home:
+//                onBackPressed();
+//                return true;
             case R.id.action_periodic_deleteAll:
                 deleteAll();
                 return true;
             case R.id.action_periodic_settings:
-                startActivity(new Intent(this, SettingsActivity.class));
+                startActivity(new Intent(getContext(), SettingsActivity.class));
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -126,10 +145,10 @@ public class CashBoxPeriodicActivity extends AppCompatActivity { //todo to fragm
     private void deleteAll() {
         int count = adapter.getItemCount();
         if (count == 0) {
-            Toast.makeText(this, "No entries to recycle", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "No entries to recycle", Toast.LENGTH_SHORT).show();
             return;
         }
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle(R.string.confirmDeleteAllDialog)
                 .setMessage("Are you sure you want to send all entries to the recycle bin?")
                 .setNegativeButton(R.string.cancelDialog, null)
@@ -137,7 +156,7 @@ public class CashBoxPeriodicActivity extends AppCompatActivity { //todo to fragm
                         viewModel.addDisposable(viewModel.deleteAllPeriodicEntryWorks()
                                 .subscribeOn(Schedulers.io())
                                 .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(integer -> Toast.makeText(this,
+                                .subscribe(integer -> Toast.makeText(getContext(),
                                         getString(R.string.snackbarEntriesDeleted, count),
                                         Toast.LENGTH_SHORT)
                                         .show())))
@@ -199,7 +218,7 @@ public class CashBoxPeriodicActivity extends AppCompatActivity { //todo to fragm
                     currencyFormat.format(workInfo.getAmount()), workInfo.getRepeatInterval()));
             holder.rvRepetitions.setText(getString(R.string.periodic_repetitionsLeft, workInfo.getRepetitions()));
             int colorRes = workInfo.getAmount() < 0 ? R.color.colorNegativeNumber : R.color.colorPositiveNumber;
-            holder.rvAmountPeriod.setTextColor(getColor(colorRes));
+            holder.rvAmountPeriod.setTextColor(getContext().getColor(colorRes));
         }
 
         @Override
@@ -252,7 +271,7 @@ public class CashBoxPeriodicActivity extends AppCompatActivity { //todo to fragm
         public void onItemSecondaryAction(int position) {
             PeriodicEntryPojo.PeriodicEntryWorkInfo workInfo = currentList.get(position).getWorkInfo();
 
-            AlertDialog dialog = new AlertDialog.Builder(CashBoxPeriodicActivity.this)
+            AlertDialog dialog = new AlertDialog.Builder(getContext())
                     .setTitle(R.string.periodic_dialog_newPeriodic)
                     .setView(R.layout.periodic_new_entry)
                     .setNegativeButton(R.string.cancelDialog, null)
@@ -278,17 +297,17 @@ public class CashBoxPeriodicActivity extends AppCompatActivity { //todo to fragm
                 inputPeriod.setText(String.format(Locale.US, "%d", workInfo.getRepeatInterval()));
                 inputRepetitions.setText(String.format(Locale.US, "%d", workInfo.getRepetitions()));
 
-                Util.showKeyboard(CashBoxPeriodicActivity.this, inputAmount);
+                Util.showKeyboard(getContext(), inputAmount);
                 positive.setOnClickListener((View v) -> {
                     try {
                         String input = inputAmount.getText().toString().trim();
                         int repetitions = Integer.parseInt(inputRepetitions.getText().toString());
                         if (input.isEmpty()) {
                             layoutAmount.setError(getString(R.string.required));
-                            Util.showKeyboard(CashBoxPeriodicActivity.this, inputAmount);
+                            Util.showKeyboard(getContext(), inputAmount);
                         } else if (repetitions < 1) {
                             layoutRepetitions.setError("Min. 1");
-                            Util.showKeyboard(CashBoxPeriodicActivity.this, inputRepetitions);
+                            Util.showKeyboard(getContext(), inputRepetitions);
                         } else { //Change values and do the DB change
                             try {
                                 workInfo.setAmount(Util.parseExpression(inputAmount.getText().toString()));
@@ -304,13 +323,13 @@ public class CashBoxPeriodicActivity extends AppCompatActivity { //todo to fragm
                             } catch (NumberFormatException e) {
                                 layoutAmount.setError(getString(R.string.errorMessageAmount));
                                 inputAmount.selectAll();
-                                Util.showKeyboard(CashBoxPeriodicActivity.this, inputAmount);
+                                Util.showKeyboard(getContext(), inputAmount);
                             }
                         }
                     } catch (NumberFormatException e) {
                         layoutRepetitions.setError(getString(R.string.errorMessageAmount));
                         inputRepetitions.selectAll();
-                        Util.showKeyboard(CashBoxPeriodicActivity.this, inputRepetitions);
+                        Util.showKeyboard(getContext(), inputRepetitions);
                     }
                 });
             });

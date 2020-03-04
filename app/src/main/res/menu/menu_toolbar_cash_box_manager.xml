@@ -11,13 +11,13 @@
         android:title="@string/menu_contextualToolbar"
         android:icon="@drawable/ic_edit_white_24dp"
         app:showAsAction="ifRoom" />
-    <item
-        android:id="@+id/action_manager_showPeriodic"
-        android:title="@string/menuCBM_showPeriodic"
-        app:showAsAction="never" />
-    <item android:id="@+id/action_manager_recycleBin"
-        android:title="@string/menuCBM_recycleBin"
-        app:showAsAction="never" />
+<!--    <item-->
+<!--        android:id="@+id/action_manager_showPeriodic"-->
+<!--        android:title="@string/menuCBM_showPeriodic"-->
+<!--        app:showAsAction="never" />-->
+<!--    <item android:id="@+id/action_manager_recycleBin"-->
+<!--        android:title="@string/menuCBM_recycleBin"-->
+<!--        app:showAsAction="never" />-->
     <item
         android:id="@+id/action_manager_settings"
         android:icon="@drawable/settings_outline"
