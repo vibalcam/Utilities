@@ -8,23 +8,20 @@ import androidx.lifecycle.LiveData;
 
 import com.vibal.utilities.db.CashBoxRepository;
 import com.vibal.utilities.modelsNew.PeriodicEntryPojo;
-import com.vibal.utilities.util.LogUtil;
 
 import java.util.List;
 import java.util.UUID;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
-import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.disposables.Disposable;
 
 public class PeriodicEntryWorkViewModel extends AndroidViewModel {
     private static final String TAG = "PruebaPeriodicViewModel";
 
     private CashBoxRepository repository;
     private LiveData<List<PeriodicEntryPojo>> periodicEntries;
-    @NonNull
-    private CompositeDisposable compositeDisposable = new CompositeDisposable();
+//    @NonNull
+//    private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
 
     public PeriodicEntryWorkViewModel(@NonNull Application application) {
@@ -62,14 +59,14 @@ public class PeriodicEntryWorkViewModel extends AndroidViewModel {
         return repository.deleteAllPeriodicEntryWorks();
     }
 
-    public void addDisposable(@NonNull Disposable disposable) {
-        compositeDisposable.add(disposable);
-    }
-
-    @Override
-    protected void onCleared() {
-        super.onCleared();
-        compositeDisposable.clear();
-        LogUtil.debug(TAG, "onCleared: clearing disposable");
-    }
+//    public void addDisposable(@NonNull Disposable disposable) {
+//        compositeDisposable.add(disposable);
+//    }
+//
+//    @Override
+//    protected void onCleared() {
+//        super.onCleared();
+//        compositeDisposable.clear();
+//        LogUtil.debug(TAG, "onCleared: clearing disposable");
+//    }
 }

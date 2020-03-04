@@ -28,7 +28,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.ActionMode;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
-import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.PreferenceManager;
@@ -77,6 +76,7 @@ import io.reactivex.Maybe;
 import io.reactivex.MaybeOnSubscribe;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 
 import static com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity.ACTION_ADD_CASHBOX;
@@ -110,6 +110,7 @@ public class CashBoxManagerFragment extends PagerFragment {
     private CashBoxViewModel viewModel;
     private CashBoxManagerRecyclerAdapter adapter;
     private boolean isFabOpen = false;
+    private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     // Contextual toolbars
     private int actionModeType = EDIT_MODE;
@@ -316,17 +317,17 @@ public class CashBoxManagerFragment extends PagerFragment {
         checkFileForCashBoxes();
     }
 
-//    @Override
-//    public void onDestroyView() { //todo
-//        super.onDestroyView();
-//        adapter = null;
-//    }
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        compositeDisposable.dispose();
+    }
 
     /**
      * Left for compability with previous versions that used file storage
      */
     private void checkFileForCashBoxes() {
-        viewModel.addDisposable(Maybe.create((MaybeOnSubscribe<CashBoxManager>) emitter -> {
+        compositeDisposable.add(Maybe.create((MaybeOnSubscribe<CashBoxManager>) emitter -> {
             LogUtil.debug(TAG, "Inicio check file");
             //Check if the file exists
             File originalFile = requireContext().getFileStreamPath("cashBoxManager");
@@ -396,7 +397,7 @@ public class CashBoxManagerFragment extends PagerFragment {
         super.onStop();
         // Delete all periodic tasks which are no longer active
         LogUtil.debug(TAG, "On stop: delete periodic inactive");
-        viewModel.addDisposable(viewModel.deletePeriodicInactive()
+        compositeDisposable.add(viewModel.deletePeriodicInactive()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe());
@@ -528,7 +529,7 @@ public class CashBoxManagerFragment extends PagerFragment {
                 .setMessage("Are you sure you want to move all entries to the recycle bin?")
                 .setNegativeButton(R.string.cancelDialog, null)
                 .setPositiveButton(R.string.confirm, (DialogInterface dialog, int which) ->
-                        viewModel.addDisposable(viewModel.recycleAllCashBoxes()
+                        compositeDisposable.add(viewModel.recycleAllCashBoxes()
                                 .subscribeOn(Schedulers.io())
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(integer -> Toast.makeText(getContext(),
@@ -634,7 +635,7 @@ public class CashBoxManagerFragment extends PagerFragment {
                                     "Initial Amount", Calendar.getInstance()));
                     }
 
-                    viewModel.addDisposable(viewModel.addCashBox(cashBox)
+                    compositeDisposable.add(viewModel.addCashBox(cashBox)
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(dialog1::dismiss, throwable -> {
@@ -736,7 +737,7 @@ public class CashBoxManagerFragment extends PagerFragment {
                             addEntries = addEntries.andThen(viewModel.addEntry(adapter.currentList.get(k).getId(),
                                     new CashBox.Entry(amount, inputInfo.getText().toString().trim(),
                                             calendarListener.getCalendar(), groupId)));
-                        viewModel.addDisposable(addEntries.subscribeOn(Schedulers.io())
+                        compositeDisposable.add(addEntries.subscribeOn(Schedulers.io())
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(() -> {
                                     dialogInterface.dismiss();
@@ -793,7 +794,7 @@ public class CashBoxManagerFragment extends PagerFragment {
                     } else {
                         try {
                             double amount = Util.parseExpression(inputAmount.getText().toString());
-                            viewModel.addDisposable(viewModel.addPeriodicEntryWorkRequest(
+                            compositeDisposable.add(viewModel.addPeriodicEntryWorkRequest(
                                     new PeriodicEntryPojo.PeriodicEntryWorkRequest(infoWithCash.getId(),
                                             amount, inputInfo.getText().toString(),
                                             Long.parseLong(inputPeriod.getText().toString()), repetitions,
@@ -841,7 +842,7 @@ public class CashBoxManagerFragment extends PagerFragment {
         void submitList(@NonNull List<CashBox.InfoWithCash> newList) {
             LogUtil.debug(TAG, "New list submitted: " + newList.toString());
 
-            viewModel.addDisposable(Single.just(DiffUtil.calculateDiff(
+            compositeDisposable.add(Single.just(DiffUtil.calculateDiff(
                     new DiffCallback<>(currentList, newList), false))
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
@@ -928,7 +929,7 @@ public class CashBoxManagerFragment extends PagerFragment {
             if (selectedItems.remove(fromPosition))
                 selectedItems.add(toPosition);
 
-            viewModel.addDisposable(viewModel.moveCashBox(infoWithCash, toPosition)
+            compositeDisposable.add(viewModel.moveCashBox(infoWithCash, toPosition)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe());
@@ -944,7 +945,7 @@ public class CashBoxManagerFragment extends PagerFragment {
             if (actionMode != null)
                 actionMode.finish();
             LogUtil.debug(TAG, "Delete CashBox");
-            viewModel.addDisposable(viewModel.recycleCashBoxInfo(currentList.get(position))
+            compositeDisposable.add(viewModel.recycleCashBoxInfo(currentList.get(position))
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(() -> Toast.makeText(getContext(),
@@ -974,7 +975,7 @@ public class CashBoxManagerFragment extends PagerFragment {
                 positive.setOnClickListener((View v1) -> {
                     String newName = inputName.getText().toString();
                     try {
-                        viewModel.addDisposable(
+                        compositeDisposable.add(
                                 viewModel.changeCashBoxName(infoWithCash, newName)
                                         .subscribeOn(Schedulers.io())
                                         .observeOn(AndroidSchedulers.mainThread())
@@ -1023,7 +1024,7 @@ public class CashBoxManagerFragment extends PagerFragment {
                 Util.showKeyboard(requireContext(), inputName);
 
                 positive.setOnClickListener((View v1) ->
-                        viewModel.addDisposable(viewModel.duplicateCashBox(cashBoxInfo.getId(),
+                        compositeDisposable.add(viewModel.duplicateCashBox(cashBoxInfo.getId(),
                                 inputName.getText().toString())
                                 .subscribeOn(Schedulers.io())
                                 .observeOn(AndroidSchedulers.mainThread())
@@ -1079,7 +1080,7 @@ public class CashBoxManagerFragment extends PagerFragment {
                 if (actionMode == null) { //Normal behavior
                     if (event.getActionMasked() == MotionEvent.ACTION_UP)
                         CashBoxItemFragment.getAddEntryDialog(currentList.get(getAdapterPosition()).getId(),
-                                requireContext(), viewModel)
+                                requireContext(), viewModel,compositeDisposable)
                                 .show();
                     return true; //to consume the touch action so it does not count as a click on the view
                 } else { //While in edit mode/action mode

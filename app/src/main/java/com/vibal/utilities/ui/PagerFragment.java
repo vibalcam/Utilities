@@ -1,14 +1,9 @@
 package com.vibal.utilities.ui;
 
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuInflater;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-
-import com.google.android.material.tabs.TabLayout;
 
 public abstract class PagerFragment extends Fragment {
     private static final String PAGER_POSITION_ARG = "pager_position";

@@ -23,8 +23,6 @@ import java.util.Locale;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
-import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.disposables.Disposable;
 
 import static com.vibal.utilities.modelsNew.CashBoxInfo.NO_CASHBOX;
 
@@ -36,8 +34,8 @@ public class CashBoxViewModel extends AndroidViewModel {
     private LiveData<List<CashBox.InfoWithCash>> cashBoxesInfo;
     private LiveData<CashBox> cashBox;
 //    private long currentCashBoxId = NO_CASHBOX;
-    @NonNull
-    private CompositeDisposable compositeDisposable = new CompositeDisposable();
+//    @NonNull
+//    private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     public CashBoxViewModel(@NonNull Application application) {
         super(application);
@@ -206,14 +204,14 @@ public class CashBoxViewModel extends AndroidViewModel {
         return repository.deletePeriodicInactive();
     }
 
-    public void addDisposable(@NonNull Disposable disposable) {
-        compositeDisposable.add(disposable);
-    }
-
-    @Override
-    protected void onCleared() {
-        super.onCleared();
-        compositeDisposable.clear();
-        LogUtil.debug(TAG, "onCleared: clearing disposable");
-    }
+//    public void addDisposable(@NonNull Disposable disposable) {
+//        compositeDisposable.add(disposable);
+//    }
+//
+//    @Override
+//    protected void onCleared() {
+//        super.onCleared();
+////        compositeDisposable.clear();
+//        LogUtil.debug(TAG, "onCleared: clearing disposable");
+//    }
 }

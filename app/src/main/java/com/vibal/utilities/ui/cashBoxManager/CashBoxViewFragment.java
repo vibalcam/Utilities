@@ -14,8 +14,6 @@ import com.vibal.utilities.R;
 import com.vibal.utilities.ui.PagerFragment;
 import com.vibal.utilities.util.LogUtil;
 
-import java.util.List;
-
 import butterknife.ButterKnife;
 
 public class CashBoxViewFragment extends PagerFragment {

@@ -26,7 +26,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.ShareActionProvider;
 import androidx.core.view.MenuItemCompat;
-import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DiffUtil;
@@ -68,6 +67,7 @@ import butterknife.OnClick;
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 
 public class CashBoxItemFragment extends PagerFragment {
@@ -80,13 +80,13 @@ public class CashBoxItemFragment extends PagerFragment {
     TextView itemCash;
     @BindView(R.id.rvCashBoxItem)
     RecyclerView rvCashBoxItem;
-    private SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener;
     private CashBoxItemRecyclerAdapter adapter;
     private CashBoxViewModel viewModel;
     private ShareActionProvider shareActionProvider;
     private SharedPreferences sharedPrefNot;
     private boolean notificationEnabled = false; //By default, the icon is set to alarm off
     private MenuItem menuItemNotification;
+    private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     @NonNull
     static CashBoxItemFragment newInstance(int pagerPosition) {
@@ -97,7 +97,8 @@ public class CashBoxItemFragment extends PagerFragment {
 
     @NonNull
     static AlertDialog getAddEntryDialog(long cashBoxId, @NonNull Context context,
-                                         @NonNull CashBoxViewModel viewModel) {
+                                         @NonNull CashBoxViewModel viewModel,
+                                         CompositeDisposable compositeDisposable) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         AlertDialog dialog = builder.setTitle(R.string.newEntry)
                 .setView(R.layout.cash_box_item_entry_input)
@@ -127,7 +128,7 @@ public class CashBoxItemFragment extends PagerFragment {
                         Util.showKeyboard(context, inputAmount);
                     } else {
                         double amount = Util.parseExpression(inputAmount.getText().toString());
-                        viewModel.addDisposable(viewModel.addEntry(cashBoxId, new CashBox.Entry(
+                        compositeDisposable.add(viewModel.addEntry(cashBoxId, new CashBox.Entry(
                                 amount, inputInfo.getText().toString(), calendarListener.getCalendar()))
                                 .subscribeOn(Schedulers.io())
                                 .observeOn(AndroidSchedulers.mainThread())
@@ -213,12 +214,11 @@ public class CashBoxItemFragment extends PagerFragment {
         });
     }
 
-//    @Override
-//    public void onDestroyView() { //todo
-//        super.onDestroyView();
-//        rvCashBoxItem.setAdapter(null);
-//        adapter = null;
-//    }
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        compositeDisposable.dispose();
+    }
 
     private void updateCash(double cash) {
         if (Math.abs(cash) > MAX_SHOW_CASH)
@@ -337,7 +337,7 @@ public class CashBoxItemFragment extends PagerFragment {
                 .setSingleChoiceItems(arrayAdapter, -1, (dialog, which) -> {
                     dialog.dismiss();
                     LogUtil.debug(TAG, arrayAdapter.getItem(which).getCurrencyCode());
-                    viewModel.addDisposable(
+                    compositeDisposable.add(
                             viewModel.setCurrentCashBoxCurrency(arrayAdapter.getItem(which))
                                     .subscribeOn(Schedulers.io())
                                     .observeOn(AndroidSchedulers.mainThread())
@@ -422,7 +422,7 @@ public class CashBoxItemFragment extends PagerFragment {
 
     @OnClick(R.id.fabCBItem)
     void onFabClicked() {
-        getAddEntryDialog(viewModel.getCurrentCashBoxId(), requireContext(), viewModel)
+        getAddEntryDialog(viewModel.getCurrentCashBoxId(), requireContext(), viewModel, compositeDisposable)
                 .show();
     }
 
@@ -433,7 +433,7 @@ public class CashBoxItemFragment extends PagerFragment {
         }
 
         List<CashBox.Entry> deletedEntries = new ArrayList<>(adapter.currentList);
-        viewModel.addDisposable(viewModel.deleteAllEntriesFromCurrentCashBox()
+        compositeDisposable.add(viewModel.deleteAllEntriesFromCurrentCashBox()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(integer ->
@@ -441,7 +441,7 @@ public class CashBoxItemFragment extends PagerFragment {
                                 getString(R.string.snackbarEntriesDeleted, integer),
                                 Snackbar.LENGTH_LONG)
                                 .setAction(R.string.undo, v ->
-                                        viewModel.addDisposable(viewModel.addAllEntriesToCurrentCashBox(deletedEntries)
+                                        compositeDisposable.add(viewModel.addAllEntriesToCurrentCashBox(deletedEntries)
                                                 .subscribeOn(Schedulers.io())
                                                 .observeOn(AndroidSchedulers.mainThread())
                                                 .subscribe()))
@@ -458,7 +458,7 @@ public class CashBoxItemFragment extends PagerFragment {
         private List<CashBox.Entry> currentList = new ArrayList<>();
 
         void submitList(@NonNull List<CashBox.Entry> newList) {
-            viewModel.addDisposable(Single.just(DiffUtil.calculateDiff(
+            compositeDisposable.add(Single.just(DiffUtil.calculateDiff(
                     new DiffCallback<>(currentList, newList), false))
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
@@ -524,7 +524,7 @@ public class CashBoxItemFragment extends PagerFragment {
                     .setNegativeButton(R.string.groupEntryIndividual,
                             (dialogInterface, i) -> deleteEntry(entry))
                     .setPositiveButton(R.string.groupEntryAll, (dialogInterface, i) ->
-                            viewModel.addDisposable(viewModel.getGroupEntries(entry)
+                            compositeDisposable.add(viewModel.getGroupEntries(entry)
                                     .flatMap(entries -> viewModel.deleteGroupEntries(entry)
                                             .map(integer -> entries))
                                     .subscribeOn(Schedulers.io())
@@ -533,7 +533,7 @@ public class CashBoxItemFragment extends PagerFragment {
                                             getString(R.string.snackbarEntriesDeleted, 1),
                                             Snackbar.LENGTH_LONG)
                                             .setAction(R.string.undo, (View v) ->
-                                                    viewModel.addDisposable(viewModel.addAllEntries(entryList)
+                                                    compositeDisposable.add(viewModel.addAllEntries(entryList)
                                                             .subscribeOn(Schedulers.io())
                                                             .observeOn(AndroidSchedulers.mainThread())
                                                             .subscribe()))
@@ -544,14 +544,14 @@ public class CashBoxItemFragment extends PagerFragment {
         }
 
         private void deleteEntry(CashBox.Entry entry) {
-            viewModel.addDisposable(viewModel.deleteEntry(entry)
+            compositeDisposable.add(viewModel.deleteEntry(entry)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(() -> Snackbar.make(rvCashBoxItem,
                             getString(R.string.snackbarEntriesDeleted, 1),
                             Snackbar.LENGTH_LONG)
                             .setAction(R.string.undo, (View v) ->
-                                    viewModel.addDisposable(viewModel.addEntryToCurrentCashBox(entry)
+                                    compositeDisposable.add(viewModel.addEntryToCurrentCashBox(entry)
                                             .subscribeOn(Schedulers.io())
                                             .observeOn(AndroidSchedulers.mainThread())
                                             .subscribe()))
@@ -619,7 +619,7 @@ public class CashBoxItemFragment extends PagerFragment {
                                                         calendarListener.getCalendar()))
                                         // Modify all entries of the group
                                         .setPositiveButton(R.string.groupEntryAll, (dialogInterfaceGroup, i) ->
-                                                viewModel.addDisposable(viewModel.getGroupEntries(modifiedEntry)
+                                                compositeDisposable.add(viewModel.getGroupEntries(modifiedEntry)
                                                         .flatMap(entries -> viewModel.modifyGroupEntry(
                                                                 modifiedEntry, amount, info,
                                                                 calendarListener.getCalendar())
@@ -636,7 +636,7 @@ public class CashBoxItemFragment extends PagerFragment {
                                                                         for (CashBox.Entry k : entryList)
                                                                             completable = completable.andThen(
                                                                                     viewModel.updateEntry(k));
-                                                                        viewModel.addDisposable(completable
+                                                                        compositeDisposable.add(completable
                                                                                 .subscribeOn(Schedulers.io())
                                                                                 .observeOn(AndroidSchedulers.mainThread())
                                                                                 .subscribe());
@@ -661,7 +661,7 @@ public class CashBoxItemFragment extends PagerFragment {
 
         private void modifyEntry(CashBox.Entry modifiedEntry, DialogInterface dialogInterface,
                                  double amount, String info, Calendar date) {
-            viewModel.addDisposable(viewModel.modifyEntry(modifiedEntry, amount, info, date)
+            compositeDisposable.add(viewModel.modifyEntry(modifiedEntry, amount, info, date)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(() -> {
@@ -669,7 +669,7 @@ public class CashBoxItemFragment extends PagerFragment {
                         Snackbar.make(rvCashBoxItem,
                                 R.string.snackbarEntryModified, Snackbar.LENGTH_LONG)
                                 .setAction(R.string.undo, (View v1) ->
-                                        viewModel.addDisposable(viewModel.updateEntry(modifiedEntry)
+                                        compositeDisposable.add(viewModel.updateEntry(modifiedEntry)
                                                 .subscribeOn(Schedulers.io())
                                                 .observeOn(AndroidSchedulers.mainThread())
                                                 .subscribe()))

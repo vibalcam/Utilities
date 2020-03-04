@@ -16,7 +16,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DiffUtil;
@@ -37,6 +36,7 @@ import com.vibal.utilities.viewModels.CashBoxDeletedViewModel;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 
 public class CashBoxDeletedFragment extends PagerFragment {
@@ -59,6 +59,7 @@ public class CashBoxDeletedFragment extends PagerFragment {
 
     private CashBoxDeletedRecyclerAdapter adapter;
     private CashBoxDeletedViewModel viewModel;
+    private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     static CashBoxDeletedFragment newInstance(int pagerPosition) {
         CashBoxDeletedFragment fragment = new CashBoxDeletedFragment();
@@ -107,6 +108,12 @@ public class CashBoxDeletedFragment extends PagerFragment {
     }
 
     @Override
+    public void onDestroy() {
+        super.onDestroy();
+        compositeDisposable.dispose();
+    }
+
+    @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         if(!isOptionsMenuActive())
             return;
@@ -151,7 +158,7 @@ public class CashBoxDeletedFragment extends PagerFragment {
                 .setMessage("Are you sure you want to delete all entries? This action CANNOT be undone")
                 .setNegativeButton(R.string.cancelDialog, null)
                 .setPositiveButton(R.string.confirmDeleteDialogConfirm, (DialogInterface dialog, int which) ->
-                        viewModel.addDisposable(viewModel.clearRecycleBin()
+                        compositeDisposable.add(viewModel.clearRecycleBin()
                                 .subscribeOn(Schedulers.io())
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(integer -> Toast.makeText(getContext(),
@@ -172,7 +179,7 @@ public class CashBoxDeletedFragment extends PagerFragment {
                 .setMessage("Are you sure you want to restore all CashBoxes?")
                 .setNegativeButton(R.string.cancelDialog, null)
                 .setPositiveButton(R.string.confirm, (DialogInterface dialog, int which) ->
-                        viewModel.addDisposable(viewModel.restoreAll()
+                        compositeDisposable.add(viewModel.restoreAll()
                                 .subscribeOn(Schedulers.io())
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(integer -> Toast.makeText(getContext(),
@@ -220,7 +227,7 @@ public class CashBoxDeletedFragment extends PagerFragment {
 
         @Override
         public void onItemDelete(int position) {
-            viewModel.addDisposable(viewModel.delete(getItem(position))
+            compositeDisposable.add(viewModel.delete(getItem(position))
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(() -> Toast.makeText(getContext(),
@@ -230,7 +237,7 @@ public class CashBoxDeletedFragment extends PagerFragment {
 
         @Override
         public void onItemSecondaryAction(int position) {
-            viewModel.addDisposable(viewModel.restore(getItem(position))
+            compositeDisposable.add(viewModel.restore(getItem(position))
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(() -> Toast.makeText(getContext(),

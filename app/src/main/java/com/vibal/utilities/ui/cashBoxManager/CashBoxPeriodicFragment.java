@@ -18,7 +18,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
-import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DiffUtil;
@@ -54,6 +53,7 @@ import butterknife.ButterKnife;
 import io.reactivex.Single;
 import io.reactivex.SingleOnSubscribe;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 
 public class CashBoxPeriodicFragment extends PagerFragment {
@@ -62,6 +62,7 @@ public class CashBoxPeriodicFragment extends PagerFragment {
 
     private PeriodicEntryWorkViewModel viewModel;
     private CashBoxPeriodicRecyclerAdapter adapter;
+    private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     @NonNull
     static CashBoxPeriodicFragment newInstance(int pagerPosition) {
@@ -114,6 +115,12 @@ public class CashBoxPeriodicFragment extends PagerFragment {
     }
 
     @Override
+    public void onDestroy() {
+        super.onDestroy();
+        compositeDisposable.dispose();
+    }
+
+    @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         if(!isOptionsMenuActive())
             return;
@@ -153,7 +160,7 @@ public class CashBoxPeriodicFragment extends PagerFragment {
                 .setMessage("Are you sure you want to send all entries to the recycle bin?")
                 .setNegativeButton(R.string.cancelDialog, null)
                 .setPositiveButton(R.string.confirmDeleteDialogConfirm, (DialogInterface dialog, int which) ->
-                        viewModel.addDisposable(viewModel.deleteAllPeriodicEntryWorks()
+                        compositeDisposable.add(viewModel.deleteAllPeriodicEntryWorks()
                                 .subscribeOn(Schedulers.io())
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(integer -> Toast.makeText(getContext(),
@@ -175,7 +182,7 @@ public class CashBoxPeriodicFragment extends PagerFragment {
         private LinkedList<PeriodicEntryPojo> toDelete = new LinkedList<>();
 
         void submitList(@NonNull List<PeriodicEntryPojo> newList) {
-            viewModel.addDisposable(Single.create((SingleOnSubscribe<List<PeriodicEntryPojo>>) emitter -> {
+            compositeDisposable.add(Single.create((SingleOnSubscribe<List<PeriodicEntryPojo>>) emitter -> {
                 for (PeriodicEntryPojo pojo : toDelete)
                     newList.remove(pojo);
                 emitter.onSuccess(newList);
@@ -257,7 +264,7 @@ public class CashBoxPeriodicFragment extends PagerFragment {
 
                     LogUtil.debug("Prueba", "Deleted entry");
                     if (event != DISMISS_EVENT_ACTION)
-                        viewModel.addDisposable(
+                        compositeDisposable.add(
 //                                viewModel.deletePeriodicEntryWorkInfo(deletedEntry.getWorkInfo())
                                 viewModel.deletePeriodicEntryWorkInfo(toDelete.removeFirst().getWorkInfo())
                                         .subscribeOn(Schedulers.io())
@@ -315,7 +322,7 @@ public class CashBoxPeriodicFragment extends PagerFragment {
                                 workInfo.setRepeatInterval(Long.parseLong(inputPeriod.getText().toString()));
                                 workInfo.setRepetitions(repetitions);
 
-                                viewModel.addDisposable(viewModel.updatePeriodicEntryWorkInfo(workInfo)
+                                compositeDisposable.add(viewModel.updatePeriodicEntryWorkInfo(workInfo)
                                         .subscribeOn(Schedulers.io())
                                         .observeOn(AndroidSchedulers.mainThread())
                                         .subscribe());

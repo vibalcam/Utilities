@@ -1,6 +1,1 @@
-- Changed Periodic and Deleted Activities to Fragments
-- Added CashBoxViewFragment to hold Manager and Item fragments
-- Changed fragments to adjust to ViewPager
-- Created PagerActivity and PagerFragment to hold general implementations for ViewPager
-- TabLayout not showing in landscape or when in action mode
-- Toolbar title gives preference to item fragment than to manager when in landscape
+- Moved CompositeDisposable to fragments in order to solve memory leak
