@@ -41,6 +41,7 @@ import com.google.android.material.textview.MaterialTextView;
 import com.vibal.utilities.R;
 import com.vibal.utilities.backgroundTasks.ReminderReceiver;
 import com.vibal.utilities.modelsNew.CashBox;
+import com.vibal.utilities.modelsNew.Entry;
 import com.vibal.utilities.ui.PagerFragment;
 import com.vibal.utilities.ui.settings.SettingsActivity;
 import com.vibal.utilities.ui.swipeController.CashBoxAdapterSwipable;
@@ -128,7 +129,7 @@ public class CashBoxItemFragment extends PagerFragment {
                         Util.showKeyboard(context, inputAmount);
                     } else {
                         double amount = Util.parseExpression(inputAmount.getText().toString());
-                        compositeDisposable.add(viewModel.addEntry(cashBoxId, new CashBox.Entry(
+                        compositeDisposable.add(viewModel.addEntry(cashBoxId, new Entry(
                                 amount, inputInfo.getText().toString(), calendarListener.getCalendar()))
                                 .subscribeOn(Schedulers.io())
                                 .observeOn(AndroidSchedulers.mainThread())
@@ -432,7 +433,7 @@ public class CashBoxItemFragment extends PagerFragment {
             return;
         }
 
-        List<CashBox.Entry> deletedEntries = new ArrayList<>(adapter.currentList);
+        List<Entry> deletedEntries = new ArrayList<>(adapter.currentList);
         compositeDisposable.add(viewModel.deleteAllEntriesFromCurrentCashBox()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -455,9 +456,9 @@ public class CashBoxItemFragment extends PagerFragment {
         @NonNull
         private DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
         @NonNull
-        private List<CashBox.Entry> currentList = new ArrayList<>();
+        private List<Entry> currentList = new ArrayList<>();
 
-        void submitList(@NonNull List<CashBox.Entry> newList) {
+        void submitList(@NonNull List<Entry> newList) {
             compositeDisposable.add(Single.just(DiffUtil.calculateDiff(
                     new DiffCallback<>(currentList, newList), false))
                     .subscribeOn(Schedulers.io())
@@ -479,7 +480,7 @@ public class CashBoxItemFragment extends PagerFragment {
 
         @Override
         public void onBindViewHolder(@NonNull ViewHolder viewHolder, int index) {
-            CashBox.Entry entry = currentList.get(index);
+            Entry entry = currentList.get(index);
 
             // Amount
             viewHolder.rvItemAmount.setText(formatCurrency.format(entry.getAmount()));
@@ -510,9 +511,9 @@ public class CashBoxItemFragment extends PagerFragment {
 
         @Override
         public void onItemDelete(int position) {
-            CashBox.Entry entry = currentList.get(position);
+            Entry entry = currentList.get(position);
 
-            if (entry.getGroupId() == CashBox.Entry.NO_GROUP) {
+            if (entry.getGroupId() == Entry.NO_GROUP) {
                 deleteEntry(entry);
                 return;
             }
@@ -543,7 +544,7 @@ public class CashBoxItemFragment extends PagerFragment {
             dialog.show();
         }
 
-        private void deleteEntry(CashBox.Entry entry) {
+        private void deleteEntry(Entry entry) {
             compositeDisposable.add(viewModel.deleteEntry(entry)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
@@ -578,7 +579,7 @@ public class CashBoxItemFragment extends PagerFragment {
                 TextInputEditText inputAmount = ((AlertDialog) dialogInterface).findViewById(R.id.inputTextAmount);
                 TextInputLayout layoutAmount = ((AlertDialog) dialogInterface).findViewById(R.id.inputLayoutAmount);
                 MaterialTextView inputDate = ((AlertDialog) dialogInterface).findViewById(R.id.inputDate);
-                CashBox.Entry modifiedEntry = currentList.get(position);
+                Entry modifiedEntry = currentList.get(position);
 
                 // Set up Date Picker
                 Util.TextViewDatePickerClickListener calendarListener =
@@ -605,7 +606,7 @@ public class CashBoxItemFragment extends PagerFragment {
                             double amount = Util.parseExpression(input);
 
                             // Not a group entry
-                            if (modifiedEntry.getGroupId() == CashBox.Entry.NO_GROUP)
+                            if (modifiedEntry.getGroupId() == Entry.NO_GROUP)
                                 modifyEntry(modifiedEntry, dialogInterface, amount, info,
                                         calendarListener.getCalendar());
                             else { // Group entry
@@ -633,7 +634,7 @@ public class CashBoxItemFragment extends PagerFragment {
                                                                     Snackbar.LENGTH_LONG)
                                                                     .setAction(R.string.undo, (View v2) -> {
                                                                         Completable completable = Completable.complete();
-                                                                        for (CashBox.Entry k : entryList)
+                                                                        for (Entry k : entryList)
                                                                             completable = completable.andThen(
                                                                                     viewModel.updateEntry(k));
                                                                         compositeDisposable.add(completable
@@ -659,7 +660,7 @@ public class CashBoxItemFragment extends PagerFragment {
             notifyItemChanged(position);   // since the item is deleted from swipping we have to show it back again
         }
 
-        private void modifyEntry(CashBox.Entry modifiedEntry, DialogInterface dialogInterface,
+        private void modifyEntry(Entry modifiedEntry, DialogInterface dialogInterface,
                                  double amount, String info, Calendar date) {
             compositeDisposable.add(viewModel.modifyEntry(modifiedEntry, amount, info, date)
                     .subscribeOn(Schedulers.io())

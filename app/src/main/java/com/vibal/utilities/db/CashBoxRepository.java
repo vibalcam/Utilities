@@ -10,6 +10,7 @@ import androidx.work.WorkManager;
 import com.vibal.utilities.backgroundTasks.RxPeriodicEntryWorker;
 import com.vibal.utilities.modelsNew.CashBox;
 import com.vibal.utilities.modelsNew.CashBoxInfo;
+import com.vibal.utilities.modelsNew.Entry;
 import com.vibal.utilities.modelsNew.PeriodicEntryPojo;
 import com.vibal.utilities.util.LogUtil;
 
@@ -118,15 +119,15 @@ public class CashBoxRepository {
 
     // Entries
 
-    public Completable insertEntry(CashBox.Entry entry) {
+    public Completable insertEntry(Entry entry) {
         return cashBoxEntryDao.insert(entry);
     }
 
-    public Completable insertAllEntries(Collection<CashBox.Entry> entries) {
+    public Completable insertAllEntries(Collection<Entry> entries) {
         return cashBoxEntryDao.insertAll(entries);
     }
 
-    public Completable updateEntry(CashBox.Entry entry) {
+    public Completable updateEntry(Entry entry) {
         return cashBoxEntryDao.update(entry);
     }
 
@@ -134,7 +135,7 @@ public class CashBoxRepository {
         return cashBoxEntryDao.modify(id, amount, info, date);
     }
 
-    public Completable deleteEntry(CashBox.Entry entry) {
+    public Completable deleteEntry(Entry entry) {
         return cashBoxEntryDao.delete(entry);
     }
 
@@ -144,7 +145,7 @@ public class CashBoxRepository {
 
     // Group Entries
 
-    public Single<List<CashBox.Entry>> getGroupEntries(long groupId) {
+    public Single<List<Entry>> getGroupEntries(long groupId) {
         return cashBoxEntryDao.getGroupEntries(groupId);
     }
 

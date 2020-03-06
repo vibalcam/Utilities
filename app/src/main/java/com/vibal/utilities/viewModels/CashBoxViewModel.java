@@ -11,6 +11,7 @@ import com.vibal.utilities.backgroundTasks.RxPeriodicEntryWorker;
 import com.vibal.utilities.db.CashBoxRepository;
 import com.vibal.utilities.modelsNew.CashBox;
 import com.vibal.utilities.modelsNew.CashBoxInfo;
+import com.vibal.utilities.modelsNew.Entry;
 import com.vibal.utilities.modelsNew.PeriodicEntryPojo;
 import com.vibal.utilities.util.LogUtil;
 
@@ -143,39 +144,39 @@ public class CashBoxViewModel extends AndroidViewModel {
                 cashBoxInfoList.get(toIndex).getCashBoxInfo().getOrderId());
     }
 
-    public Completable addEntryToCurrentCashBox(@NonNull CashBox.Entry entry) {
+    public Completable addEntryToCurrentCashBox(@NonNull Entry entry) {
         return addEntry(getCurrentCashBoxId(), entry);
     }
 
-    public Completable addEntry(long cashBoxId, @NonNull CashBox.Entry entry) {
+    public Completable addEntry(long cashBoxId, @NonNull Entry entry) {
         return repository.insertEntry(entry.getEntryWithCashBoxId(cashBoxId));
     }
 
-    public Completable addAllEntriesToCurrentCashBox(@NonNull List<CashBox.Entry> entries) {
+    public Completable addAllEntriesToCurrentCashBox(@NonNull List<Entry> entries) {
         return addAllEntries(getCurrentCashBoxId(), entries);
     }
 
-    private Completable addAllEntries(long cashBoxId, @NonNull Collection<CashBox.Entry> entries) {
+    private Completable addAllEntries(long cashBoxId, @NonNull Collection<Entry> entries) {
         LogUtil.debug(TAG, entries.toString());
-        ArrayList<CashBox.Entry> entryArrayList = new ArrayList<>();
-        for (CashBox.Entry entry : entries)
+        ArrayList<Entry> entryArrayList = new ArrayList<>();
+        for (Entry entry : entries)
             entryArrayList.add(entry.getEntryWithCashBoxId(cashBoxId));
         return repository.insertAllEntries(entryArrayList);
     }
 
-    public Completable addAllEntries(@NonNull Collection<CashBox.Entry> entries) {
+    public Completable addAllEntries(@NonNull Collection<Entry> entries) {
         return repository.insertAllEntries(entries);
     }
 
-    public Completable updateEntry(CashBox.Entry entry) {
+    public Completable updateEntry(Entry entry) {
         return repository.updateEntry(entry);
     }
 
-    public Completable modifyEntry(@NonNull CashBox.Entry entry, double amount, String info, Calendar date) {
+    public Completable modifyEntry(@NonNull Entry entry, double amount, String info, Calendar date) {
         return repository.modifyEntry(entry.getId(), amount, info, date);
     }
 
-    public Completable deleteEntry(CashBox.Entry entry) {
+    public Completable deleteEntry(Entry entry) {
         return repository.deleteEntry(entry);
     }
 
@@ -187,15 +188,15 @@ public class CashBoxViewModel extends AndroidViewModel {
         return repository.addPeriodicEntryWorkRequest(workRequest);
     }
 
-    public Single<List<CashBox.Entry>> getGroupEntries(CashBox.Entry entry) {
+    public Single<List<Entry>> getGroupEntries(Entry entry) {
         return repository.getGroupEntries(entry.getGroupId());
     }
 
-    public Completable modifyGroupEntry(CashBox.Entry entry, double amount, String info, Calendar date) {
+    public Completable modifyGroupEntry(Entry entry, double amount, String info, Calendar date) {
         return repository.modifyGroupEntry(entry.getGroupId(), amount, info, date);
     }
 
-    public Single<Integer> deleteGroupEntries(CashBox.Entry entry) {
+    public Single<Integer> deleteGroupEntries(Entry entry) {
         return repository.deleteGroupEntries(entry.getGroupId());
     }
 

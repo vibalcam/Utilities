@@ -44,6 +44,7 @@ import com.vibal.utilities.R;
 import com.vibal.utilities.models.CashBoxManager;
 import com.vibal.utilities.modelsNew.CashBox;
 import com.vibal.utilities.modelsNew.CashBoxInfo;
+import com.vibal.utilities.modelsNew.Entry;
 import com.vibal.utilities.modelsNew.PeriodicEntryPojo;
 import com.vibal.utilities.ui.PagerFragment;
 import com.vibal.utilities.ui.settings.SettingsActivity;
@@ -357,7 +358,7 @@ public class CashBoxManagerFragment extends PagerFragment {
             LogUtil.debug(TAG, "Analyze cashboxmanager");
             Completable completable = Completable.complete();
             CashBox.InfoWithCash infoWithCash;
-            List<CashBox.Entry> entryList;
+            List<Entry> entryList;
             com.vibal.utilities.models.CashBox cashBox;
             com.vibal.utilities.models.CashBox.Entry entry;
             for (int k = 0; k < manager.size(); k++) {
@@ -366,7 +367,7 @@ public class CashBoxManagerFragment extends PagerFragment {
                 entryList = new ArrayList<>();
                 for (int i = 0; i < cashBox.sizeEntries(); i++) {
                     entry = cashBox.getEntry(i);
-                    entryList.add(new CashBox.Entry(entry.getAmount(), entry.getInfo(), entry.getDate()));
+                    entryList.add(new Entry(entry.getAmount(), entry.getInfo(), entry.getDate()));
                 }
 
                 completable = completable.andThen(viewModel.addCashBox(new CashBox(infoWithCash, entryList)));
@@ -631,7 +632,7 @@ public class CashBoxManagerFragment extends PagerFragment {
                     if (!strInitCash.isEmpty()) {
                         double initCash = Util.parseExpression(strInitCash);
                         if (initCash != 0)
-                            cashBox.getEntries().add(new CashBox.Entry(initCash,
+                            cashBox.getEntries().add(new Entry(initCash,
                                     "Initial Amount", Calendar.getInstance()));
                     }
 
@@ -735,7 +736,7 @@ public class CashBoxManagerFragment extends PagerFragment {
                         Completable addEntries = Completable.complete();
                         for (int k : adapter.selectedItems)
                             addEntries = addEntries.andThen(viewModel.addEntry(adapter.currentList.get(k).getId(),
-                                    new CashBox.Entry(amount, inputInfo.getText().toString().trim(),
+                                    new Entry(amount, inputInfo.getText().toString().trim(),
                                             calendarListener.getCalendar(), groupId)));
                         compositeDisposable.add(addEntries.subscribeOn(Schedulers.io())
                                 .observeOn(AndroidSchedulers.mainThread())

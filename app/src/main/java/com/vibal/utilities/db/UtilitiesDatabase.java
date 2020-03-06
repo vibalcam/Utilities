@@ -12,10 +12,11 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import com.vibal.utilities.modelsNew.CashBox;
 import com.vibal.utilities.modelsNew.CashBoxInfo;
+import com.vibal.utilities.modelsNew.Entry;
 import com.vibal.utilities.modelsNew.PeriodicEntryPojo;
 import com.vibal.utilities.util.Converters;
 
-@Database(entities = {CashBoxInfo.class, CashBox.Entry.class,
+@Database(entities = {CashBoxInfo.class, Entry.class,
         PeriodicEntryPojo.PeriodicEntryWorkInfo.class}, version = 3, exportSchema = false)
 @TypeConverters(Converters.class)
 public abstract class UtilitiesDatabase extends RoomDatabase {

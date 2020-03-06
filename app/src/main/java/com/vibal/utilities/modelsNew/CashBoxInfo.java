@@ -23,9 +23,11 @@ public class CashBoxInfo implements Cloneable {
     public static final long NO_ORDER_ID = 0;
     @Ignore
     public static final int MAX_LENGTH_NAME = 15;
+//    @Ignore
+//    public static final long NO_ONLINE_ID = 0;
 
     @PrimaryKey(autoGenerate = true)
-    private long id;
+    protected long id;
 
     @NonNull
     @ColumnInfo(collate = NOCASE)
@@ -38,12 +40,18 @@ public class CashBoxInfo implements Cloneable {
     @ColumnInfo(defaultValue = "")
     private Currency currency = Currency.getInstance(Locale.getDefault());
 
-    public CashBoxInfo(long id, @NonNull String name, long orderId, boolean deleted, Currency currency) {
+//    @ColumnInfo(defaultValue = ""+NO_ONLINE_ID)
+//    private long onlineId = NO_ONLINE_ID;
+
+//    public CashBoxInfo(long id, @NonNull String name, long orderId, boolean deleted,
+//                       Currency currency,long onlineId) {
+public CashBoxInfo(long id, @NonNull String name, long orderId, boolean deleted, Currency currency) {
         this.id = id;
         this.name = name;
         this.orderId = orderId;
         this.deleted = deleted;
         this.currency = currency;
+//        this.onlineId = onlineId;
     }
 
     @Ignore
@@ -54,6 +62,10 @@ public class CashBoxInfo implements Cloneable {
     public long getId() {
         return id;
     }
+
+//    public long getOnlineId() {
+//        return onlineId;
+//    }
 
     @NonNull
     public String getName() {
@@ -109,21 +121,24 @@ public class CashBoxInfo implements Cloneable {
 
     @Override
     public int hashCode() {
-        return name.toLowerCase().hashCode();
+//        return name.toLowerCase().hashCode();
+        return (int) id;
     }
 
-    @NonNull
     @Override
     public String toString() {
         return "CashBoxInfo{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", orderId=" + orderId +
+                ", deleted=" + deleted +
+                ", currency=" + currency +
+//                ", onlineId=" + onlineId +
                 '}';
     }
 
     /**
-     * Clones the object without conserving the id and the orderId
+     * Clones the object without conserving the id, the orderId and the onlineId
      *
      * @return the new object, product of the cloning
      */
@@ -132,6 +147,7 @@ public class CashBoxInfo implements Cloneable {
         CashBoxInfo cashBoxInfo = clone();
         cashBoxInfo.id = NO_CASHBOX;
         cashBoxInfo.orderId = NO_ORDER_ID;
+//        cashBoxInfo.onlineId = NO_ONLINE_ID;
         // Currency and deleted are maintained
         return cashBoxInfo;
     }

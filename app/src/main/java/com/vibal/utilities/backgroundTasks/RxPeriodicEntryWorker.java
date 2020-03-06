@@ -17,6 +17,7 @@ import com.vibal.utilities.App;
 import com.vibal.utilities.R;
 import com.vibal.utilities.db.UtilitiesDatabase;
 import com.vibal.utilities.modelsNew.CashBox;
+import com.vibal.utilities.modelsNew.Entry;
 import com.vibal.utilities.modelsNew.PeriodicEntryPojo;
 import com.vibal.utilities.ui.cashBoxManager.CashBoxItemFragment;
 import com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity;
@@ -46,7 +47,7 @@ public class RxPeriodicEntryWorker extends RxWorker {
                 .flatMap(periodicEntryPojo -> {
                     //Create entry
                     PeriodicEntryPojo.PeriodicEntryWorkInfo workInfo = periodicEntryPojo.getWorkInfo();
-                    CashBox.Entry entry = new CashBox.Entry(workInfo.getCashBoxId(),
+                    Entry entry = new Entry(workInfo.getCashBoxId(),
                             workInfo.getAmount(), workInfo.getInfo(), Calendar.getInstance());
                     entry.setInfo("Periodic: " + entry.getInfo());
                     Single<Result> result = database.cashBoxEntryDao().insert(entry)
@@ -86,7 +87,7 @@ public class RxPeriodicEntryWorker extends RxWorker {
 //        return database.periodicEntryWorkDao().getWorkPojoByUUID(getId())
 //                .flatMap(periodicEntryPojo -> {
 //                    PeriodicEntryPojo.PeriodicEntryWorkInfo workInfo = periodicEntryPojo.getWorkInfo();
-//                    CashBox.Entry entry = new CashBox.Entry(workInfo.getCashBoxId(),workInfo.getAmount(),
+//                    Entry entry = new Entry(workInfo.getCashBoxId(),workInfo.getAmount(),
 //                            "Periodic: " + workInfo.getInfo(), Calendar.getInstance());
 //                    return database.cashBoxEntryDao().insert(entry)
 //                            .toSingle(() -> {

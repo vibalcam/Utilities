@@ -11,6 +11,7 @@ import androidx.room.Update;
 
 import com.vibal.utilities.modelsNew.CashBox;
 import com.vibal.utilities.modelsNew.CashBoxInfo;
+import com.vibal.utilities.modelsNew.Entry;
 import com.vibal.utilities.util.LogUtil;
 
 import java.util.ArrayList;
@@ -69,8 +70,8 @@ public abstract class CashBoxDao {
         else {
             return insert(cashBox.getInfoWithCash().getCashBoxInfo()).flatMapCompletable(id -> {
                 LogUtil.debug("Prueba", "Id: " + id);
-                ArrayList<CashBox.Entry> entryArrayList = new ArrayList<>();
-                for (CashBox.Entry entry : cashBox.getEntries())
+                ArrayList<Entry> entryArrayList = new ArrayList<>();
+                for (Entry entry : cashBox.getEntries())
                     entryArrayList.add(entry.getEntryWithCashBoxId(id));
                 return cashBoxEntryDao.insertAll(entryArrayList);
             });

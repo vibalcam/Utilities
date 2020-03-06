@@ -8,6 +8,7 @@ import androidx.room.Query;
 import androidx.room.Update;
 
 import com.vibal.utilities.modelsNew.CashBox;
+import com.vibal.utilities.modelsNew.Entry;
 
 import java.util.Calendar;
 import java.util.Collection;
@@ -19,22 +20,22 @@ import io.reactivex.Single;
 @Dao
 public interface CashBoxEntryDao {
     @Query("SELECT * FROM entries_table WHERE cashBoxId=:cashBoxId ORDER BY date DESC")
-    LiveData<List<CashBox.Entry>> getEntriesByCashBoxId(long cashBoxId);
+    LiveData<List<Entry>> getEntriesByCashBoxId(long cashBoxId);
 
     @Query("SELECT * FROM entries_table WHERE groupId=:groupId")
-    Single<List<CashBox.Entry>> getGroupEntries(long groupId);
+    Single<List<Entry>> getGroupEntries(long groupId);
 
     @Insert
-    Completable insert(CashBox.Entry entry);
+    Completable insert(Entry entry);
 
     @Insert
-    Completable insertAll(Collection<CashBox.Entry> entries);
+    Completable insertAll(Collection<Entry> entries);
 
     @Delete
-    Completable delete(CashBox.Entry entry);
+    Completable delete(Entry entry);
 
     @Update
-    Completable update(CashBox.Entry entry);
+    Completable update(Entry entry);
 
     @Query("UPDATE entries_table " +
             "SET amount=:amount,info=:info,date=:date " +
