@@ -59,6 +59,7 @@
     <string name="menuCBM_showPeriodic">Periodic Tasks</string>
     <string name="menuCBM_recycleBin">Recycle Bin</string>
     <string name="menuCBM_manager">Manager</string>
+    <string name="menuCBM_managerOnline">Online</string>
     <string name="menuCBM_notifications">Notifications</string>
 
     <!--CashBox Manager Contextual Menu-->

@@ -464,12 +464,12 @@ public class CashBoxManagerFragment extends PagerFragment {
         if (action == ACTION_ADD_CASHBOX)
             showAddDialog();
         else if (action == ACTION_DETAILS)
-            swapToItemFragment(intent.getLongExtra(EXTRA_CASHBOX_ID, CashBoxInfo.NO_CASHBOX));
+            swapToItemFragment(intent.getLongExtra(EXTRA_CASHBOX_ID, CashBoxInfo.NO_ID));
     }
 
     private void swapToItemFragment(long cashBoxId) {
         LogUtil.debug(TAG, "Selected " + cashBoxId);
-        if (cashBoxId == CashBoxInfo.NO_CASHBOX)
+        if (cashBoxId == CashBoxInfo.NO_ID)
             return;
 
         viewModel.setCurrentCashBoxId(cashBoxId);

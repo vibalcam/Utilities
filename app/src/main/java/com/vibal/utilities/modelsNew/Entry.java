@@ -31,33 +31,35 @@ import static androidx.room.ForeignKey.CASCADE;
         foreignKeys = @ForeignKey(entity = CashBoxInfo.class, parentColumns = "id",
                 childColumns = "cashBoxId", onDelete = CASCADE, onUpdate = CASCADE),
         indices = {@Index(value = "cashBoxId")})
-public class Entry implements Parcelable, Cloneable, DiffDbUsable<Entry> {
+//public class Entry implements Parcelable, Cloneable, DiffDbUsable<Entry> {
+public class Entry implements Cloneable, DiffDbUsable<Entry> {
     @Ignore
     public static final long NO_GROUP = 0;
     @Ignore
     public static final String NO_INFO = "(No info)";
-    @Ignore
-    public static final Parcelable.Creator<Entry> CREATOR = new Parcelable.Creator<Entry>() {
-        @NonNull
-        @Override
-        public Entry createFromParcel(@NonNull Parcel source) {
-            return new Entry(source);
-        }
-
-        @NonNull
-        @Override
-        public Entry[] newArray(int size) {
-            return new Entry[size];
-        }
-    };
+//    @Ignore
+//    public static final Parcelable.Creator<Entry> CREATOR = new Parcelable.Creator<Entry>() {
+//        @NonNull
+//        @Override
+//        public Entry createFromParcel(@NonNull Parcel source) {
+//            return new Entry(source);
+//        }
+//
+//        @NonNull
+//        @Override
+//        public Entry[] newArray(int size) {
+//            return new Entry[size];
+//        }
+//    };
     @Ignore
     private static final String DIFF_AMOUNT = "amount";
     @Ignore
     private static final String DIFF_DATE = "date";
     @Ignore
     private static final String DIFF_INFO = "info";
+
     @PrimaryKey(autoGenerate = true)
-    private long id;
+    protected long id;
     private long cashBoxId;
     private double amount;
     private Calendar date;
@@ -83,12 +85,12 @@ public class Entry implements Parcelable, Cloneable, DiffDbUsable<Entry> {
 
     @Ignore
     public Entry(double amount, @NonNull String info, Calendar date, long groupId) {
-        this(CashBoxInfo.NO_CASHBOX, amount, info, date, groupId);
+        this(CashBoxInfo.NO_ID, amount, info, date, groupId);
     }
 
     @Ignore
     public Entry(double amount, @NonNull String info, Calendar date) {
-        this(CashBoxInfo.NO_CASHBOX, amount, info, date);
+        this(CashBoxInfo.NO_ID, amount, info, date);
     }
 
     @Ignore
@@ -157,7 +159,7 @@ public class Entry implements Parcelable, Cloneable, DiffDbUsable<Entry> {
         if (this.cashBoxId == cashBoxId)
             return this;
 
-        Entry entry = this.cashBoxId != CashBoxInfo.NO_CASHBOX ? this.cloneContents() : this;
+        Entry entry = this.cashBoxId != CashBoxInfo.NO_ID ? this.cloneContents() : this;
         entry.cashBoxId = cashBoxId;
         return entry;
     }
@@ -186,7 +188,7 @@ public class Entry implements Parcelable, Cloneable, DiffDbUsable<Entry> {
     public Entry cloneContents() {
         Entry entry = clone();
         entry.id = 0;
-        entry.cashBoxId = CashBoxInfo.NO_CASHBOX;
+        entry.cashBoxId = CashBoxInfo.NO_ID;
         entry.groupId = NO_GROUP;
         return entry;
     }
@@ -208,20 +210,20 @@ public class Entry implements Parcelable, Cloneable, DiffDbUsable<Entry> {
     }
 
     // Parcelable implementation
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(@NonNull Parcel dest, int flags) {
-        dest.writeLong(id);
-        dest.writeLong(cashBoxId);
-        dest.writeString(info);
-        dest.writeLong(Converters.calendarToTimestamp(date));
-        dest.writeDouble(amount);
-        dest.writeLong(groupId);
-    }
+//    @Override
+//    public int describeContents() {
+//        return 0;
+//    }
+//
+//    @Override
+//    public void writeToParcel(@NonNull Parcel dest, int flags) {
+//        dest.writeLong(id);
+//        dest.writeLong(cashBoxId);
+//        dest.writeString(info);
+//        dest.writeLong(Converters.calendarToTimestamp(date));
+//        dest.writeDouble(amount);
+//        dest.writeLong(groupId);
+//    }
 
     //Implements DiffDbUsable
     @Override

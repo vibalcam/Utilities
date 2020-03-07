@@ -18,7 +18,7 @@ import static androidx.room.ColumnInfo.NOCASE;
         @Index(value = "deleted")})
 public class CashBoxInfo implements Cloneable {
     @Ignore
-    public static final int NO_CASHBOX = 0;
+    public static final int NO_ID = 0;
     @Ignore
     public static final long NO_ORDER_ID = 0;
     @Ignore
@@ -27,7 +27,7 @@ public class CashBoxInfo implements Cloneable {
 //    public static final long NO_ONLINE_ID = 0;
 
     @PrimaryKey(autoGenerate = true)
-    protected long id;
+    private long id;
 
     @NonNull
     @ColumnInfo(collate = NOCASE)
@@ -122,7 +122,7 @@ public CashBoxInfo(long id, @NonNull String name, long orderId, boolean deleted,
     @Override
     public int hashCode() {
 //        return name.toLowerCase().hashCode();
-        return (int) id;
+        return (int) getId();
     }
 
     @Override
@@ -133,7 +133,6 @@ public CashBoxInfo(long id, @NonNull String name, long orderId, boolean deleted,
                 ", orderId=" + orderId +
                 ", deleted=" + deleted +
                 ", currency=" + currency +
-//                ", onlineId=" + onlineId +
                 '}';
     }
 
@@ -145,7 +144,7 @@ public CashBoxInfo(long id, @NonNull String name, long orderId, boolean deleted,
     @NonNull
     public CashBoxInfo cloneContents() {
         CashBoxInfo cashBoxInfo = clone();
-        cashBoxInfo.id = NO_CASHBOX;
+        cashBoxInfo.id = NO_ID;
         cashBoxInfo.orderId = NO_ORDER_ID;
 //        cashBoxInfo.onlineId = NO_ONLINE_ID;
         // Currency and deleted are maintained

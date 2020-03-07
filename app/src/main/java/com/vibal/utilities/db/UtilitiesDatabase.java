@@ -12,14 +12,17 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import com.vibal.utilities.modelsNew.CashBox;
 import com.vibal.utilities.modelsNew.CashBoxInfo;
+import com.vibal.utilities.modelsNew.CashBoxInfoOnline;
 import com.vibal.utilities.modelsNew.Entry;
+import com.vibal.utilities.modelsNew.EntryOnline;
 import com.vibal.utilities.modelsNew.PeriodicEntryPojo;
 import com.vibal.utilities.util.Converters;
 
-@Database(entities = {CashBoxInfo.class, Entry.class,
-        PeriodicEntryPojo.PeriodicEntryWorkInfo.class}, version = 3, exportSchema = false)
+@Database(entities = {CashBoxInfo.class, Entry.class, CashBoxInfoOnline.class,
+        PeriodicEntryPojo.PeriodicEntryWorkInfo.class, EntryOnline.class}, version = 4,
+        exportSchema = false)
 @TypeConverters(Converters.class)
-public abstract class UtilitiesDatabase extends RoomDatabase {
+public abstract class UtilitiesDatabase extends RoomDatabase { // todo new migration online
     private static final Migration MIGRATION_1_2 = new Migration(1, 2) {
         @Override
         public void migrate(@NonNull SupportSQLiteDatabase database) {
@@ -68,6 +71,34 @@ public abstract class UtilitiesDatabase extends RoomDatabase {
         }
     };
 
+    private static final Migration MIGRATION_3_4 = new Migration(3,4) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            // Online CashBoxInfo
+            database.execSQL("CREATE TABLE IF NOT EXISTS `cashBoxesOnline_table` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`name` TEXT NOT NULL COLLATE NOCASE, " +
+                    "`orderId` INTEGER NOT NULL, " +
+                    "`currency` TEXT DEFAULT '')");
+            database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_cashBoxesOnline_table_name`" +
+                    " ON `cashBoxesOnline_table` (`name`)");
+
+            // Online Entry
+            database.execSQL("CREATE TABLE IF NOT EXISTS `entriesOnline_table` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`viewed` INTEGER NOT NULL, " +
+                    "`cashBoxId` INTEGER NOT NULL, " +
+                    "`amount` REAL NOT NULL, " +
+                    "`date` INTEGER, " +
+                    "`info` TEXT, " +
+                    "`groupId` INTEGER NOT NULL DEFAULT 0, " +
+                    "FOREIGN KEY(`cashBoxId`) REFERENCES `cashBoxesOnline_table`(`id`) " +
+                    "ON UPDATE CASCADE ON DELETE CASCADE )");
+            database.execSQL("CREATE INDEX IF NOT EXISTS `index_entriesOnline_table_cashBoxId` " +
+                    "ON `entriesOnline_table` (`cashBoxId`)");
+        }
+    };
+
     private static UtilitiesDatabase INSTANCE = null;
 
     @NonNull
@@ -75,7 +106,7 @@ public abstract class UtilitiesDatabase extends RoomDatabase {
         if (INSTANCE == null) {
             INSTANCE = Room.databaseBuilder(context.getApplicationContext(), UtilitiesDatabase.class,
                     "utilities_database")
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
 //                    .fallbackToDestructiveMigration()
 //                    .addCallback(roomCallback)
                     .build();

@@ -25,7 +25,7 @@ import java.util.Locale;
 import io.reactivex.Completable;
 import io.reactivex.Single;
 
-import static com.vibal.utilities.modelsNew.CashBoxInfo.NO_CASHBOX;
+import static com.vibal.utilities.modelsNew.CashBoxInfo.NO_ID;
 
 public class CashBoxViewModel extends AndroidViewModel {
     private static final String TAG = "PruebaCashBoxViewModel";
@@ -58,7 +58,7 @@ public class CashBoxViewModel extends AndroidViewModel {
 
     public long getCurrentCashBoxId() {
 //        return currentCashBoxId;
-        return cashBox == null || cashBox.getValue() == null ? NO_CASHBOX :
+        return cashBox == null || cashBox.getValue() == null ? NO_ID :
                 cashBox.getValue().getInfoWithCash().getId();
     }
 

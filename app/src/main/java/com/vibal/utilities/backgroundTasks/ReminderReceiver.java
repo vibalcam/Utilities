@@ -136,7 +136,7 @@ public class ReminderReceiver extends BroadcastReceiver {
         } else { //Show notification reminder
             LogUtil.debug(TAG, "Show notification");
             showReminderNotification(context,
-                    intent.getLongExtra(EXTRA_CASHBOX_ID, CashBoxInfo.NO_CASHBOX));
+                    intent.getLongExtra(EXTRA_CASHBOX_ID, CashBoxInfo.NO_ID));
         }
     }
 }

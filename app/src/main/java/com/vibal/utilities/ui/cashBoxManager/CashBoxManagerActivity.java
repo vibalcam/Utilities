@@ -172,8 +172,10 @@ public class CashBoxManagerActivity extends AppCompatActivity implements TabLayo
                 case 0:
                     return CashBoxViewFragment.newInstance(position);
                 case 1:
-                    return CashBoxDeletedFragment.newInstance(position);
+                    return CashBoxViewFragment.newInstance(position);
                 case 2:
+                    return CashBoxDeletedFragment.newInstance(position);
+                case 3:
                     return CashBoxPeriodicFragment.newInstance(position);
                 default: // should never happen
                     throw new IllegalArgumentException("No fragment associated to position");
@@ -182,7 +184,7 @@ public class CashBoxManagerActivity extends AppCompatActivity implements TabLayo
 
         @Override
         public int getCount() {
-            return 3;
+            return 4;
         }
     }
 }
