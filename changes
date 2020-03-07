@@ -1,4 +1,2 @@
-- Added class CashBoxInfoOnline which extends CashBoxInfo
-- Added class EntryOnline which extends Entry
-- Added migration to add cashBoxOnline_table and entryOnline_table
-- Added tab for online cashBoxes
+- Created local and online version of CashBoxManagerFragment and CashBoxItemFragment
+- Changed CashBoxViewFragment to choose between local and online

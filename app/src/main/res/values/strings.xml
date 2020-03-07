@@ -5,6 +5,7 @@
     <string name="main_randomChooser">Random Chooser</string>
     <string name="main_cashBoxManager">CashBox Manager</string>
     <string name="titleCBM">CashBoxes</string>
+    <string name="titleCBM_online">Cloud</string>
     <string name="title_periodicEntry">Periodic Entries</string>
     <string name="title_deletedCashBox">Recycle Bin</string>
     <string name="title_activity_settings">Settings</string>

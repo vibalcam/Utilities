@@ -71,7 +71,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 
-public class CashBoxItemFragment extends PagerFragment {
+public abstract class CashBoxItemFragment extends PagerFragment {
     public static final int REMINDER_ID = 1;
     private static final double MAX_SHOW_CASH = 99999999;
     private static final String TAG = "PruebaItemFragment";
@@ -89,12 +89,13 @@ public class CashBoxItemFragment extends PagerFragment {
     private MenuItem menuItemNotification;
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
-    @NonNull
-    static CashBoxItemFragment newInstance(int pagerPosition) {
-        CashBoxItemFragment fragment = new CashBoxItemFragment();
-        fragment.setPositionAsArgument(pagerPosition);
-        return fragment;
-    }
+    // Default to the local instance
+//    @NonNull
+//    static CashBoxItemFragment newInstance(int pagerPosition) {
+//        CashBoxItemFragment fragment = new CashBoxItemLocalFragment();
+//        fragment.setPositionAsArgument(pagerPosition);
+//        return fragment;
+//    }
 
     @NonNull
     static AlertDialog getAddEntryDialog(long cashBoxId, @NonNull Context context,
@@ -191,7 +192,7 @@ public class CashBoxItemFragment extends PagerFragment {
         super.onActivityCreated(savedInstanceState);
 
         // Initialize data
-        viewModel = new ViewModelProvider(requireParentFragment()).get(CashBoxViewModel.class);
+        viewModel = initializeViewModel();
         viewModel.getCurrentCashBox().observe(getViewLifecycleOwner(), cashBox -> {
             LogUtil.debug("PruebaItemFragment", "Is Visible onSubmitList: " + isVisible());
 
@@ -214,6 +215,8 @@ public class CashBoxItemFragment extends PagerFragment {
                 shareActionProvider.setShareIntent(Util.getShareIntent(cashBox));
         });
     }
+
+    protected abstract CashBoxViewModel initializeViewModel();
 
     @Override
     public void onDestroy() {

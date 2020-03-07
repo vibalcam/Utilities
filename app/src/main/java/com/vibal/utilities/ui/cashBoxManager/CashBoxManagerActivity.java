@@ -170,9 +170,9 @@ public class CashBoxManagerActivity extends AppCompatActivity implements TabLayo
             LogUtil.debug("PruebaViewPager", "Position get Item: " + position);
             switch (position) {
                 case 0:
-                    return CashBoxViewFragment.newInstance(position);
+                    return CashBoxViewFragment.newInstance(position, false);
                 case 1:
-                    return CashBoxViewFragment.newInstance(position);
+                    return CashBoxViewFragment.newInstance(position, true);
                 case 2:
                     return CashBoxDeletedFragment.newInstance(position);
                 case 3:

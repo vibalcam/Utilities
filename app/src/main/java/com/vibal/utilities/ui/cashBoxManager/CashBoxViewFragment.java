@@ -18,12 +18,26 @@ import butterknife.ButterKnife;
 
 public class CashBoxViewFragment extends PagerFragment {
     private static final String TAG = "PruebaView";
+    public static final String ONLINE_MODE_ARG = "online_arg";
+    private boolean onlineMode;
 
     @NonNull
-    static CashBoxViewFragment newInstance(int pagerPosition) {
+    static CashBoxViewFragment newInstance(int pagerPosition, boolean onlineMode) {
         CashBoxViewFragment fragment = new CashBoxViewFragment();
         fragment.setPositionAsArgument(pagerPosition);
+        boolean prueba = fragment.getArguments() != null;
+        Bundle bundle = fragment.getArguments() != null ? fragment.getArguments() :
+                new Bundle();
+        bundle.putBoolean(ONLINE_MODE_ARG, onlineMode);
+        fragment.setArguments(bundle);
         return fragment;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        onlineMode = getArguments() != null && getArguments().
+                getBoolean(ONLINE_MODE_ARG, false);
     }
 
     @Nullable
@@ -42,12 +56,16 @@ public class CashBoxViewFragment extends PagerFragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        // Manager instance
+        Fragment managerFragment = onlineMode ? CashBoxManagerOnlineFragment.newInstance(getPagerPosition()) :
+                CashBoxManagerLocalFragment.newInstance(getPagerPosition());
+
         // Logic for landscape mode
         FragmentManager fragmentManager = getChildFragmentManager();
         LogUtil.debug(TAG, fragmentManager.getFragments().toString());
         if (savedInstanceState == null) {
             fragmentManager.beginTransaction()
-                    .replace(R.id.container, CashBoxManagerFragment.newInstance(getPagerPosition()))
+                    .replace(R.id.container, managerFragment)
                     .commitNow();
         } else {
             View viewLand = requireView().findViewById(R.id.containerItem);
@@ -57,8 +75,10 @@ public class CashBoxViewFragment extends PagerFragment {
                 // If the Item Fragment was active, pop it and replace it
                 fragmentManager.popBackStackImmediate();
                 fragmentManager.beginTransaction()
-                        .replace(R.id.containerItem, CashBoxItemFragment.newInstance(getPagerPosition()))
-                        .replace(R.id.container, CashBoxManagerFragment.newInstance(getPagerPosition()))
+                        .replace(R.id.containerItem, onlineMode ?
+                                CashBoxItemOnlineFragment.newInstance(getPagerPosition()) :
+                                CashBoxItemLocalFragment.newInstance(getPagerPosition()))
+                        .replace(R.id.container, managerFragment)
                         .commitNow();
             } else if ((fragment = fragmentManager.findFragmentById(R.id.containerItem)) != null) {
                 // Remove the ItemFragment that is not being used anymore

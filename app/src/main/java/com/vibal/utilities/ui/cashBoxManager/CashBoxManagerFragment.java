@@ -22,8 +22,10 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.ActionMode;
@@ -89,7 +91,7 @@ import static com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity.GROUP
 import static com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity.GROUP_ID_COUNT_KEY;
 import static com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity.NO_ACTION;
 
-public class CashBoxManagerFragment extends PagerFragment {
+public abstract class CashBoxManagerFragment extends PagerFragment {
     private static final String TAG = "PruebaManagerFragment";
     private static final int EDIT_MODE = 0;
     private static final int GROUP_ADD_MODE = 1;
@@ -220,7 +222,8 @@ public class CashBoxManagerFragment extends PagerFragment {
     private final ActionMode.Callback editModeCallback = new ActionMode.Callback() {
         @Override
         public boolean onCreateActionMode(@NonNull ActionMode mode, Menu menu) {
-            mode.getMenuInflater().inflate(R.menu.menu_contextual_toolbar_cash_box_manager, menu);
+            if(isCloneEnabled())
+                mode.getMenuInflater().inflate(R.menu.menu_contextual_toolbar_cash_box_manager, menu);
             //Hide fab
             fabMain.animate().alpha(0f);
             fabMain.setVisibility(View.GONE);
@@ -243,7 +246,7 @@ public class CashBoxManagerFragment extends PagerFragment {
                 return true;
             } else if (adapter.selectedItems.size() > 1) //should never happen
                 throw new RuntimeException("Selected Items size has to be 1");
-            else if (item.getItemId() == R.id.action_manager_duplicate) {
+            else if (item.getItemId() == R.id.action_manager_duplicate && isCloneEnabled()) {
                 adapter.showCloneDialog(adapter.selectedItems.iterator().next());
                 mode.finish();
                 return true;
@@ -265,12 +268,12 @@ public class CashBoxManagerFragment extends PagerFragment {
         }
     };
 
-    @NonNull
-    static CashBoxManagerFragment newInstance(int pagerPosition) {
-        CashBoxManagerFragment fragment = new CashBoxManagerFragment();
-        fragment.setPositionAsArgument(pagerPosition);
-        return fragment;
-    }
+//    @NonNull
+//    static CashBoxManagerFragment newInstance(int pagerPosition) {
+//        CashBoxManagerFragment fragment = new CashBoxManagerLocalFragment();
+//        fragment.setPositionAsArgument(pagerPosition);
+//        return fragment;
+//    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -311,12 +314,15 @@ public class CashBoxManagerFragment extends PagerFragment {
         LogUtil.debug(TAG, "onActivityCreated: ");
 
         // Initialize data
-        viewModel = new ViewModelProvider(requireParentFragment()).get(CashBoxViewModel.class);
+//        viewModel = new ViewModelProvider(requireParentFragment()).get(CashBoxViewModel.class);
+        viewModel = initializeViewModel();
         viewModel.getCashBoxesInfo().observe(getViewLifecycleOwner(), infoWithCashes ->
                 adapter.submitList(infoWithCashes));
 
         checkFileForCashBoxes();
     }
+
+    abstract protected CashBoxViewModel initializeViewModel();
 
     @Override
     public void onDestroy() {
@@ -408,22 +414,23 @@ public class CashBoxManagerFragment extends PagerFragment {
     public void onResume() {
         super.onResume();
         LogUtil.debug("PruebaView", getParentFragmentManager().getFragments().toString());
+        //Set Toolbar title since in onCreateOptionsMenu doesn't work
+        if (getParentFragmentManager().getFragments().size() < 2)
+            ((AppCompatActivity) requireActivity()).getSupportActionBar().setTitle(getTitle());
+//            ((AppCompatActivity) requireActivity()).getSupportActionBar().setTitle(R.string.titleCBM);
     }
 
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        if (!isOptionsMenuActive())
-            return;
         super.onCreateOptionsMenu(menu, inflater);
-
-        LogUtil.debug("PruebaOptionsMenu", "Manager");
         menu.clear();
         inflater.inflate(R.menu.menu_toolbar_cash_box_manager, menu);
-
-        //Set Toolbar title
-        if (getParentFragmentManager().getFragments().size() < 2)
-            ((AppCompatActivity) requireActivity()).getSupportActionBar().setTitle(R.string.titleCBM);
     }
+
+    @StringRes
+    abstract protected int getTitle();
+
+    abstract protected boolean isCloneEnabled();
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -481,13 +488,17 @@ public class CashBoxManagerFragment extends PagerFragment {
         // In landscape, no backstack so back returns to parent activity
         View landsView = requireParentFragment().getView().findViewById(R.id.containerItem); // view in parent fragment
         if (landsView != null && landsView.getVisibility() == View.VISIBLE)
-            transaction.replace(R.id.containerItem, CashBoxItemFragment.newInstance(getPagerPosition()))
+//            transaction.replace(R.id.containerItem, CashBoxItemFragment.newInstance(getPagerPosition()))
+            transaction.replace(R.id.containerItem, getChildInstance())
                     .commitNow();
         else
-            transaction.replace(R.id.container, CashBoxItemFragment.newInstance(getPagerPosition()))
+//            transaction.replace(R.id.container, CashBoxItemFragment.newInstance(getPagerPosition()))
+            transaction.replace(R.id.container, getChildInstance())
                     .addToBackStack(null)
                     .commit();
     }
+
+    abstract protected CashBoxItemFragment getChildInstance();
 
     private boolean startActionMode(int type) {
         if (adapter.currentList.isEmpty()) { // Check if there are any CashBoxes
@@ -820,6 +831,12 @@ public class CashBoxManagerFragment extends PagerFragment {
         dialog.show();
     }
 
+    @DrawableRes
+    abstract protected int getSideImageResource();
+
+    abstract protected void onImageClick(long cashBoxId, @NonNull CashBoxViewModel viewModel,
+                                         CompositeDisposable compositeDisposable);
+
     public class CashBoxManagerRecyclerAdapter extends RecyclerView.Adapter<CashBoxManagerRecyclerAdapter.ViewHolder> implements CashBoxAdapterSwipable {
         private static final boolean SWIPE_ENABLED = true;
         private static final String TAG = "PruebaManagerActivity";
@@ -890,7 +907,8 @@ public class CashBoxManagerFragment extends PagerFragment {
             } else {
                 // Image show add
                 viewHolder.image.setVisibility(View.VISIBLE);
-                viewHolder.image.setImageResource(R.drawable.ic_add);
+                viewHolder.image.setImageResource(getSideImageResource());
+//                viewHolder.image.setImageResource(R.drawable.ic_add);
                 // Amount show
                 viewHolder.rvAmount.setVisibility(View.VISIBLE);
                 currencyFormat.setCurrency(cashBoxInfo.getCashBoxInfo().getCurrency());
@@ -1010,6 +1028,9 @@ public class CashBoxManagerFragment extends PagerFragment {
         }
 
         private void showCloneDialog(int position) {
+            if(!isCloneEnabled())
+                return;
+
             CashBoxInfo cashBoxInfo = currentList.get(position).getCashBoxInfo();
 
             AlertDialog dialogClone = inputNameDialog("Clone CashBox", R.string.cashBox_cloneButton);
@@ -1080,9 +1101,11 @@ public class CashBoxManagerFragment extends PagerFragment {
             boolean onImageTouch(@NonNull MotionEvent event) {
                 if (actionMode == null) { //Normal behavior
                     if (event.getActionMasked() == MotionEvent.ACTION_UP)
-                        CashBoxItemFragment.getAddEntryDialog(currentList.get(getAdapterPosition()).getId(),
-                                requireContext(), viewModel, compositeDisposable)
-                                .show();
+                        onImageClick(currentList.get(getAdapterPosition()).getId(),
+                                viewModel, compositeDisposable);
+//                        CashBoxItemFragment.getAddEntryDialog(currentList.get(getAdapterPosition()).getId(),
+//                                requireContext(), viewModel, compositeDisposable)
+//                                .show();
                     return true; //to consume the touch action so it does not count as a click on the view
                 } else { //While in edit mode/action mode
                     if (onStartDragListener != null && event.getActionMasked() == MotionEvent.ACTION_DOWN) {
