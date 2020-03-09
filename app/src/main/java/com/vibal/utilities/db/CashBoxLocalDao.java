@@ -23,7 +23,7 @@ import io.reactivex.Completable;
 import io.reactivex.Single;
 
 @Dao
-public abstract class CashBoxDao {
+public abstract class CashBoxLocalDao extends CashBoxBaseDao {
     // Non deleted CashBoxes
     @Query("SELECT C.id,C.name,C.orderId,SUM(amount) AS cash, deleted, currency " +
             "FROM cashBoxesInfo_table AS C LEFT JOIN entries_table AS E ON C.id=E.cashBoxId " +
@@ -64,48 +64,16 @@ public abstract class CashBoxDao {
             "ORDER BY C.orderId DESC")
     public abstract List<CashBox.InfoWithCash> getAllCashBoxInfoForWidget();
 
-    Completable insert(@NonNull CashBox cashBox, @NonNull CashBoxEntryDao cashBoxEntryDao) {
-        if (cashBox.getEntries().isEmpty())
-            return insert(cashBox.getInfoWithCash().getCashBoxInfo()).ignoreElement();
-        else {
-            return insert(cashBox.getInfoWithCash().getCashBoxInfo()).flatMapCompletable(id -> {
-                LogUtil.debug("Prueba", "Id: " + id);
-                ArrayList<Entry> entryArrayList = new ArrayList<>();
-                for (Entry entry : cashBox.getEntries())
-                    entryArrayList.add(entry.getEntryWithCashBoxId(id));
-                return cashBoxEntryDao.insertAll(entryArrayList);
-            });
-        }
-    }
-
-    Single<Long> insert(CashBoxInfo cashBoxInfo) {
-        return insertWithoutOrderId(cashBoxInfo)
-                .flatMap(id -> configureOrderId(id)
-                        .toSingle(() -> id));
-    }
-
     @Query("UPDATE cashBoxesInfo_table " +
             "SET orderId=:cashBoxId " +
             "WHERE id=:cashBoxId AND orderId=" + CashBoxInfo.NO_ORDER_ID)
     abstract Completable configureOrderId(long cashBoxId);
-
-    @Insert
-    abstract Single<Long> insertWithoutOrderId(CashBoxInfo cashBoxInfo);
-
-    @Update
-    abstract Completable update(CashBoxInfo cashBoxInfo);
-
-    @Update
-    abstract Completable updateAll(Collection<CashBoxInfo> cashBoxInfoCollection);
 
     @Query("UPDATE cashBoxesInfo_table SET currency=:currency WHERE id=:cashBoxId")
     abstract Completable setCashBoxCurrency(long cashBoxId, Currency currency);
 
     @Query("UPDATE cashBoxesInfo_table SET deleted=:deleted WHERE deleted!=:deleted")
     abstract Single<Integer> setDeletedAll(boolean deleted);
-
-    @Delete
-    abstract Completable delete(CashBoxInfo cashBoxInfo);
 
     @Query("DELETE FROM cashBoxesInfo_table WHERE deleted=1")
     abstract Single<Integer> clearRecycleBin();

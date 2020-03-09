@@ -1,2 +1,1 @@
-- Created local and online version of CashBoxManagerFragment and CashBoxItemFragment
-- Changed CashBoxViewFragment to choose between local and online
+- Generalized CashBoxDao

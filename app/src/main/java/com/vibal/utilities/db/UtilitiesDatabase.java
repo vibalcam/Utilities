@@ -10,7 +10,6 @@ import androidx.room.TypeConverters;
 import androidx.room.migration.Migration;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
-import com.vibal.utilities.modelsNew.CashBox;
 import com.vibal.utilities.modelsNew.CashBoxInfo;
 import com.vibal.utilities.modelsNew.CashBoxInfoOnline;
 import com.vibal.utilities.modelsNew.Entry;
@@ -116,7 +115,7 @@ public abstract class UtilitiesDatabase extends RoomDatabase { // todo new migra
 
     public abstract CashBoxEntryDao cashBoxEntryDao();
 
-    public abstract CashBoxDao cashBoxDao();
+    public abstract CashBoxLocalDao cashBoxDao();
 
     public abstract PeriodicEntryWorkDao periodicEntryWorkDao();
 

@@ -25,7 +25,7 @@ import io.reactivex.Single;
 
 public class CashBoxRepository {
     private WorkManager workManager;
-    private CashBoxDao cashBoxDao;
+    private CashBoxLocalDao cashBoxLocalDao;
     private CashBoxEntryDao cashBoxEntryDao;
     private PeriodicEntryWorkDao periodicEntryWorkDao;
     private LiveData<List<CashBox.InfoWithCash>> cashBoxesInfo;
@@ -34,9 +34,9 @@ public class CashBoxRepository {
         UtilitiesDatabase database = UtilitiesDatabase.getInstance(application);
 
         // CashBox Manager
-        cashBoxDao = database.cashBoxDao();
+        cashBoxLocalDao = database.cashBoxDao();
         cashBoxEntryDao = database.cashBoxEntryDao();
-        cashBoxesInfo = cashBoxDao.getAllCashBoxesInfo(false);
+        cashBoxesInfo = cashBoxLocalDao.getAllCashBoxesInfo(false);
 
         // WorkManager
         workManager = WorkManager.getInstance(application);
@@ -54,7 +54,7 @@ public class CashBoxRepository {
         MediatorLiveData<CashBox> liveDataMerger = new MediatorLiveData<>();
         liveDataMerger.setValue(new CashBox("Loading..."));
 
-        liveDataMerger.addSource(cashBoxDao.getCashBoxInfoWithCashById(id),
+        liveDataMerger.addSource(cashBoxLocalDao.getCashBoxInfoWithCashById(id),
                 infoWithCash -> {
                     if (infoWithCash == null)
                         return;
@@ -77,44 +77,44 @@ public class CashBoxRepository {
     }
 
     public LiveData<List<CashBox.InfoWithCash>> getAllDeletedCashBoxesInfo() {
-        return cashBoxDao.getAllCashBoxesInfo(true);
+        return cashBoxLocalDao.getAllCashBoxesInfo(true);
     }
 
     public Single<CashBox> getCashBox(long id) {
-        return cashBoxDao.getCashBoxById(id);
+        return cashBoxLocalDao.getCashBoxById(id);
     }
 
     public Completable insertCashBox(@NonNull CashBox cashBox) {
-        return cashBoxDao.insert(cashBox, cashBoxEntryDao);
+        return cashBoxLocalDao.insert(cashBox, cashBoxEntryDao);
     }
 
     public Single<Long> insertCashBoxInfo(@NonNull CashBox.InfoWithCash infoWithCash) {
-        return cashBoxDao.insert(infoWithCash.getCashBoxInfo());
+        return cashBoxLocalDao.insert(infoWithCash.getCashBoxInfo());
     }
 
     public Completable updateCashBoxInfo(CashBoxInfo cashBoxInfo) {
-        return cashBoxDao.update(cashBoxInfo);
+        return cashBoxLocalDao.update(cashBoxInfo);
     }
 
     public Completable setCashBoxCurrency(long cashBoxId, @NonNull Currency currency) {
-        return cashBoxDao.setCashBoxCurrency(cashBoxId, currency);
+        return cashBoxLocalDao.setCashBoxCurrency(cashBoxId, currency);
     }
 
     public Completable moveCashBoxInfo(@NonNull CashBox.InfoWithCash infoWithCash, long toOrderPos) {
-        return cashBoxDao.moveCashBoxToOrderPos(infoWithCash.getCashBoxInfo().getId(),
+        return cashBoxLocalDao.moveCashBoxToOrderPos(infoWithCash.getCashBoxInfo().getId(),
                 infoWithCash.getCashBoxInfo().getOrderId(), toOrderPos);
     }
 
     public Single<Integer> setDeletedAll(boolean deleted) {
-        return cashBoxDao.setDeletedAll(deleted);
+        return cashBoxLocalDao.setDeletedAll(deleted);
     }
 
     public Completable deleteCashBox(@NonNull CashBoxInfo cashBoxInfo) {
-        return cashBoxDao.delete(cashBoxInfo);
+        return cashBoxLocalDao.delete(cashBoxInfo);
     }
 
     public Single<Integer> clearRecycleBin() {
-        return cashBoxDao.clearRecycleBin();
+        return cashBoxLocalDao.clearRecycleBin();
     }
 
     // Entries
