@@ -14,7 +14,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.PreferenceManager;
@@ -26,11 +25,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.vibal.utilities.R;
 import com.vibal.utilities.modelsNew.CashBox;
-import com.vibal.utilities.ui.PagerFragment;
 import com.vibal.utilities.ui.settings.SettingsActivity;
 import com.vibal.utilities.ui.swipeController.CashBoxAdapterSwipable;
 import com.vibal.utilities.ui.swipeController.CashBoxSwipeController;
+import com.vibal.utilities.ui.viewPager.PagerFragment;
 import com.vibal.utilities.util.LogUtil;
+import com.vibal.utilities.util.MyDialogBuilder;
 import com.vibal.utilities.viewModels.CashBoxDeletedViewModel;
 
 import butterknife.BindView;
@@ -154,10 +154,9 @@ public class CashBoxDeletedFragment extends PagerFragment {
             Toast.makeText(getContext(), "No entries to delete", Toast.LENGTH_SHORT).show();
             return;
         }
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setTitle(R.string.confirmDeleteAllDialog)
+        new MyDialogBuilder(requireContext())
+                .setTitle(R.string.confirmDeleteAllDialog)
                 .setMessage("Are you sure you want to delete all entries? This action CANNOT be undone")
-                .setNegativeButton(R.string.cancelDialog, null)
                 .setPositiveButton(R.string.confirmDeleteDialogConfirm, (DialogInterface dialog, int which) ->
                         compositeDisposable.add(viewModel.clearRecycleBin()
                                 .subscribeOn(Schedulers.io())
@@ -167,6 +166,20 @@ public class CashBoxDeletedFragment extends PagerFragment {
                                         Toast.LENGTH_SHORT)
                                         .show())))
                 .show();
+
+//        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+//        builder.setTitle(R.string.confirmDeleteAllDialog)
+//                .setMessage("Are you sure you want to delete all entries? This action CANNOT be undone")
+//                .setNegativeButton(R.string.cancelDialog, null)
+//                .setPositiveButton(R.string.confirmDeleteDialogConfirm, (DialogInterface dialog, int which) ->
+//                        compositeDisposable.add(viewModel.clearRecycleBin()
+//                                .subscribeOn(Schedulers.io())
+//                                .observeOn(AndroidSchedulers.mainThread())
+//                                .subscribe(integer -> Toast.makeText(getContext(),
+//                                        getString(R.string.snackbarEntriesDeleted, count),
+//                                        Toast.LENGTH_SHORT)
+//                                        .show())))
+//                .show();
     }
 
     private void restoreAll() {
@@ -175,10 +188,9 @@ public class CashBoxDeletedFragment extends PagerFragment {
             Toast.makeText(getContext(), "No entries to restore", Toast.LENGTH_SHORT).show();
             return;
         }
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setTitle(R.string.confirmRestoreAllDialog)
+        new MyDialogBuilder(requireContext())
+                .setTitle(R.string.confirmRestoreAllDialog)
                 .setMessage("Are you sure you want to restore all CashBoxes?")
-                .setNegativeButton(R.string.cancelDialog, null)
                 .setPositiveButton(R.string.confirm, (DialogInterface dialog, int which) ->
                         compositeDisposable.add(viewModel.restoreAll()
                                 .subscribeOn(Schedulers.io())
@@ -188,6 +200,20 @@ public class CashBoxDeletedFragment extends PagerFragment {
                                         Toast.LENGTH_SHORT)
                                         .show())))
                 .show();
+
+//        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+//        builder.setTitle(R.string.confirmRestoreAllDialog)
+//                .setMessage("Are you sure you want to restore all CashBoxes?")
+//                .setNegativeButton(R.string.cancelDialog, null)
+//                .setPositiveButton(R.string.confirm, (DialogInterface dialog, int which) ->
+//                        compositeDisposable.add(viewModel.restoreAll()
+//                                .subscribeOn(Schedulers.io())
+//                                .observeOn(AndroidSchedulers.mainThread())
+//                                .subscribe(integer -> Toast.makeText(getContext(),
+//                                        getString(R.string.snackbarEntriesRestored, count),
+//                                        Toast.LENGTH_SHORT)
+//                                        .show())))
+//                .show();
     }
 
     public class CashBoxDeletedRecyclerAdapter

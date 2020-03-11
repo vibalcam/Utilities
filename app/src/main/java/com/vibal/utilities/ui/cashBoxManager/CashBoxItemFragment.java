@@ -26,7 +26,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.ShareActionProvider;
 import androidx.core.view.MenuItemCompat;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.DividerItemDecoration;
@@ -40,14 +39,14 @@ import com.google.android.material.textfield.TextInputLayout;
 import com.google.android.material.textview.MaterialTextView;
 import com.vibal.utilities.R;
 import com.vibal.utilities.backgroundTasks.ReminderReceiver;
-import com.vibal.utilities.modelsNew.CashBox;
 import com.vibal.utilities.modelsNew.Entry;
-import com.vibal.utilities.ui.PagerFragment;
 import com.vibal.utilities.ui.settings.SettingsActivity;
 import com.vibal.utilities.ui.swipeController.CashBoxAdapterSwipable;
 import com.vibal.utilities.ui.swipeController.CashBoxSwipeController;
+import com.vibal.utilities.ui.viewPager.PagerFragment;
 import com.vibal.utilities.util.DiffCallback;
 import com.vibal.utilities.util.LogUtil;
+import com.vibal.utilities.util.MyDialogBuilder;
 import com.vibal.utilities.util.Util;
 import com.vibal.utilities.viewModels.CashBoxViewModel;
 import com.vibal.utilities.workaround.LinearLayoutManagerWrapper;
@@ -101,20 +100,16 @@ public abstract class CashBoxItemFragment extends PagerFragment {
     static AlertDialog getAddEntryDialog(long cashBoxId, @NonNull Context context,
                                          @NonNull CashBoxViewModel viewModel,
                                          CompositeDisposable compositeDisposable) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        AlertDialog dialog = builder.setTitle(R.string.newEntry)
+        return new MyDialogBuilder(context)
+                .setTitle(R.string.newEntry)
                 .setView(R.layout.cash_box_item_entry_input)
-                .setNegativeButton(R.string.cancelDialog, null)
                 .setPositiveButton(R.string.addEntryDialog, null)
-                .create();
-        dialog.setCanceledOnTouchOutside(false);
-
-        dialog.setOnShowListener((DialogInterface dialog1) -> {
-            Button positive = ((AlertDialog) dialog1).getButton(DialogInterface.BUTTON_POSITIVE);
-            TextInputEditText inputInfo = ((AlertDialog) dialog1).findViewById(R.id.inputTextInfo);
-            TextInputEditText inputAmount = ((AlertDialog) dialog1).findViewById(R.id.inputTextAmount);
-            TextInputLayout layoutAmount = ((AlertDialog) dialog1).findViewById(R.id.inputLayoutAmount);
-            MaterialTextView inputDate = ((AlertDialog) dialog1).findViewById(R.id.inputDate);
+                .setActions(dialog -> {
+            Button positive = ((AlertDialog) dialog).getButton(DialogInterface.BUTTON_POSITIVE);
+            TextInputEditText inputInfo = ((AlertDialog) dialog).findViewById(R.id.inputTextInfo);
+            TextInputEditText inputAmount = ((AlertDialog) dialog).findViewById(R.id.inputTextAmount);
+            TextInputLayout layoutAmount = ((AlertDialog) dialog).findViewById(R.id.inputLayoutAmount);
+            MaterialTextView inputDate = ((AlertDialog) dialog).findViewById(R.id.inputDate);
 
             // Set up Date Picker
             Util.TextViewDatePickerClickListener calendarListener =
@@ -134,7 +129,7 @@ public abstract class CashBoxItemFragment extends PagerFragment {
                                 amount, inputInfo.getText().toString(), calendarListener.getCalendar()))
                                 .subscribeOn(Schedulers.io())
                                 .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(dialog1::dismiss));
+                                .subscribe(dialog::dismiss));
                     }
                 } catch (NumberFormatException e) {
                     layoutAmount.setError(context.getString(R.string.errorMessageAmount));
@@ -142,8 +137,52 @@ public abstract class CashBoxItemFragment extends PagerFragment {
                     Util.showKeyboard(context, inputAmount);
                 }
             });
-        });
-        return dialog;
+        }).create();
+
+
+//        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+//        AlertDialog dialog = builder.setTitle(R.string.newEntry)
+//                .setView(R.layout.cash_box_item_entry_input)
+//                .setNegativeButton(R.string.cancelDialog, null)
+//                .setPositiveButton(R.string.addEntryDialog, null)
+//                .create();
+//        dialog.setCanceledOnTouchOutside(false);
+//
+//        dialog.setOnShowListener((DialogInterface dialog1) -> {
+//            Button positive = ((AlertDialog) dialog1).getButton(DialogInterface.BUTTON_POSITIVE);
+//            TextInputEditText inputInfo = ((AlertDialog) dialog1).findViewById(R.id.inputTextInfo);
+//            TextInputEditText inputAmount = ((AlertDialog) dialog1).findViewById(R.id.inputTextAmount);
+//            TextInputLayout layoutAmount = ((AlertDialog) dialog1).findViewById(R.id.inputLayoutAmount);
+//            MaterialTextView inputDate = ((AlertDialog) dialog1).findViewById(R.id.inputDate);
+//
+//            // Set up Date Picker
+//            Util.TextViewDatePickerClickListener calendarListener =
+//                    new Util.TextViewDatePickerClickListener(context, inputDate, true);
+//            inputDate.setOnClickListener(calendarListener);
+//
+//            Util.showKeyboard(context, inputAmount);
+//            positive.setOnClickListener((View v) -> {
+//                try {
+//                    String input = inputAmount.getText().toString().trim();
+//                    if (input.isEmpty()) {
+//                        layoutAmount.setError(context.getString(R.string.required));
+//                        Util.showKeyboard(context, inputAmount);
+//                    } else {
+//                        double amount = Util.parseExpression(inputAmount.getText().toString());
+//                        compositeDisposable.add(viewModel.addEntry(cashBoxId, new Entry(
+//                                amount, inputInfo.getText().toString(), calendarListener.getCalendar()))
+//                                .subscribeOn(Schedulers.io())
+//                                .observeOn(AndroidSchedulers.mainThread())
+//                                .subscribe(dialog1::dismiss));
+//                    }
+//                } catch (NumberFormatException e) {
+//                    layoutAmount.setError(context.getString(R.string.errorMessageAmount));
+//                    inputAmount.selectAll();
+//                    Util.showKeyboard(context, inputAmount);
+//                }
+//            });
+//        });
+//        return dialog;
     }
 
     @Override
@@ -336,8 +375,10 @@ public abstract class CashBoxItemFragment extends PagerFragment {
                 return o1.getSymbol().equals(o1.getCurrencyCode()) ? 1 : -1;
         });
 
-        new AlertDialog.Builder(requireContext())
-                .setTitle(getString(R.string.currency_dialog_title))
+//        new AlertDialog.Builder(requireContext())
+        new MyDialogBuilder(requireContext())
+                .setTitle(R.string.currency_dialog_title)
+                .setPositiveButton(null,null)
                 .setSingleChoiceItems(arrayAdapter, -1, (dialog, which) -> {
                     dialog.dismiss();
                     LogUtil.debug(TAG, arrayAdapter.getItem(which).getCurrencyCode());
@@ -383,13 +424,13 @@ public abstract class CashBoxItemFragment extends PagerFragment {
                     calendar.get(Calendar.DAY_OF_MONTH))
                     .show();
         } else //Cancel reminder dialog
-            new AlertDialog.Builder(requireContext())
+//            new AlertDialog.Builder(requireContext())
+            new MyDialogBuilder(requireContext())
                     .setTitle(R.string.reminder_dialog_cancel_title)
                     .setMessage(getString(R.string.reminder_dialog_cancel_message,
                             DateFormat.getDateTimeInstance().format(new Date(timeInMillis))))
                     .setNegativeButton(R.string.reminder_dialog_cancel_keep, null)
-                    .setPositiveButton(R.string.reminder_dialog_cancel_cancel,
-                            (dialogInterface, i) -> cancelReminder())
+                    .setPositiveButton(R.string.reminder_dialog_cancel_cancel, (dialogInterface, i) -> cancelReminder())
                     .show();
     }
 
@@ -521,7 +562,7 @@ public abstract class CashBoxItemFragment extends PagerFragment {
                 return;
             }
 
-            AlertDialog dialog = new AlertDialog.Builder(requireContext())
+            new MyDialogBuilder(requireContext())
                     .setTitle(R.string.titleGroupEntryDelete)
                     .setMessage(R.string.messageGroupDelete)
                     .setOnCancelListener(dialogInterface -> notifyItemChanged(position))   // since the item is deleted from swipping we have to show it back again)
@@ -542,9 +583,32 @@ public abstract class CashBoxItemFragment extends PagerFragment {
                                                             .observeOn(AndroidSchedulers.mainThread())
                                                             .subscribe()))
                                             .show())))
-                    .create();
-            dialog.setCanceledOnTouchOutside(false);
-            dialog.show();
+                    .show();
+
+//            AlertDialog dialog = new AlertDialog.Builder(requireContext())
+//                    .setTitle(R.string.titleGroupEntryDelete)
+//                    .setMessage(R.string.messageGroupDelete)
+//                    .setOnCancelListener(dialogInterface -> notifyItemChanged(position))   // since the item is deleted from swipping we have to show it back again)
+//                    .setNegativeButton(R.string.groupEntryIndividual,
+//                            (dialogInterface, i) -> deleteEntry(entry))
+//                    .setPositiveButton(R.string.groupEntryAll, (dialogInterface, i) ->
+//                            compositeDisposable.add(viewModel.getGroupEntries(entry)
+//                                    .flatMap(entries -> viewModel.deleteGroupEntries(entry)
+//                                            .map(integer -> entries))
+//                                    .subscribeOn(Schedulers.io())
+//                                    .observeOn(AndroidSchedulers.mainThread())
+//                                    .subscribe(entryList -> Snackbar.make(rvCashBoxItem,
+//                                            getString(R.string.snackbarEntriesDeleted, 1),
+//                                            Snackbar.LENGTH_LONG)
+//                                            .setAction(R.string.undo, (View v) ->
+//                                                    compositeDisposable.add(viewModel.addAllEntries(entryList)
+//                                                            .subscribeOn(Schedulers.io())
+//                                                            .observeOn(AndroidSchedulers.mainThread())
+//                                                            .subscribe()))
+//                                            .show())))
+//                    .create();
+//            dialog.setCanceledOnTouchOutside(false);
+//            dialog.show();
         }
 
         private void deleteEntry(Entry entry) {
@@ -568,97 +632,186 @@ public abstract class CashBoxItemFragment extends PagerFragment {
                     + "\nID del cashBox: " + currentList.get(position).getCashBoxId() + "\nID group: " +
                     currentList.get(position).getGroupId());
 
-            AlertDialog dialog = new AlertDialog.Builder(requireContext())
+            new MyDialogBuilder(requireContext())
                     .setTitle(R.string.modifyEntry)
                     .setView(R.layout.cash_box_item_entry_input)
-                    .setNegativeButton(R.string.cancelDialog, null)
                     .setPositiveButton(R.string.confirm, null)
-                    .create();
-            dialog.setCanceledOnTouchOutside(false);
+                    .setActions((DialogInterface dialogInterface) -> {
+                        Button positive = ((AlertDialog) dialogInterface).getButton(DialogInterface.BUTTON_POSITIVE);
+                        TextInputEditText inputInfo = ((AlertDialog) dialogInterface).findViewById(R.id.inputTextInfo);
+                        TextInputEditText inputAmount = ((AlertDialog) dialogInterface).findViewById(R.id.inputTextAmount);
+                        TextInputLayout layoutAmount = ((AlertDialog) dialogInterface).findViewById(R.id.inputLayoutAmount);
+                        MaterialTextView inputDate = ((AlertDialog) dialogInterface).findViewById(R.id.inputDate);
+                        Entry modifiedEntry = currentList.get(position);
 
-            dialog.setOnShowListener((DialogInterface dialogInterface) -> {
-                Button positive = ((AlertDialog) dialogInterface).getButton(DialogInterface.BUTTON_POSITIVE);
-                TextInputEditText inputInfo = ((AlertDialog) dialogInterface).findViewById(R.id.inputTextInfo);
-                TextInputEditText inputAmount = ((AlertDialog) dialogInterface).findViewById(R.id.inputTextAmount);
-                TextInputLayout layoutAmount = ((AlertDialog) dialogInterface).findViewById(R.id.inputLayoutAmount);
-                MaterialTextView inputDate = ((AlertDialog) dialogInterface).findViewById(R.id.inputDate);
-                Entry modifiedEntry = currentList.get(position);
+                        // Set up Date Picker
+                        Util.TextViewDatePickerClickListener calendarListener =
+                                new Util.TextViewDatePickerClickListener(requireContext(), inputDate,
+                                        modifiedEntry.getDate(), true);
+                        inputDate.setOnClickListener(calendarListener);
 
-                // Set up Date Picker
-                Util.TextViewDatePickerClickListener calendarListener =
-                        new Util.TextViewDatePickerClickListener(requireContext(), inputDate,
-                                modifiedEntry.getDate(), true);
-                inputDate.setOnClickListener(calendarListener);
-
-                inputInfo.setText(modifiedEntry.getInfo());
-                inputAmount.setText(String.format(Locale.US, "%.2f", modifiedEntry.getAmount()));
-                // Show keyboard and select the whole text
-                inputAmount.selectAll();
-                Util.showKeyboard(requireContext(), inputAmount);
-
-                positive.setOnClickListener((View v) -> {
-                    try {
-                        String input = inputAmount.getText().toString().trim();
-
-                        if (input.isEmpty()) {
-                            layoutAmount.setError(getString(R.string.required));
-                            inputAmount.setText("");
-                            Util.showKeyboard(requireContext(), inputAmount);
-                        } else {
-                            String info = inputInfo.getText().toString().trim();
-                            double amount = Util.parseExpression(input);
-
-                            // Not a group entry
-                            if (modifiedEntry.getGroupId() == Entry.NO_GROUP)
-                                modifyEntry(modifiedEntry, dialogInterface, amount, info,
-                                        calendarListener.getCalendar());
-                            else { // Group entry
-                                AlertDialog dialogGroup = new AlertDialog.Builder(requireContext())
-                                        .setTitle(R.string.titleGroupEntryModify)
-                                        .setMessage(R.string.messageGroupModify)
-                                        // Modify only this entry
-                                        .setNegativeButton(R.string.groupEntryIndividual,
-                                                (dialogInterfaceGroup, i) -> modifyEntry(modifiedEntry,
-                                                        dialogInterface, amount, info,
-                                                        calendarListener.getCalendar()))
-                                        // Modify all entries of the group
-                                        .setPositiveButton(R.string.groupEntryAll, (dialogInterfaceGroup, i) ->
-                                                compositeDisposable.add(viewModel.getGroupEntries(modifiedEntry)
-                                                        .flatMap(entries -> viewModel.modifyGroupEntry(
-                                                                modifiedEntry, amount, info,
-                                                                calendarListener.getCalendar())
-                                                                .toSingleDefault(entries))
-                                                        .subscribeOn(Schedulers.io())
-                                                        .observeOn(AndroidSchedulers.mainThread())
-                                                        .subscribe(entryList -> {
-                                                            dialogInterface.dismiss();
-                                                            Snackbar.make(rvCashBoxItem,
-                                                                    getString(R.string.snackbarEntriesDeleted, 1),
-                                                                    Snackbar.LENGTH_LONG)
-                                                                    .setAction(R.string.undo, (View v2) -> {
-                                                                        Completable completable = Completable.complete();
-                                                                        for (Entry k : entryList)
-                                                                            completable = completable.andThen(
-                                                                                    viewModel.updateEntry(k));
-                                                                        compositeDisposable.add(completable
-                                                                                .subscribeOn(Schedulers.io())
-                                                                                .observeOn(AndroidSchedulers.mainThread())
-                                                                                .subscribe());
-                                                                    }).show();
-                                                        })))
-                                        .create();
-                                dialogGroup.setCanceledOnTouchOutside(false);
-                                dialogGroup.show();
-                            }
-                        }
-                    } catch (NumberFormatException e) {
-                        layoutAmount.setError(getString(R.string.errorMessageAmount));
+                        inputInfo.setText(modifiedEntry.getInfo());
+                        inputAmount.setText(String.format(Locale.US, "%.2f", modifiedEntry.getAmount()));
+                        // Show keyboard and select the whole text
                         inputAmount.selectAll();
                         Util.showKeyboard(requireContext(), inputAmount);
-                    }
-                });
-            });
-            dialog.show();
+
+                        positive.setOnClickListener((View v) -> {
+                            try {
+                                String input = inputAmount.getText().toString().trim();
+
+                                if (input.isEmpty()) {
+                                    layoutAmount.setError(getString(R.string.required));
+                                    inputAmount.setText("");
+                                    Util.showKeyboard(requireContext(), inputAmount);
+                                } else {
+                                    String info = inputInfo.getText().toString().trim();
+                                    double amount = Util.parseExpression(input);
+
+                                    // Not a group entry
+                                    if (modifiedEntry.getGroupId() == Entry.NO_GROUP)
+                                        modifyEntry(modifiedEntry, dialogInterface, amount, info,
+                                                calendarListener.getCalendar());
+                                    else { // Group entry
+//                                        AlertDialog dialogGroup = new AlertDialog.Builder(requireContext())
+                                        new MyDialogBuilder(requireContext())
+                                                .setTitle(R.string.titleGroupEntryModify)
+                                                .setMessage(R.string.messageGroupModify)
+                                                // Modify only this entry
+                                                .setNegativeButton(R.string.groupEntryIndividual,
+                                                        (dialogInterfaceGroup, i) -> modifyEntry(modifiedEntry,
+                                                                dialogInterface, amount, info,
+                                                                calendarListener.getCalendar()))
+                                                // Modify all entries of the group
+                                                .setPositiveButton(R.string.groupEntryAll, (dialogInterfaceGroup, i) ->
+                                                        compositeDisposable.add(viewModel.getGroupEntries(modifiedEntry)
+                                                                .flatMap(entries -> viewModel.modifyGroupEntry(
+                                                                        modifiedEntry, amount, info,
+                                                                        calendarListener.getCalendar())
+                                                                        .toSingleDefault(entries))
+                                                                .subscribeOn(Schedulers.io())
+                                                                .observeOn(AndroidSchedulers.mainThread())
+                                                                .subscribe(entryList -> {
+                                                                    dialogInterface.dismiss();
+                                                                    Snackbar.make(rvCashBoxItem,
+                                                                            getString(R.string.snackbarEntriesDeleted, 1),
+                                                                            Snackbar.LENGTH_LONG)
+                                                                            .setAction(R.string.undo, (View v2) -> {
+                                                                                Completable completable = Completable.complete();
+                                                                                for (Entry k : entryList)
+                                                                                    completable = completable.andThen(
+                                                                                            viewModel.updateEntry(k));
+                                                                                compositeDisposable.add(completable
+                                                                                        .subscribeOn(Schedulers.io())
+                                                                                        .observeOn(AndroidSchedulers.mainThread())
+                                                                                        .subscribe());
+                                                                            }).show();
+                                                                })))
+                                                .show();
+//                                                .create();
+//                                        dialogGroup.setCanceledOnTouchOutside(false);
+//                                        dialogGroup.show();
+                                    }
+                                }
+                            } catch (NumberFormatException e) {
+                                layoutAmount.setError(getString(R.string.errorMessageAmount));
+                                inputAmount.selectAll();
+                                Util.showKeyboard(requireContext(), inputAmount);
+                            }
+                        });
+                    }).show();
+
+//            AlertDialog dialog = new AlertDialog.Builder(requireContext())
+//                    .setTitle(R.string.modifyEntry)
+//                    .setView(R.layout.cash_box_item_entry_input)
+//                    .setNegativeButton(R.string.cancelDialog, null)
+//                    .setPositiveButton(R.string.confirm, null)
+//                    .create();
+//            dialog.setCanceledOnTouchOutside(false);
+//
+//            dialog.setOnShowListener((DialogInterface dialogInterface) -> {
+//                Button positive = ((AlertDialog) dialogInterface).getButton(DialogInterface.BUTTON_POSITIVE);
+//                TextInputEditText inputInfo = ((AlertDialog) dialogInterface).findViewById(R.id.inputTextInfo);
+//                TextInputEditText inputAmount = ((AlertDialog) dialogInterface).findViewById(R.id.inputTextAmount);
+//                TextInputLayout layoutAmount = ((AlertDialog) dialogInterface).findViewById(R.id.inputLayoutAmount);
+//                MaterialTextView inputDate = ((AlertDialog) dialogInterface).findViewById(R.id.inputDate);
+//                Entry modifiedEntry = currentList.get(position);
+//
+//                // Set up Date Picker
+//                Util.TextViewDatePickerClickListener calendarListener =
+//                        new Util.TextViewDatePickerClickListener(requireContext(), inputDate,
+//                                modifiedEntry.getDate(), true);
+//                inputDate.setOnClickListener(calendarListener);
+//
+//                inputInfo.setText(modifiedEntry.getInfo());
+//                inputAmount.setText(String.format(Locale.US, "%.2f", modifiedEntry.getAmount()));
+//                // Show keyboard and select the whole text
+//                inputAmount.selectAll();
+//                Util.showKeyboard(requireContext(), inputAmount);
+//
+//                positive.setOnClickListener((View v) -> {
+//                    try {
+//                        String input = inputAmount.getText().toString().trim();
+//
+//                        if (input.isEmpty()) {
+//                            layoutAmount.setError(getString(R.string.required));
+//                            inputAmount.setText("");
+//                            Util.showKeyboard(requireContext(), inputAmount);
+//                        } else {
+//                            String info = inputInfo.getText().toString().trim();
+//                            double amount = Util.parseExpression(input);
+//
+//                            // Not a group entry
+//                            if (modifiedEntry.getGroupId() == Entry.NO_GROUP)
+//                                modifyEntry(modifiedEntry, dialogInterface, amount, info,
+//                                        calendarListener.getCalendar());
+//                            else { // Group entry
+//                                AlertDialog dialogGroup = new AlertDialog.Builder(requireContext())
+//                                        .setTitle(R.string.titleGroupEntryModify)
+//                                        .setMessage(R.string.messageGroupModify)
+//                                        // Modify only this entry
+//                                        .setNegativeButton(R.string.groupEntryIndividual,
+//                                                (dialogInterfaceGroup, i) -> modifyEntry(modifiedEntry,
+//                                                        dialogInterface, amount, info,
+//                                                        calendarListener.getCalendar()))
+//                                        // Modify all entries of the group
+//                                        .setPositiveButton(R.string.groupEntryAll, (dialogInterfaceGroup, i) ->
+//                                                compositeDisposable.add(viewModel.getGroupEntries(modifiedEntry)
+//                                                        .flatMap(entries -> viewModel.modifyGroupEntry(
+//                                                                modifiedEntry, amount, info,
+//                                                                calendarListener.getCalendar())
+//                                                                .toSingleDefault(entries))
+//                                                        .subscribeOn(Schedulers.io())
+//                                                        .observeOn(AndroidSchedulers.mainThread())
+//                                                        .subscribe(entryList -> {
+//                                                            dialogInterface.dismiss();
+//                                                            Snackbar.make(rvCashBoxItem,
+//                                                                    getString(R.string.snackbarEntriesDeleted, 1),
+//                                                                    Snackbar.LENGTH_LONG)
+//                                                                    .setAction(R.string.undo, (View v2) -> {
+//                                                                        Completable completable = Completable.complete();
+//                                                                        for (Entry k : entryList)
+//                                                                            completable = completable.andThen(
+//                                                                                    viewModel.updateEntry(k));
+//                                                                        compositeDisposable.add(completable
+//                                                                                .subscribeOn(Schedulers.io())
+//                                                                                .observeOn(AndroidSchedulers.mainThread())
+//                                                                                .subscribe());
+//                                                                    }).show();
+//                                                        })))
+//                                        .create();
+//                                dialogGroup.setCanceledOnTouchOutside(false);
+//                                dialogGroup.show();
+//                            }
+//                        }
+//                    } catch (NumberFormatException e) {
+//                        layoutAmount.setError(getString(R.string.errorMessageAmount));
+//                        inputAmount.selectAll();
+//                        Util.showKeyboard(requireContext(), inputAmount);
+//                    }
+//                });
+//            });
+//            dialog.show();
 
             notifyItemChanged(position);   // since the item is deleted from swipping we have to show it back again
         }

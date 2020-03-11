@@ -2,9 +2,9 @@ package com.vibal.utilities.util;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.widget.Button;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 
 import com.vibal.utilities.R;
@@ -12,9 +12,8 @@ import com.vibal.utilities.R;
 public class MyDialogBuilder extends AlertDialog.Builder {
     private static final int POSITIVE_RES =  R.string.confirm;
     private static final int NEGATIVE_RES =  R.string.cancelDialog;
-//    private boolean dismissAfterPositive = true;
+    private static final boolean CANCELABLE = true;
     private boolean cancelOnTouchOutside = false;
-//    private MyDialogAction actions;
     private DialogInterface.OnShowListener actions;
 
     public MyDialogBuilder(@NonNull Context context) {
@@ -23,15 +22,9 @@ public class MyDialogBuilder extends AlertDialog.Builder {
         setPositiveButton(null);
     }
 
-//    public MyDialogBuilder(@NonNull Context context, boolean dismissAfterPositive) {
-//        this(context);
-//        this.dismissAfterPositive = dismissAfterPositive;
-//    }
-
 
     public MyDialogBuilder setPositiveButton(DialogInterface.OnClickListener listener) {
-        super.setPositiveButton(POSITIVE_RES, listener);
-        return this;
+        return setPositiveButton(POSITIVE_RES, listener);
     }
 
     public MyDialogBuilder setNegativeButton(DialogInterface.OnClickListener listener) {
@@ -50,17 +43,7 @@ public class MyDialogBuilder extends AlertDialog.Builder {
     private void setupDialog(AlertDialog dialog) {
         if(actions != null)
             dialog.setOnShowListener(actions);
-//        dialog.setOnShowListener(dialog1 -> {
-//            Button positive = ((AlertDialog) dialog1).getButton(DialogInterface.BUTTON_POSITIVE);
-//            Button negative = ((AlertDialog) dialog1).getButton(DialogInterface.BUTTON_NEGATIVE);
-//            Button neutral = ((AlertDialog) dialog1).getButton(DialogInterface.BUTTON_NEUTRAL);
-//
-//            positive.setOnClickListener(v -> actions.doOnPositive(dialog1));
-//
-//            neutral.setOnClickListener(v -> actions.doOnNeutral(dialog1));
-//
-//            negative.setOnClickListener(v -> actions.doOnNegative(dialog1));
-//        });
+        dialog.setCancelable(CANCELABLE);
         dialog.setCanceledOnTouchOutside(cancelOnTouchOutside);
     }
 
@@ -74,35 +57,38 @@ public class MyDialogBuilder extends AlertDialog.Builder {
         return this;
     }
 
-//    public MyDialogBuilder setDismissAfterPositive(boolean dismissAfterPositive) {
-//        this.dismissAfterPositive = dismissAfterPositive;
-//        return this;
-//    }
+    @Override
+    public MyDialogBuilder setPositiveButton(int textId, DialogInterface.OnClickListener listener) {
+        return (MyDialogBuilder) super.setPositiveButton(textId, listener);
+    }
 
-//    public MyDialogBuilder setActions(MyDialogAction actions) {
-//        this.actions = actions;
-//        return this;
-//    }
+    @Override
+    public MyDialogBuilder setView(int layoutResId) {
+        return (MyDialogBuilder) super.setView(layoutResId);
+    }
 
+    @Override
+    public MyDialogBuilder setTitle(int titleId) {
+        return (MyDialogBuilder) super.setTitle(titleId);
+    }
 
-//    public interface MyDialogAction {
-//        void doOnPositive(DialogInterface dialog);
-//        void doOnNeutral(DialogInterface dialog);
-//        void doOnNegative(DialogInterface dialog);
-//    }
+    @Override
+    public MyDialogBuilder setTitle(@Nullable CharSequence title) {
+        return (MyDialogBuilder) super.setTitle(title);
+    }
 
-//    public static class MyDialogActionBase implements MyDialogAction {
-//        @Override
-//        public void doOnPositive(DialogInterface dialog) {
-//            dialog.dismiss();
-//        }
-//        @Override
-//        public void doOnNeutral(DialogInterface dialog) {
-//            dialog.dismiss();
-//        }
-//        @Override
-//        public void doOnNegative(DialogInterface dialog) {
-//            dialog.dismiss();
-//        }
-//    }
+    @Override
+    public MyDialogBuilder setMessage(int messageId) {
+        return (MyDialogBuilder) super.setMessage(messageId);
+    }
+
+    @Override
+    public MyDialogBuilder setMessage(@Nullable CharSequence message) {
+        return (MyDialogBuilder) super.setMessage(message);
+    }
+
+    @Override
+    public MyDialogBuilder setOnDismissListener(DialogInterface.OnDismissListener onDismissListener) {
+        return (MyDialogBuilder) super.setOnDismissListener(onDismissListener);
+    }
 }

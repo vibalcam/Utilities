@@ -16,8 +16,8 @@ import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.material.tabs.TabLayout;
 import com.vibal.utilities.R;
-import com.vibal.utilities.ui.PagerActivity;
-import com.vibal.utilities.ui.PagerFragment;
+import com.vibal.utilities.ui.viewPager.PagerActivity;
+import com.vibal.utilities.ui.viewPager.PagerFragment;
 import com.vibal.utilities.util.LogUtil;
 import com.vibal.utilities.widget.CashBoxWidgetProvider;
 

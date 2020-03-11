@@ -1,4 +1,4 @@
-package com.vibal.utilities.util;
+package com.vibal.utilities.ui.viewPager;
 
 import android.content.Context;
 import android.util.AttributeSet;

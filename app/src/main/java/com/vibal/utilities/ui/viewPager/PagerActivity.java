@@ -1,4 +1,4 @@
-package com.vibal.utilities.ui;
+package com.vibal.utilities.ui.viewPager;
 
 public interface PagerActivity {
     int getCurrentPagerPosition();
