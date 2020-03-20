@@ -1,21 +1,13 @@
 package com.vibal.utilities.db;
 
-import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
-import androidx.room.Delete;
-import androidx.room.Insert;
 import androidx.room.Query;
 import androidx.room.Transaction;
-import androidx.room.Update;
 
 import com.vibal.utilities.modelsNew.CashBox;
 import com.vibal.utilities.modelsNew.CashBoxInfo;
-import com.vibal.utilities.modelsNew.Entry;
-import com.vibal.utilities.util.LogUtil;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Currency;
 import java.util.List;
 
@@ -24,7 +16,6 @@ import io.reactivex.Single;
 
 @Dao
 public abstract class CashBoxOnlineDao extends CashBoxBaseDao  {
-    // Non deleted CashBoxes
     @Query("SELECT C.id,C.name,C.orderId,SUM(amount) AS cash, currency " +
             "FROM cashBoxesOnline_table AS C LEFT JOIN entriesOnline_table AS E ON C.id=E.cashBoxId " +
             "GROUP BY C.id,C.name,C.orderId, C.currency " +
@@ -62,4 +53,6 @@ public abstract class CashBoxOnlineDao extends CashBoxBaseDao  {
 
     @Query("UPDATE cashBoxesOnline_table SET currency=:currency WHERE id=:cashBoxId")
     abstract Completable setCashBoxCurrency(long cashBoxId, Currency currency);
+
+
 }

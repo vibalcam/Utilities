@@ -82,7 +82,7 @@ public class ReminderReceiver extends BroadcastReceiver {
             setBootReceiverEnabled(context, false);
 
         //Get info of the CashBox
-        Disposable disposable = UtilitiesDatabase.getInstance(context).cashBoxDao()
+        Disposable disposable = UtilitiesDatabase.getInstance(context).cashBoxLocalDao()
                 .getCashBoxById(cashBoxId)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())

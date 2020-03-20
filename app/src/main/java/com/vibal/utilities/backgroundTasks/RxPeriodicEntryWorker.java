@@ -16,7 +16,6 @@ import androidx.work.WorkerParameters;
 import com.vibal.utilities.App;
 import com.vibal.utilities.R;
 import com.vibal.utilities.db.UtilitiesDatabase;
-import com.vibal.utilities.modelsNew.CashBox;
 import com.vibal.utilities.modelsNew.Entry;
 import com.vibal.utilities.modelsNew.PeriodicEntryPojo;
 import com.vibal.utilities.ui.cashBoxManager.CashBoxItemFragment;
@@ -50,7 +49,7 @@ public class RxPeriodicEntryWorker extends RxWorker {
                     Entry entry = new Entry(workInfo.getCashBoxId(),
                             workInfo.getAmount(), workInfo.getInfo(), Calendar.getInstance());
                     entry.setInfo("Periodic: " + entry.getInfo());
-                    Single<Result> result = database.cashBoxEntryDao().insert(entry)
+                    Single<Result> result = database.cashBoxEntryLocalDao().insert(entry)
                             .toSingle(() -> {
                                 LogUtil.debug(TAG, "Success");
                                 showNotification(periodicEntryPojo);
@@ -77,7 +76,7 @@ public class RxPeriodicEntryWorker extends RxWorker {
                         return database.periodicEntryWorkDao().delete(workInfo)
                                 .flatMap(integer -> result);
                 }).onErrorReturn(throwable -> {
-                    LogUtil.debug(TAG, "No found the corresponding work info");
+                    LogUtil.debug(TAG, "Didn't found the corresponding work info");
                     return Result.success();
                 });
 
@@ -89,7 +88,7 @@ public class RxPeriodicEntryWorker extends RxWorker {
 //                    PeriodicEntryPojo.PeriodicEntryWorkInfo workInfo = periodicEntryPojo.getWorkInfo();
 //                    Entry entry = new Entry(workInfo.getCashBoxId(),workInfo.getAmount(),
 //                            "Periodic: " + workInfo.getInfo(), Calendar.getInstance());
-//                    return database.cashBoxEntryDao().insert(entry)
+//                    return database.cashBoxEntryLocalDao().insert(entry)
 //                            .toSingle(() -> {
 //                                LogUtil.debug(TAG,"Success");
 //                                showNotification(periodicEntryPojo);

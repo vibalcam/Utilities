@@ -113,9 +113,13 @@ public abstract class UtilitiesDatabase extends RoomDatabase { // todo new migra
         return INSTANCE;
     }
 
-    public abstract CashBoxEntryDao cashBoxEntryDao();
+    public abstract CashBoxEntryLocalDao cashBoxEntryLocalDao();
 
-    public abstract CashBoxLocalDao cashBoxDao();
+    public abstract CashBoxLocalDao cashBoxLocalDao();
+
+    public abstract CashBoxEntryOnlineDao cashBoxEntryOnlineDao();
+
+    public abstract CashBoxOnlineDao cashBoxOnlineDao();
 
     public abstract PeriodicEntryWorkDao periodicEntryWorkDao();
 
@@ -123,7 +127,7 @@ public abstract class UtilitiesDatabase extends RoomDatabase { // todo new migra
 //        @Override
 //        public void onCreate(@NonNull SupportSQLiteDatabase db) {
 //            super.onCreate(db);
-//            Completable.create(emitter -> INSTANCE.cashBoxDao().
+//            Completable.create(emitter -> INSTANCE.cashBoxLocalDao().
 //                    insert(new CashBoxInfo("Example")))
 //                    .subscribeOn(Schedulers.io())
 //                    .observeOn(Schedulers.single())

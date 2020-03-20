@@ -7,7 +7,6 @@ import androidx.room.Insert;
 import androidx.room.Query;
 import androidx.room.Update;
 
-import com.vibal.utilities.modelsNew.CashBox;
 import com.vibal.utilities.modelsNew.Entry;
 
 import java.util.Calendar;
@@ -18,7 +17,7 @@ import io.reactivex.Completable;
 import io.reactivex.Single;
 
 @Dao
-public interface CashBoxEntryDao {
+public interface CashBoxEntryLocalDao {
     @Query("SELECT * FROM entries_table WHERE cashBoxId=:cashBoxId ORDER BY date DESC")
     LiveData<List<Entry>> getEntriesByCashBoxId(long cashBoxId);
 

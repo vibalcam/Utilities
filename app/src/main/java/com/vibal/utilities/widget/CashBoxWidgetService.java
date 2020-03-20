@@ -42,7 +42,7 @@ public class CashBoxWidgetService extends RemoteViewsService {
 
         @Override
         public void onDataSetChanged() {
-            cashBoxInfos = database.cashBoxDao().getAllCashBoxInfoForWidget();
+            cashBoxInfos = database.cashBoxLocalDao().getAllCashBoxInfoForWidget();
             currencyFormat = NumberFormat.getCurrencyInstance();
         }
 

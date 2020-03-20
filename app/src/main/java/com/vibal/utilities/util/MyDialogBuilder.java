@@ -22,7 +22,6 @@ public class MyDialogBuilder extends AlertDialog.Builder {
         setPositiveButton(null);
     }
 
-
     public MyDialogBuilder setPositiveButton(DialogInterface.OnClickListener listener) {
         return setPositiveButton(POSITIVE_RES, listener);
     }
@@ -61,6 +60,7 @@ public class MyDialogBuilder extends AlertDialog.Builder {
     public MyDialogBuilder setPositiveButton(int textId, DialogInterface.OnClickListener listener) {
         return (MyDialogBuilder) super.setPositiveButton(textId, listener);
     }
+
 
     @Override
     public MyDialogBuilder setView(int layoutResId) {

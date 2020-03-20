@@ -41,7 +41,7 @@ public class CashBoxViewModel extends AndroidViewModel {
     public CashBoxViewModel(@NonNull Application application) {
         super(application);
         workManager = WorkManager.getInstance(application);
-        repository = new CashBoxRepository(application);
+        repository = new CashBoxRepository(application, false);
         cashBoxesInfo = repository.getCashBoxesInfo();
     }
 

@@ -53,7 +53,8 @@
         android:visibility="gone"
         android:rotation="90"
         app:fabSize="mini"
-        app:srcCompat="@drawable/ic_person_add_black_24dp" />
+        app:srcCompat="@drawable/ic_person_add_white_24dp"
+        android:tint="@android:color/black" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabCBM_main"

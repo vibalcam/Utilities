@@ -414,15 +414,17 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
     public void onResume() {
         super.onResume();
         LogUtil.debug("PruebaView", getParentFragmentManager().getFragments().toString());
-        //Set Toolbar title since in onCreateOptionsMenu doesn't work
-        if (getParentFragmentManager().getFragments().size() < 2)
-            ((AppCompatActivity) requireActivity()).getSupportActionBar().setTitle(getTitle());
-//            ((AppCompatActivity) requireActivity()).getSupportActionBar().setTitle(R.string.titleCBM);
     }
 
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        if (!isOptionsMenuActive())
+            return;
         super.onCreateOptionsMenu(menu, inflater);
+
+        //Set Toolbar title since in onCreateOptionsMenu doesn't work
+        if (getParentFragmentManager().getFragments().size() < 2)
+            ((AppCompatActivity) requireActivity()).getSupportActionBar().setTitle(getTitle());
         menu.clear();
         inflater.inflate(R.menu.menu_toolbar_cash_box_manager, menu);
     }

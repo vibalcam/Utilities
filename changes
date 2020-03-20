@@ -1,1 +1,1 @@
-- Changed AlertDialog for MyDialogBuilder
+- Separated CashBoxEntryDao into Online and Local daos

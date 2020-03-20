@@ -8,6 +8,7 @@ import androidx.lifecycle.MediatorLiveData;
 import androidx.work.WorkManager;
 
 import com.vibal.utilities.backgroundTasks.RxPeriodicEntryWorker;
+import com.vibal.utilities.backgroundTasks.UtilAppAPI;
 import com.vibal.utilities.modelsNew.CashBox;
 import com.vibal.utilities.modelsNew.CashBoxInfo;
 import com.vibal.utilities.modelsNew.Entry;
@@ -22,25 +23,79 @@ import java.util.UUID;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class CashBoxRepository {
+    // Work Manager
     private WorkManager workManager;
-    private CashBoxLocalDao cashBoxLocalDao;
-    private CashBoxEntryDao cashBoxEntryDao;
     private PeriodicEntryWorkDao periodicEntryWorkDao;
+
+    // CashBox Manager
     private LiveData<List<CashBox.InfoWithCash>> cashBoxesInfo;
+    private final long onlineId;
 
-    public CashBoxRepository(Application application) {
+    // CashBox Manager Local
+    private CashBoxLocalDao cashBoxLocalDao;
+    private CashBoxEntryLocalDao cashBoxEntryLocalDao;
+
+    // CashBox Manager Online
+    private CashBoxOnlineDao cashBoxOnlineDao;
+    private CashBoxEntryOnlineDao cashBoxEntryOnlineDao;
+    private static UtilAppAPI utilAppAPI = null;
+//    private static final String BASE_URL = "https://utilserver.ddns.net:25575/utilApp";
+    private static final String BASE_URL = "https://192.168.0.42/util";
+
+    //todo onlineMode
+    public CashBoxRepository(Application application, long onlineId) {
         UtilitiesDatabase database = UtilitiesDatabase.getInstance(application);
+        this.onlineId = onlineId;
 
-        // CashBox Manager
-        cashBoxLocalDao = database.cashBoxDao();
-        cashBoxEntryDao = database.cashBoxEntryDao();
-        cashBoxesInfo = cashBoxLocalDao.getAllCashBoxesInfo(false);
+        // CashBox Manager of selected mode
+        if(isOnline()) {
+            // CashBox Manager Online
+            cashBoxOnlineDao = database.cashBoxOnlineDao();
+            cashBoxEntryOnlineDao = database.cashBoxEntryOnlineDao();
+            cashBoxesInfo = cashBoxOnlineDao.getAllCashBoxesInfo();
+            if(utilAppAPI == null) {
+                Retrofit retrofit = new Retrofit.Builder()
+                        .baseUrl(BASE_URL)
+                        .client(getOkHttpClient())
+                        .addConverterFactory(GsonConverterFactory.create())
+                        .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+                        .build();
+                utilAppAPI = retrofit.create(UtilAppAPI.class);//todo comprobar
+            }
+        } else {
+            // CashBox Manager Local
+            cashBoxLocalDao = database.cashBoxLocalDao();
+            cashBoxEntryLocalDao = database.cashBoxEntryLocalDao();
+            cashBoxesInfo = cashBoxLocalDao.getAllCashBoxesInfo(false);
+        }
 
         // WorkManager
         workManager = WorkManager.getInstance(application);
         periodicEntryWorkDao = database.periodicEntryWorkDao();
+    }
+
+    private boolean isOnline() {
+        return onlineId != -1;
+    }
+
+    @NonNull
+    private OkHttpClient getOkHttpClient() {
+        return new OkHttpClient.Builder()
+                .addInterceptor(chain -> {
+                    Request originalRequest = chain.request();
+                    Request newRequest = originalRequest.newBuilder()
+                            .header(UtilAppAPI.CLIENT_ID, String.valueOf(onlineId))
+                            .header(UtilAppAPI.PASSWORD_HEADER,UtilAppAPI.PASSWORD)
+                            .build();
+                    return chain.proceed(newRequest);
+                }).build();
     }
 
     // CashBox Manager
@@ -63,7 +118,7 @@ public class CashBoxRepository {
                     cashBox.setInfoWithCash(infoWithCash);
                     liveDataMerger.setValue(cashBox);
                 });
-        liveDataMerger.addSource(cashBoxEntryDao.getEntriesByCashBoxId(id),
+        liveDataMerger.addSource(cashBoxEntryLocalDao.getEntriesByCashBoxId(id),
                 entries -> {
                     if (entries == null)
                         return;
@@ -85,7 +140,7 @@ public class CashBoxRepository {
     }
 
     public Completable insertCashBox(@NonNull CashBox cashBox) {
-        return cashBoxLocalDao.insert(cashBox, cashBoxEntryDao);
+        return cashBoxLocalDao.insert(cashBox, cashBoxEntryLocalDao);
     }
 
     public Single<Long> insertCashBoxInfo(@NonNull CashBox.InfoWithCash infoWithCash) {
@@ -120,41 +175,41 @@ public class CashBoxRepository {
     // Entries
 
     public Completable insertEntry(Entry entry) {
-        return cashBoxEntryDao.insert(entry);
+        return cashBoxEntryLocalDao.insert(entry);
     }
 
     public Completable insertAllEntries(Collection<Entry> entries) {
-        return cashBoxEntryDao.insertAll(entries);
+        return cashBoxEntryLocalDao.insertAll(entries);
     }
 
     public Completable updateEntry(Entry entry) {
-        return cashBoxEntryDao.update(entry);
+        return cashBoxEntryLocalDao.update(entry);
     }
 
     public Completable modifyEntry(long id, double amount, String info, Calendar date) {
-        return cashBoxEntryDao.modify(id, amount, info, date);
+        return cashBoxEntryLocalDao.modify(id, amount, info, date);
     }
 
     public Completable deleteEntry(Entry entry) {
-        return cashBoxEntryDao.delete(entry);
+        return cashBoxEntryLocalDao.delete(entry);
     }
 
     public Single<Integer> deleteAllEntries(long cashBoxId) {
-        return cashBoxEntryDao.deleteAll(cashBoxId);
+        return cashBoxEntryLocalDao.deleteAll(cashBoxId);
     }
 
     // Group Entries
 
     public Single<List<Entry>> getGroupEntries(long groupId) {
-        return cashBoxEntryDao.getGroupEntries(groupId);
+        return cashBoxEntryLocalDao.getGroupEntries(groupId);
     }
 
     public Completable modifyGroupEntry(long groupId, double amount, String info, Calendar date) {
-        return cashBoxEntryDao.modifyGroup(groupId, amount, info, date);
+        return cashBoxEntryLocalDao.modifyGroup(groupId, amount, info, date);
     }
 
     public Single<Integer> deleteGroupEntries(long groupId) {
-        return cashBoxEntryDao.deleteGroup(groupId);
+        return cashBoxEntryLocalDao.deleteGroup(groupId);
     }
 
     // WorkManager

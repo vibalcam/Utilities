@@ -48,10 +48,8 @@ public class CashBoxManagerActivity extends AppCompatActivity implements TabLayo
      * Next free group id for use (returned id is not in use, +1 when save new one)
      */
     public static final String GROUP_ID_COUNT_KEY = "com.vibal.utilities.cashBoxManager.GROUP_ID_COUNT";
-    /**
-     * Next free group id for use (returned id is not in use, +1 when save new one)
-     */
     public static final String GROUP_ADD_MODE_KEY = "com.vibal.utilities.cashBoxManager.GROUP_ADD_MODE";
+    public static final String CLIENT_ID_KEY = "com.vibal.utilities.cashBoxManager.CLIENT_ID";
 
     @BindView(R.id.CB_viewPager)
     ViewPager pager;
@@ -147,6 +145,7 @@ public class CashBoxManagerActivity extends AppCompatActivity implements TabLayo
     @Override
     public void onTabSelected(@NonNull TabLayout.Tab tab) {
         LogUtil.debug("PruebaViewPager", "Position: " + tab.getPosition());
+        supportInvalidateOptionsMenu();
         pager.setCurrentItem(tab.getPosition(), true);
     }
 

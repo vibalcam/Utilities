@@ -37,6 +37,9 @@
     <string name="helperEnterNameDialog">Max. 15 characters</string>
     <string name="contentDescriptionLogoMain">App\'s logo</string>
 
+    <!--Dialog Buttons-->
+
+
     <!--Menu Actions-->
     <string name="action_help">Help</string>
     <string name="action_versions">What\'s New?</string>
@@ -65,6 +68,7 @@
 
     <!--CashBox Manager Contextual Menu-->
     <string name="contextualMenu_CBMDuplicate">Duplicate</string>
+    <string name="invite">Invite</string>
 
     <!--CashBox Item Fragment-->
     <string name="titleGroupEntryDelete">Delete Group Entry</string>
@@ -77,12 +81,16 @@
     <string name="enterInfoDialog">Info</string>
     <string name="enterAmountDialog">Amount</string>
 
+    <!--CashBox Online Item Fragment-->
+    <string name="dialog_inviteTitle">Invite user</string>
+
     <!--CashBox Item Menu-->
     <string name="action_reset">Delete All</string>
     <string name="menu_item_reminderOn">Cancel Reminder</string>
     <string name="menu_item_reminderOff">Set Reminder</string>
     <string name="menu_item_share">Share</string>
     <string name="menu_item_currency">Currency</string>
+    <string name="menu_item_invite">Invite</string>
 
     <!--CashBox Deleted Menu-->
     <string name="action_restoreAll">Restore All</string>
@@ -150,9 +158,11 @@
     </string>
 
 
+
     <!--Preference Titles-->
     <string name="pref_general_header">General</string>
     <string name="pref_CBM_header">CashBox Manager</string>
+    <string name="pref_CBMOnline_header">CashBox Manager Online</string>
 
     <!--General Preferences-->
     <string name="pref_defaultStart">Default start screen</string>
@@ -167,6 +177,25 @@
     <string name="pref_notifyPeriodic">Notification Periodic</string>
     <string name="pref_summaryOn_notifyPeriodic">Notify when a periodic entry has been added</string>
     <string name="pref_summaryOff_notifyPeriodic">Do not notify when a periodic entry has been added</string>
+
+    <!--CashBox Online Preferences-->
+    <string name="pref_online">Allow online mode</string>
+    <string name="pref_online_cancel">Cancel online mode</string>
+    <string name="allowOnline_acceptMessage">
+        By accepting you give consent to Utilities to save your Online CashBox data.
+         This data will be saved anonymously with the username of your choice. Take into account
+        that the data introduced may be loosed, deleted or modified due to unexpected incidents.
+         You can withdraw you consent at any time with the "Allow online mode" option in Settings.
+         By doing so, your user and all your saved data will be deleted from the server.
+         However, the data shared with other users will remain being available to them,
+         but will stop being linked to your user.
+    </string>
+    <string name="allowOnline_cancelMessage">
+        By doing so you will withdraw your consent and your user and data will be deleted from the
+        server. The data cannot be restored. What do you want to do with your online cashboxes?
+    </string>
+    <string name="deleteLocal">Delete</string>
+    <string name="moveLocal">Make local</string>
 
     <!--CashBox Manager Widget-->
     <string name="emptyCashBoxManager">No CashBoxes added</string>
