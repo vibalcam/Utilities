@@ -1,11 +1,13 @@
 package com.vibal.utilities.db;
 
 import androidx.lifecycle.LiveData;
+import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
 import androidx.room.Update;
 
+import com.vibal.utilities.modelsNew.Entry;
 import com.vibal.utilities.modelsNew.EntryOnline;
 
 import java.util.Calendar;
@@ -15,24 +17,29 @@ import java.util.List;
 import io.reactivex.Completable;
 import io.reactivex.Single;
 
-public interface CashBoxEntryOnlineDao {
-    @Query("SELECT * FROM entriesOnline_table WHERE cashBoxId=:cashBoxId ORDER BY date DESC")
-    LiveData<List<EntryOnline>> getEntriesByCashBoxId(long cashBoxId);
+@Dao
+public interface CashBoxEntryOnlineDao extends CashBoxEntryBaseDao {
+    @Insert(entity = EntryOnline.class)
+    Completable insert(Entry entry);
 
-    @Query("SELECT * FROM entriesOnline_table WHERE groupId=:groupId")
-    Single<List<EntryOnline>> getGroupEntries(long groupId);
+    @Insert(entity = EntryOnline.class)
+    Completable insertAll(Collection<Entry> entries);
 
-    @Insert
-    Completable insert(EntryOnline entry);
+    @Update(entity = EntryOnline.class)
+    Completable update(Entry entry);
 
-    @Insert
-    Completable insertAll(Collection<EntryOnline> entries);
+    @Delete(entity = EntryOnline.class)
+    Completable delete(Entry entry);
 
-    @Delete
-    Completable delete(EntryOnline entry);
+    @Query("SELECT id,cashBoxId,amount,date,info,groupId " +
+            "FROM entriesOnline_table " +
+            "WHERE cashBoxId=:cashBoxId ORDER BY date DESC")
+    LiveData<List<Entry>> getEntriesByCashBoxId(long cashBoxId);
 
-    @Update
-    Completable update(EntryOnline entry);
+    @Query("SELECT id,cashBoxId,amount,date,info,groupId " +
+            "FROM entriesOnline_table " +
+            "WHERE groupId=:groupId")
+    Single<List<Entry>> getGroupEntries(long groupId);
 
     @Query("UPDATE entriesOnline_table " +
             "SET amount=:amount,info=:info,date=:date " +
@@ -50,4 +57,6 @@ public interface CashBoxEntryOnlineDao {
 
     @Query("DELETE FROM entriesOnline_table WHERE cashBoxId=:cashBoxId")
     Single<Integer> deleteAll(long cashBoxId);
+
+    //todo viewed changes
 }

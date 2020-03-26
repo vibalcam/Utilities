@@ -10,15 +10,15 @@ import androidx.room.TypeConverters;
 import androidx.room.migration.Migration;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
-import com.vibal.utilities.modelsNew.CashBoxInfo;
+import com.vibal.utilities.modelsNew.CashBoxInfoLocal;
 import com.vibal.utilities.modelsNew.CashBoxInfoOnline;
 import com.vibal.utilities.modelsNew.Entry;
 import com.vibal.utilities.modelsNew.EntryOnline;
 import com.vibal.utilities.modelsNew.PeriodicEntryPojo;
 import com.vibal.utilities.util.Converters;
 
-@Database(entities = {CashBoxInfo.class, Entry.class, CashBoxInfoOnline.class,
-        PeriodicEntryPojo.PeriodicEntryWorkInfo.class, EntryOnline.class}, version = 4,
+@Database(entities = {CashBoxInfoLocal.class, Entry.class, CashBoxInfoOnline.class,
+        EntryOnline.class, PeriodicEntryPojo.PeriodicEntryWorkInfo.class}, version = 4,
         exportSchema = false)
 @TypeConverters(Converters.class)
 public abstract class UtilitiesDatabase extends RoomDatabase { // todo new migration online
@@ -85,7 +85,7 @@ public abstract class UtilitiesDatabase extends RoomDatabase { // todo new migra
             // Online Entry
             database.execSQL("CREATE TABLE IF NOT EXISTS `entriesOnline_table` (" +
                     "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
-                    "`viewed` INTEGER NOT NULL, " +
+                    "`viewed` INTEGER NOT NULL DEFAULT 0, " +
                     "`cashBoxId` INTEGER NOT NULL, " +
                     "`amount` REAL NOT NULL, " +
                     "`date` INTEGER, " +

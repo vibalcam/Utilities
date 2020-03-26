@@ -12,6 +12,7 @@ import com.google.android.material.textfield.TextInputLayout;
 import com.vibal.utilities.R;
 import com.vibal.utilities.util.MyDialogBuilder;
 import com.vibal.utilities.util.Util;
+import com.vibal.utilities.viewModels.CashBoxOnlineViewModel;
 import com.vibal.utilities.viewModels.CashBoxViewModel;
 
 public class CashBoxItemOnlineFragment extends CashBoxItemFragment {
@@ -24,9 +25,8 @@ public class CashBoxItemOnlineFragment extends CashBoxItemFragment {
     }
 
     @Override
-    protected CashBoxViewModel initializeViewModel() { //todo
-        return new ViewModelProvider(requireParentFragment()).get(CashBoxViewModel.class);
-//        return new ViewModelProvider(requireParentFragment()).get(CashBoxViewModelOnline.class);
+    protected CashBoxViewModel initializeViewModel() {
+        return new ViewModelProvider(requireParentFragment()).get(CashBoxOnlineViewModel.class);
     }
 
     @Override

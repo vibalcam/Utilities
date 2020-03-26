@@ -5,111 +5,55 @@ import android.app.Application;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
-import androidx.work.WorkManager;
 
-import com.vibal.utilities.backgroundTasks.RxPeriodicEntryWorker;
-import com.vibal.utilities.backgroundTasks.UtilAppAPI;
 import com.vibal.utilities.modelsNew.CashBox;
 import com.vibal.utilities.modelsNew.CashBoxInfo;
 import com.vibal.utilities.modelsNew.Entry;
 import com.vibal.utilities.modelsNew.PeriodicEntryPojo;
 import com.vibal.utilities.util.LogUtil;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Currency;
 import java.util.List;
-import java.util.UUID;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import retrofit2.Retrofit;
-import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
-import retrofit2.converter.gson.GsonConverterFactory;
 
-public class CashBoxRepository {
-    // Work Manager
-    private WorkManager workManager;
-    private PeriodicEntryWorkDao periodicEntryWorkDao;
-
+public abstract class CashBoxRepository {
+    // PeriodicWork
+    private PeriodicEntryWorkRepository workRepository;
     // CashBox Manager
-    private LiveData<List<CashBox.InfoWithCash>> cashBoxesInfo;
-    private final long onlineId;
+    private LiveData<List<CashBox.InfoWithCash>> cashBoxesInfo = null;
 
-    // CashBox Manager Local
-    private CashBoxLocalDao cashBoxLocalDao;
-    private CashBoxEntryLocalDao cashBoxEntryLocalDao;
-
-    // CashBox Manager Online
-    private CashBoxOnlineDao cashBoxOnlineDao;
-    private CashBoxEntryOnlineDao cashBoxEntryOnlineDao;
-    private static UtilAppAPI utilAppAPI = null;
-//    private static final String BASE_URL = "https://utilserver.ddns.net:25575/utilApp";
-    private static final String BASE_URL = "https://192.168.0.42/util";
-
-    //todo onlineMode
-    public CashBoxRepository(Application application, long onlineId) {
+    protected CashBoxRepository(Application application) {
+        // PeriodicWork
         UtilitiesDatabase database = UtilitiesDatabase.getInstance(application);
-        this.onlineId = onlineId;
-
-        // CashBox Manager of selected mode
-        if(isOnline()) {
-            // CashBox Manager Online
-            cashBoxOnlineDao = database.cashBoxOnlineDao();
-            cashBoxEntryOnlineDao = database.cashBoxEntryOnlineDao();
-            cashBoxesInfo = cashBoxOnlineDao.getAllCashBoxesInfo();
-            if(utilAppAPI == null) {
-                Retrofit retrofit = new Retrofit.Builder()
-                        .baseUrl(BASE_URL)
-                        .client(getOkHttpClient())
-                        .addConverterFactory(GsonConverterFactory.create())
-                        .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                        .build();
-                utilAppAPI = retrofit.create(UtilAppAPI.class);//todo comprobar
-            }
-        } else {
-            // CashBox Manager Local
-            cashBoxLocalDao = database.cashBoxLocalDao();
-            cashBoxEntryLocalDao = database.cashBoxEntryLocalDao();
-            cashBoxesInfo = cashBoxLocalDao.getAllCashBoxesInfo(false);
-        }
-
-        // WorkManager
-        workManager = WorkManager.getInstance(application);
-        periodicEntryWorkDao = database.periodicEntryWorkDao();
+        workRepository = new PeriodicEntryWorkRepository(application);
     }
 
-    private boolean isOnline() {
-        return onlineId != -1;
-    }
-
-    @NonNull
-    private OkHttpClient getOkHttpClient() {
-        return new OkHttpClient.Builder()
-                .addInterceptor(chain -> {
-                    Request originalRequest = chain.request();
-                    Request newRequest = originalRequest.newBuilder()
-                            .header(UtilAppAPI.CLIENT_ID, String.valueOf(onlineId))
-                            .header(UtilAppAPI.PASSWORD_HEADER,UtilAppAPI.PASSWORD)
-                            .build();
-                    return chain.proceed(newRequest);
-                }).build();
-    }
-
-    // CashBox Manager
+//    protected void setCashBoxesInfo(LiveData<List<CashBox.InfoWithCash>> cashBoxesInfo) {
+//        this.cashBoxesInfo = cashBoxesInfo;
+//    }
 
     public LiveData<List<CashBox.InfoWithCash>> getCashBoxesInfo() {
+        if(cashBoxesInfo == null)
+            cashBoxesInfo = getCashBoxDao().getAllCashBoxesInfo();
         return cashBoxesInfo;
     }
+
+    protected abstract CashBoxBaseDao getCashBoxDao();
+    protected abstract CashBoxEntryBaseDao getCashBoxEntryDao();
+
+    // CashBox Manager
 
     @NonNull
     public LiveData<CashBox> getOrderedCashBox(long id) {
         MediatorLiveData<CashBox> liveDataMerger = new MediatorLiveData<>();
-        liveDataMerger.setValue(new CashBox("Loading..."));
+        liveDataMerger.setValue(new CashBox("Loading...")); // Puppet CashBox to be changed
 
-        liveDataMerger.addSource(cashBoxLocalDao.getCashBoxInfoWithCashById(id),
+        liveDataMerger.addSource(getCashBoxDao().getCashBoxInfoWithCashById(id),
                 infoWithCash -> {
                     if (infoWithCash == null)
                         return;
@@ -118,7 +62,7 @@ public class CashBoxRepository {
                     cashBox.setInfoWithCash(infoWithCash);
                     liveDataMerger.setValue(cashBox);
                 });
-        liveDataMerger.addSource(cashBoxEntryLocalDao.getEntriesByCashBoxId(id),
+        liveDataMerger.addSource(getCashBoxEntryDao().getEntriesByCashBoxId(id),
                 entries -> {
                     if (entries == null)
                         return;
@@ -131,128 +75,110 @@ public class CashBoxRepository {
         return liveDataMerger;
     }
 
-    public LiveData<List<CashBox.InfoWithCash>> getAllDeletedCashBoxesInfo() {
-        return cashBoxLocalDao.getAllCashBoxesInfo(true);
-    }
-
     public Single<CashBox> getCashBox(long id) {
-        return cashBoxLocalDao.getCashBoxById(id);
+        return getCashBoxDao().getCashBoxById(id);
     }
 
     public Completable insertCashBox(@NonNull CashBox cashBox) {
-        return cashBoxLocalDao.insert(cashBox, cashBoxEntryLocalDao);
+//        return getCashBoxDao().insert(cashBox, getCashBoxEntryDao());
+        if (cashBox.getEntries().isEmpty())
+            return insertCashBoxInfo(cashBox.getInfoWithCash()).ignoreElement();
+        else {
+            return insertCashBoxInfo(cashBox.getInfoWithCash())
+                    .flatMapCompletable(id -> {
+                        LogUtil.debug("Prueba", "Id: " + id);
+                        ArrayList<Entry> entryArrayList = new ArrayList<>();
+                        for (Entry entry : cashBox.getEntries())
+                            entryArrayList.add(entry.getEntryWithCashBoxId(id));
+                        return insertAllEntries(entryArrayList);
+                    });
+        }
     }
 
     public Single<Long> insertCashBoxInfo(@NonNull CashBox.InfoWithCash infoWithCash) {
-        return cashBoxLocalDao.insert(infoWithCash.getCashBoxInfo());
+        return getCashBoxDao().insert(infoWithCash.getCashBoxInfo());
     }
 
     public Completable updateCashBoxInfo(CashBoxInfo cashBoxInfo) {
-        return cashBoxLocalDao.update(cashBoxInfo);
+        return getCashBoxDao().update(cashBoxInfo);
     }
 
     public Completable setCashBoxCurrency(long cashBoxId, @NonNull Currency currency) {
-        return cashBoxLocalDao.setCashBoxCurrency(cashBoxId, currency);
+        return getCashBoxDao().setCashBoxCurrency(cashBoxId, currency);
     }
 
     public Completable moveCashBoxInfo(@NonNull CashBox.InfoWithCash infoWithCash, long toOrderPos) {
-        return cashBoxLocalDao.moveCashBoxToOrderPos(infoWithCash.getCashBoxInfo().getId(),
+        return getCashBoxDao().moveCashBoxToOrderPos(infoWithCash.getCashBoxInfo().getId(),
                 infoWithCash.getCashBoxInfo().getOrderId(), toOrderPos);
     }
 
-    public Single<Integer> setDeletedAll(boolean deleted) {
-        return cashBoxLocalDao.setDeletedAll(deleted);
-    }
+//    public Completable setDeleted(CashBoxInfo cashBoxInfo, boolean deleted) {
+//        if(deleted) //Cancel works associated with the CashBox
+//            workRepository.cancelAllCashBoxWork(cashBoxInfo.getId());
+//        cashBoxInfo.setDeleted(deleted);
+//        return updateCashBoxInfo(cashBoxInfo);
+//    }
+
+//    public Single<Integer> setDeletedAll(boolean deleted) {
+//        if(deleted) // cancel all periodic works and set deleted
+//            return workRepository.deleteAllPeriodicEntryWorks()
+//                    .flatMap(integer -> getCashBoxDao().setDeletedAll(true));
+//        else
+//            return getCashBoxDao().setDeletedAll(false);
+//    }
 
     public Completable deleteCashBox(@NonNull CashBoxInfo cashBoxInfo) {
-        return cashBoxLocalDao.delete(cashBoxInfo);
+        workRepository.cancelAllCashBoxWork(cashBoxInfo.getId());
+        return getCashBoxDao().delete(cashBoxInfo);
     }
 
-    public Single<Integer> clearRecycleBin() {
-        return cashBoxLocalDao.clearRecycleBin();
+    public Single<Integer> deleteAllCashBoxes() {
+        return workRepository.deleteAllPeriodicEntryWorks()
+                .flatMap(integer -> getCashBoxDao().deleteAll());
     }
 
     // Entries
 
     public Completable insertEntry(Entry entry) {
-        return cashBoxEntryLocalDao.insert(entry);
+        return getCashBoxEntryDao().insert(entry);
     }
 
     public Completable insertAllEntries(Collection<Entry> entries) {
-        return cashBoxEntryLocalDao.insertAll(entries);
+        return getCashBoxEntryDao().insertAll(entries);
     }
 
     public Completable updateEntry(Entry entry) {
-        return cashBoxEntryLocalDao.update(entry);
+        return getCashBoxEntryDao().update(entry);
     }
 
     public Completable modifyEntry(long id, double amount, String info, Calendar date) {
-        return cashBoxEntryLocalDao.modify(id, amount, info, date);
+        return getCashBoxEntryDao().modify(id, amount, info, date);
     }
 
     public Completable deleteEntry(Entry entry) {
-        return cashBoxEntryLocalDao.delete(entry);
+        return getCashBoxEntryDao().delete(entry);
     }
 
     public Single<Integer> deleteAllEntries(long cashBoxId) {
-        return cashBoxEntryLocalDao.deleteAll(cashBoxId);
+        return getCashBoxEntryDao().deleteAll(cashBoxId);
     }
 
     // Group Entries
 
     public Single<List<Entry>> getGroupEntries(long groupId) {
-        return cashBoxEntryLocalDao.getGroupEntries(groupId);
+        return getCashBoxEntryDao().getGroupEntries(groupId);
     }
 
     public Completable modifyGroupEntry(long groupId, double amount, String info, Calendar date) {
-        return cashBoxEntryLocalDao.modifyGroup(groupId, amount, info, date);
+        return getCashBoxEntryDao().modifyGroup(groupId, amount, info, date);
     }
 
     public Single<Integer> deleteGroupEntries(long groupId) {
-        return cashBoxEntryLocalDao.deleteGroup(groupId);
+        return getCashBoxEntryDao().deleteGroup(groupId);
     }
 
-    // WorkManager
-
-    public LiveData<List<PeriodicEntryPojo>> getPeriodicEntries() {
-        return periodicEntryWorkDao.getAllWorkPojos();
-    }
-
-    public Single<PeriodicEntryPojo> getPeriodicEntryPojo(UUID uuid) {
-        return periodicEntryWorkDao.getWorkPojoByUUID(uuid);
-    }
-
+    // Periodic Entries
     public Completable addPeriodicEntryWorkRequest(@NonNull PeriodicEntryPojo.PeriodicEntryWorkRequest workRequest) {
-        LogUtil.debug("PruebaPeriodicViewModel", "Add new periodic work");
-        workManager.enqueue(workRequest.getWorkRequest()); //todo observe, calculate difference between lists
-        //Add the data to database
-        return periodicEntryWorkDao.insert(workRequest.getWorkInfo());
-    }
-
-    public Single<Integer> updatePeriodicEntryWorkInfo(PeriodicEntryPojo.PeriodicEntryWorkInfo workInfo) {
-        return periodicEntryWorkDao.update(workInfo);
-    }
-
-//    public Completable replacePeriodicEntryWorkInfo(PeriodicEntryPojo.PeriodicEntryWorkInfo workInfo) {
-//        return deletePeriodicEntryWorkInfo(workInfo)
-//                .flatMapCompletable(integer -> integer==0 ?
-//                        Completable.error(new IllegalArgumentException("No entry delted")) :
-//                        addPeriodicEntryWorkRequest(new PeriodicEntryPojo.PeriodicEntryWorkRequest(
-//                                workInfo.getCashBoxId(),workInfo.getAmount(),workInfo.getInfo(),
-//                                workInfo.getRepeatInterval())));
-//    }
-
-    public Single<Integer> deletePeriodicEntryWorkInfo(@NonNull PeriodicEntryPojo.PeriodicEntryWorkInfo workInfo) {
-        workManager.cancelWorkById(workInfo.getWorkId()); //Cancel work
-        return periodicEntryWorkDao.delete(workInfo); //Delete from database
-    }
-
-    public Single<Integer> deleteAllPeriodicEntryWorks() {
-        workManager.cancelAllWorkByTag(RxPeriodicEntryWorker.TAG_PERIODIC);
-        return periodicEntryWorkDao.deleteAll();
-    }
-
-    public Completable deletePeriodicInactive() {
-        return periodicEntryWorkDao.deleteInactive();
+        return workRepository.addPeriodicEntryWorkRequest(workRequest);
     }
 }

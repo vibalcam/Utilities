@@ -5,9 +5,7 @@ import android.app.Application;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
-import androidx.work.WorkManager;
 
-import com.vibal.utilities.backgroundTasks.RxPeriodicEntryWorker;
 import com.vibal.utilities.db.CashBoxRepository;
 import com.vibal.utilities.modelsNew.CashBox;
 import com.vibal.utilities.modelsNew.CashBoxInfo;
@@ -20,17 +18,16 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Currency;
 import java.util.List;
-import java.util.Locale;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
 
 import static com.vibal.utilities.modelsNew.CashBoxInfo.NO_ID;
 
-public class CashBoxViewModel extends AndroidViewModel {
+public abstract class CashBoxViewModel extends AndroidViewModel {
     private static final String TAG = "PruebaCashBoxViewModel";
 
-    private WorkManager workManager;
+//    private WorkManager workManager;
     private CashBoxRepository repository;
     private LiveData<List<CashBox.InfoWithCash>> cashBoxesInfo;
     private LiveData<CashBox> cashBox;
@@ -38,10 +35,11 @@ public class CashBoxViewModel extends AndroidViewModel {
 //    @NonNull
 //    private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
-    public CashBoxViewModel(@NonNull Application application) {
+    public CashBoxViewModel(@NonNull Application application, @NonNull CashBoxRepository repository) {
         super(application);
-        workManager = WorkManager.getInstance(application);
-        repository = new CashBoxRepository(application, false);
+//        workManager = WorkManager.getInstance(application);
+//        repository = new CashBoxLocalRepository(application);
+        this.repository = repository;
         cashBoxesInfo = repository.getCashBoxesInfo();
     }
 
@@ -101,21 +99,22 @@ public class CashBoxViewModel extends AndroidViewModel {
     }
 
     public Completable recycleCashBoxInfo(@NonNull CashBox.InfoWithCash infoWithCash) {
-        CashBoxInfo cashBoxInfo = infoWithCash.getCashBoxInfo();
-        //Cancel works associated with the CashBox
-        workManager.cancelAllWorkByTag(String.format(Locale.US,
-                RxPeriodicEntryWorker.TAG_CASHBOX_ID, cashBoxInfo.getId()));
-
-        //Move to recycle bin
-        cashBoxInfo.setDeleted(true);
-        return repository.updateCashBoxInfo(cashBoxInfo);
+//        CashBoxInfo cashBoxInfo = infoWithCash.getCashBoxInfo();
+//        //Cancel works associated with the CashBox
+//        workManager.cancelAllWorkByTag(String.format(Locale.US,
+//                RxPeriodicEntryWorker.TAG_CASHBOX_ID, cashBoxInfo.getId()));
+//
+//        //Move to recycle bin
+//        cashBoxInfo.setDeleted(true);
+//        return repository.updateCashBoxInfo(cashBoxInfo);
+        return repository.deleteCashBox(infoWithCash.getCashBoxInfo());
     }
 
     public Single<Integer> recycleAllCashBoxes() {
-        //Cancel all works associated with CashBoxes
-        workManager.cancelAllWorkByTag(RxPeriodicEntryWorker.TAG_PERIODIC);
+//        //Cancel all works associated with CashBoxes
+//        workManager.cancelAllWorkByTag(RxPeriodicEntryWorker.TAG_PERIODIC);
         //Move all to recycle bin
-        return repository.setDeletedAll(true);
+        return repository.deleteAllCashBoxes();
     }
 
     public Completable duplicateCashBox(@NonNull CashBox cashBox, @NonNull String newName) {
@@ -201,9 +200,9 @@ public class CashBoxViewModel extends AndroidViewModel {
     }
 
     // Periodic Entries
-    public Completable deletePeriodicInactive() {
-        return repository.deletePeriodicInactive();
-    }
+//    public Completable deletePeriodicInactive() {
+//        return repository.deletePeriodicInactive();
+//    }
 
 //    public void addDisposable(@NonNull Disposable disposable) {
 //        compositeDisposable.add(disposable);

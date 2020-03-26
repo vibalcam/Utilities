@@ -1,33 +1,19 @@
 package com.vibal.utilities.modelsNew;
 
 import android.os.Bundle;
-import android.os.Parcel;
-import android.os.Parcelable;
-import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.room.ColumnInfo;
 import androidx.room.Embedded;
-import androidx.room.Entity;
-import androidx.room.ForeignKey;
 import androidx.room.Ignore;
-import androidx.room.Index;
-import androidx.room.PrimaryKey;
 import androidx.room.Relation;
 
-import com.vibal.utilities.util.Converters;
 import com.vibal.utilities.util.DiffDbUsable;
-import com.vibal.utilities.util.LogUtil;
-import com.vibal.utilities.util.Util;
 
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
-
-import static androidx.room.ForeignKey.CASCADE;
 
 public class CashBox {
 //    public static final Parcelable.Creator<CashBox> CREATOR = new Parcelable.Creator<CashBox>() {
@@ -51,15 +37,34 @@ public class CashBox {
     private List<Entry> entries;
 
     @Ignore
-    public CashBox(@NonNull String name) throws IllegalArgumentException {
-        this(new InfoWithCash(name, 0), new ArrayList<>());
+    public static CashBox createLocal(String name) throws IllegalArgumentException {
+        return new CashBox(InfoWithCash.createLocal(name), new ArrayList<>());
     }
 
     @Ignore
-    public CashBox(@NonNull String name, @NonNull List<Entry> entries) throws IllegalArgumentException {
-        this.entries = entries;
-        infoWithCash = new InfoWithCash(name, calculateCash(entries));
+    public static CashBox createOnline(String name) throws IllegalArgumentException {
+        return new CashBox(InfoWithCash.createOnline(name), new ArrayList<>());
     }
+
+    /**
+     * Used to create a puppet CashBox
+     * @param name Name for the puppet CashBox
+     */
+    @Ignore
+    public CashBox(String name) {
+        this(new InfoWithCash(name), new ArrayList<>());
+    }
+
+//    @Ignore
+//    public CashBox(@NonNull String name) throws IllegalArgumentException {
+//        this(new InfoWithCash(name, 0), new ArrayList<>());
+//    }
+
+//    @Ignore
+//    public CashBox(@NonNull String name, @NonNull List<Entry> entries) throws IllegalArgumentException {
+//        this.entries = entries;
+//        infoWithCash = new InfoWithCash(name, calculateCash(entries));
+//    }
 
     /**
      * You must ensure that cash is the sum of all the amounts.
@@ -189,20 +194,38 @@ public class CashBox {
         @Embedded
         private final CashBoxInfo cashBoxInfo;
         private double cash; //sum of amounts
+        private boolean hasChanges; // if the CashBox has any unviewed changes
+
 
         @Ignore
-        public InfoWithCash(@NonNull String name, double cash) throws IllegalArgumentException {
-            this(new CashBoxInfo(name), cash);
+        public static InfoWithCash createLocal(String name) {
+            return new InfoWithCash(new CashBoxInfoLocal(name),0, false);
         }
 
         @Ignore
-        public InfoWithCash(@NonNull String name) throws IllegalArgumentException {
-            this(name, 0);
+        public static InfoWithCash createOnline(String name) {
+            return new InfoWithCash(new CashBoxInfoOnline(name),0, false);
         }
 
-        public InfoWithCash(@NonNull CashBoxInfo cashBoxInfo, double cash) {
+        @Ignore
+        public InfoWithCash (String name) {
+            this(new CashBoxInfo(name), 0, false);
+        }
+
+//        @Ignore
+//        public InfoWithCash(@NonNull String name, double cash) throws IllegalArgumentException {
+//            this(new CashBoxInfo(name), cash);
+//        }
+//
+//        @Ignore
+//        public InfoWithCash(@NonNull String name) throws IllegalArgumentException {
+//            this(name, 0);
+//        }
+
+        public InfoWithCash(@NonNull CashBoxInfo cashBoxInfo, double cash, boolean hasChanges) {
             this.cashBoxInfo = cashBoxInfo;
             this.cash = cash;
+            this.hasChanges = hasChanges;
         }
 
 //        @Ignore
@@ -218,6 +241,10 @@ public class CashBox {
 
         public double getCash() {
             return cash;
+        }
+
+        public boolean hasChanges() {
+            return hasChanges;
         }
 
         @NonNull
@@ -248,7 +275,7 @@ public class CashBox {
 
         @NonNull
         public InfoWithCash cloneContents() {
-            return new InfoWithCash(cashBoxInfo.cloneContents(), cash);
+            return new InfoWithCash(cashBoxInfo.cloneContents(), cash, hasChanges);
         }
 
         // Implementation of Parcelable

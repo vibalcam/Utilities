@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.vibal.utilities.R;
+import com.vibal.utilities.viewModels.CashBoxLocalViewModel;
 import com.vibal.utilities.viewModels.CashBoxViewModel;
 
 import io.reactivex.disposables.CompositeDisposable;
@@ -17,7 +18,7 @@ public class CashBoxManagerLocalFragment extends CashBoxManagerFragment {
 
     @Override
     protected CashBoxViewModel initializeViewModel() {
-        return new ViewModelProvider(requireParentFragment()).get(CashBoxViewModel.class);
+        return new ViewModelProvider(requireParentFragment()).get(CashBoxLocalViewModel.class);
     }
 
     @Override

@@ -1,19 +1,16 @@
 package com.vibal.utilities.modelsNew;
 
 import androidx.annotation.NonNull;
-import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.Index;
-import androidx.room.PrimaryKey;
 
 import java.util.Currency;
 
-@Entity(tableName = "cashBoxesOnline_table", indices = {@Index(value = "name", unique = true)},
-        ignoredColumns = "deleted")
+@Entity(tableName = "cashBoxesOnline_table", indices = {@Index(value = "name", unique = true)})
 public class CashBoxInfoOnline extends CashBoxInfo {
     public CashBoxInfoOnline(long id, @NonNull String name, long orderId, Currency currency) {
-        super(id, name, orderId, false, currency);
+        super(id, name, orderId, currency);
     }
 
     @Ignore
@@ -24,7 +21,7 @@ public class CashBoxInfoOnline extends CashBoxInfo {
     @NonNull
     @Override
     public CashBoxInfoOnline cloneContents() {
-        return  (CashBoxInfoOnline) super.cloneContents();
+        return   (CashBoxInfoOnline) super.cloneContents();
     }
 
     @NonNull

@@ -3,6 +3,7 @@ package com.vibal.utilities.modelsNew;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
 import androidx.room.Ignore;
@@ -15,12 +16,20 @@ import static androidx.room.ForeignKey.CASCADE;
         foreignKeys = @ForeignKey(entity = CashBoxInfoOnline.class, parentColumns = "id",
         childColumns = "cashBoxId", onDelete = CASCADE, onUpdate = CASCADE))
 public class EntryOnline extends Entry {
+    @ColumnInfo(defaultValue = "0")
     private boolean viewed = false;
 
     public EntryOnline(long cashBoxId, double amount, @Nullable String info, Calendar date,
                        long groupId, boolean viewed) {
         super(cashBoxId, amount, info, date, groupId);
         setViewed(viewed);
+    }
+
+    @Ignore
+    public EntryOnline(@NonNull Entry entry) {
+        this(entry.getCashBoxId(),entry.getAmount(),entry.getInfo(),entry.getDate(),
+                entry.getGroupId(),false);
+        setId(entry.id);
     }
 
     @Ignore
@@ -52,5 +61,11 @@ public class EntryOnline extends Entry {
             return true;
         } else
             return false;
+    }
+
+    @NonNull
+    @Override
+    public Entry getEntryWithCashBoxId(long cashBoxId) {
+        return new EntryOnline(super.getEntryWithCashBoxId(cashBoxId));
     }
 }

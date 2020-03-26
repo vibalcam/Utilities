@@ -17,24 +17,24 @@ import io.reactivex.Completable;
 import io.reactivex.Single;
 
 @Dao
-public interface CashBoxEntryLocalDao {
+public interface CashBoxEntryLocalDao extends CashBoxEntryBaseDao {
+    @Insert(entity = Entry.class)
+    Completable insert(Entry entry);
+
+    @Insert(entity = Entry.class)
+    Completable insertAll(Collection<Entry> entries);
+
+    @Update(entity = Entry.class)
+    Completable update(Entry entry);
+
+    @Delete(entity = Entry.class)
+    Completable delete(Entry entry);
+
     @Query("SELECT * FROM entries_table WHERE cashBoxId=:cashBoxId ORDER BY date DESC")
     LiveData<List<Entry>> getEntriesByCashBoxId(long cashBoxId);
 
     @Query("SELECT * FROM entries_table WHERE groupId=:groupId")
     Single<List<Entry>> getGroupEntries(long groupId);
-
-    @Insert
-    Completable insert(Entry entry);
-
-    @Insert
-    Completable insertAll(Collection<Entry> entries);
-
-    @Delete
-    Completable delete(Entry entry);
-
-    @Update
-    Completable update(Entry entry);
 
     @Query("UPDATE entries_table " +
             "SET amount=:amount,info=:info,date=:date " +

@@ -227,7 +227,6 @@ public abstract class CashBoxItemFragment extends PagerFragment {
 
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        LogUtil.debug("Llamada " + getPagerPosition());
         if (!isOptionsMenuActive())
             return;
         super.onCreateOptionsMenu(menu, inflater);

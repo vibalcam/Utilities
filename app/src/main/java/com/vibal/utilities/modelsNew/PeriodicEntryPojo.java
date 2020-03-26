@@ -60,10 +60,10 @@ public class PeriodicEntryPojo implements DiffDbUsable<PeriodicEntryPojo> {
     }
 
     @Entity(tableName = "periodicWork_table",
-            foreignKeys = @ForeignKey(entity = CashBoxInfo.class, parentColumns = "id",
+            foreignKeys = @ForeignKey(entity = CashBoxInfoLocal.class, parentColumns = "id",
                     childColumns = "cashBoxId", onDelete = CASCADE, onUpdate = CASCADE),
             indices = {@Index(value = "cashBoxId")})
-    public static class PeriodicEntryWorkInfo {
+    public static class PeriodicEntryWorkInfo { //todo choose if allow in online or not, if yes, extend class
         @PrimaryKey(autoGenerate = true)
         private long id;
         @NonNull

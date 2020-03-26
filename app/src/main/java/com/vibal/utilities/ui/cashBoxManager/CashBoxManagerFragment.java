@@ -399,16 +399,16 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
         doIntentAction();
     }
 
-    @Override
-    public void onStop() {
-        super.onStop();
-        // Delete all periodic tasks which are no longer active
-        LogUtil.debug(TAG, "On stop: delete periodic inactive");
-        compositeDisposable.add(viewModel.deletePeriodicInactive()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe());
-    }
+//    @Override
+//    public void onStop() {
+//        super.onStop();
+//        // Delete all periodic tasks which are no longer active
+//        LogUtil.debug(TAG, "On stop: delete periodic inactive");
+//        compositeDisposable.add(viewModel.deletePeriodicInactive()
+//                .subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribe());
+//    }
 
     @Override
     public void onResume() {

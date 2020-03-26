@@ -115,7 +115,6 @@ public class CashBoxDeletedFragment extends PagerFragment {
 
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        LogUtil.debug("prueba");
         if (!isOptionsMenuActive())
             return;
         super.onCreateOptionsMenu(menu, inflater);

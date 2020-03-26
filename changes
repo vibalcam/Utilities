@@ -1,1 +1,6 @@
-- Separated CashBoxEntryDao into Online and Local daos
+- Separated repositories into Online, Local and Periodic repositories
+- Created CashBoxEntryBaseDao
+- Changed InfoWithCash to allow Online and Local, and added hasChanges field
+- Created CashBoxInfoLocal: CashBoxInfoLocal and CashBoxInfoOnline extend CashBoxInfo
+- When sending to recycle bin a CashBox, it first cancels all works related to it
+- Added SSL certificate to allow connection

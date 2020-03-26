@@ -8,13 +8,13 @@ import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.POST;
 
 public interface UtilAppAPI {
-    String USERNAME = "username";
+    String USERNAME = "userName";
     String CLIENT_ID = "ClientId";
     String PASSWORD_HEADER = "pwd";
-    String PASSWORD = "prueba";
+    String PASSWORD = "probando";
 
     @FormUrlEncoded
-    @POST()
+    @POST("utilApp.php")
     Single<UtilAppResponse> signUp(@Field(USERNAME) String username);
 
     //todo finish

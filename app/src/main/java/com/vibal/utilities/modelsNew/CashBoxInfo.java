@@ -2,9 +2,7 @@ package com.vibal.utilities.modelsNew;
 
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
-import androidx.room.Entity;
 import androidx.room.Ignore;
-import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
 import com.vibal.utilities.util.LogUtil;
@@ -14,8 +12,8 @@ import java.util.Locale;
 
 import static androidx.room.ColumnInfo.NOCASE;
 
-@Entity(tableName = "cashBoxesInfo_table", indices = {@Index(value = "name", unique = true),
-        @Index(value = "deleted")})
+//@Entity(tableName = "cashBoxesInfo_table", indices = {@Index(value = "name", unique = true),
+//        @Index(value = "deleted")})
 public class CashBoxInfo implements Cloneable {
     @Ignore
     public static final int NO_ID = 0;
@@ -34,8 +32,8 @@ public class CashBoxInfo implements Cloneable {
     private String name;
 
     private long orderId = NO_ORDER_ID;
-    @ColumnInfo(defaultValue = "0")
-    private boolean deleted = false;
+//    @ColumnInfo(defaultValue = "0")
+//    private boolean deleted = false;
 
     @ColumnInfo(defaultValue = "")
     private Currency currency = Currency.getInstance(Locale.getDefault());
@@ -45,13 +43,19 @@ public class CashBoxInfo implements Cloneable {
 
 //    public CashBoxInfo(long id, @NonNull String name, long orderId, boolean deleted,
 //                       Currency currency,long onlineId) {
-public CashBoxInfo(long id, @NonNull String name, long orderId, boolean deleted, Currency currency) {
+//    public CashBoxInfo(long id, @NonNull String name, long orderId, boolean deleted, Currency currency) {
+//        this.id = id;
+//        this.name = name;
+//        this.orderId = orderId;
+//        this.deleted = deleted;
+//        this.currency = currency;
+////        this.onlineId = onlineId;
+//    }
+    public CashBoxInfo(long id, @NonNull String name, long orderId, Currency currency) {
         this.id = id;
         this.name = name;
         this.orderId = orderId;
-        this.deleted = deleted;
         this.currency = currency;
-//        this.onlineId = onlineId;
     }
 
     @Ignore
@@ -92,13 +96,13 @@ public CashBoxInfo(long id, @NonNull String name, long orderId, boolean deleted,
         return orderId;
     }
 
-    public boolean isDeleted() {
-        return deleted;
-    }
-
-    public void setDeleted(boolean deleted) {
-        this.deleted = deleted;
-    }
+//    public boolean isDeleted() {
+//        return deleted;
+//    }
+//
+//    public void setDeleted(boolean deleted) {
+//        this.deleted = deleted;
+//    }
 
     public Currency getCurrency() {
         return currency;
@@ -131,7 +135,6 @@ public CashBoxInfo(long id, @NonNull String name, long orderId, boolean deleted,
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", orderId=" + orderId +
-                ", deleted=" + deleted +
                 ", currency=" + currency +
                 '}';
     }

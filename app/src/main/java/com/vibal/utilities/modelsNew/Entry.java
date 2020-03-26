@@ -2,7 +2,6 @@ package com.vibal.utilities.modelsNew;
 
 import android.os.Bundle;
 import android.os.Parcel;
-import android.os.Parcelable;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
@@ -28,7 +27,7 @@ import static androidx.room.ForeignKey.CASCADE;
 // Immutable object in orderPos for cloneContents to be easier
 // When modifying directly, watch out, since an entry can be in cloned cashBoxes (no set methods)
 @Entity(tableName = "entries_table",
-        foreignKeys = @ForeignKey(entity = CashBoxInfo.class, parentColumns = "id",
+        foreignKeys = @ForeignKey(entity = CashBoxInfoLocal.class, parentColumns = "id",
                 childColumns = "cashBoxId", onDelete = CASCADE, onUpdate = CASCADE),
         indices = {@Index(value = "cashBoxId")})
 //public class Entry implements Parcelable, Cloneable, DiffDbUsable<Entry> {

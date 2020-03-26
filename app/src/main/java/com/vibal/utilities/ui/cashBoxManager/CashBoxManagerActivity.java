@@ -27,7 +27,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class CashBoxManagerActivity extends AppCompatActivity implements TabLayout.OnTabSelectedListener, PagerActivity {
-    //public class CashBoxManagerActivity extends AppCompatActivity {
     // Extras for intents
     public static final String EXTRA_CASHBOX_ID = "com.vibal.utilities.cashBoxId";
     public static final String EXTRA_ACTION = "com.vibal.utilities.ui.cashBoxManager.action";
@@ -50,6 +49,8 @@ public class CashBoxManagerActivity extends AppCompatActivity implements TabLayo
     public static final String GROUP_ID_COUNT_KEY = "com.vibal.utilities.cashBoxManager.GROUP_ID_COUNT";
     public static final String GROUP_ADD_MODE_KEY = "com.vibal.utilities.cashBoxManager.GROUP_ADD_MODE";
     public static final String CLIENT_ID_KEY = "com.vibal.utilities.cashBoxManager.CLIENT_ID";
+
+    public static long ONLINE_ID = 0;
 
     @BindView(R.id.CB_viewPager)
     ViewPager pager;

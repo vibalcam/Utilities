@@ -44,9 +44,9 @@ public interface PeriodicEntryWorkDao {
     @Query("DELETE FROM periodicWork_table")
     Single<Integer> deleteAll();
 
-    @Query("DELETE FROM periodicWork_table " +
-            "WHERE cashBoxId IN (SELECT id " +
-            "FROM cashBoxesInfo_table " +
-            "WHERE deleted=1)")
-    Completable deleteInactive();
+//    @Query("DELETE FROM periodicWork_table " +
+//            "WHERE cashBoxId IN (SELECT id " +
+//            "FROM cashBoxesInfo_table " +
+//            "WHERE deleted=1)")
+//    Completable deleteInactive();
 }

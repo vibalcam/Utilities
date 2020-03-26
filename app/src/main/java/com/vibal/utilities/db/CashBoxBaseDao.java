@@ -1,37 +1,35 @@
 package com.vibal.utilities.db;
 
-import androidx.annotation.NonNull;
+import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
-import androidx.room.Delete;
-import androidx.room.Insert;
-import androidx.room.Update;
 
 import com.vibal.utilities.modelsNew.CashBox;
 import com.vibal.utilities.modelsNew.CashBoxInfo;
-import com.vibal.utilities.modelsNew.Entry;
-import com.vibal.utilities.util.LogUtil;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Currency;
+import java.util.List;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
 
 @Dao
-public abstract class CashBoxBaseDao {
-    Completable insert(@NonNull CashBox cashBox, @NonNull CashBoxEntryLocalDao cashBoxEntryLocalDao) {
-        if (cashBox.getEntries().isEmpty())
-            return insert(cashBox.getInfoWithCash().getCashBoxInfo()).ignoreElement();
-        else {
-            return insert(cashBox.getInfoWithCash().getCashBoxInfo()).flatMapCompletable(id -> {
-                LogUtil.debug("Prueba", "Id: " + id);
-                ArrayList<Entry> entryArrayList = new ArrayList<>();
-                for (Entry entry : cashBox.getEntries())
-                    entryArrayList.add(entry.getEntryWithCashBoxId(id));
-                return cashBoxEntryLocalDao.insertAll(entryArrayList);
-            });
-        }
-    }
+abstract class CashBoxBaseDao {
+//    Completable insert(@NonNull CashBox cashBox, @NonNull CashBoxEntryLocalDao cashBoxEntryDao) {
+//        if (cashBox.getEntries().isEmpty())
+//            return insert(cashBox.getInfoWithCash().getCashBoxInfo()).ignoreElement();
+//        else {
+//            return insert(cashBox.getInfoWithCash().getCashBoxInfo()).flatMapCompletable(id -> {
+//                LogUtil.debug("Prueba", "Id: " + id);
+//                ArrayList<Entry> entryArrayList = new ArrayList<>();
+//                for (Entry entry : cashBox.getEntries())
+//                    entryArrayList.add(entry.getEntryWithCashBoxId(id));
+//                return cashBoxEntryDao.insertAll(entryArrayList);
+//            });
+//        }
+//    }
+
+    abstract LiveData<List<CashBox.InfoWithCash>> getAllCashBoxesInfo();
 
     Single<Long> insert(CashBoxInfo cashBoxInfo) {
         return insertWithoutOrderId(cashBoxInfo)
@@ -41,17 +39,26 @@ public abstract class CashBoxBaseDao {
 
     abstract Completable configureOrderId(long cashBoxId);
 
-    @Insert
+//    @Insert
     abstract Single<Long> insertWithoutOrderId(CashBoxInfo cashBoxInfo);
 
-    @Update
+//    @Update
     abstract Completable update(CashBoxInfo cashBoxInfo);
 
-    @Update
+//    @Update
     abstract Completable updateAll(Collection<CashBoxInfo> cashBoxInfoCollection);
 
-    @Delete
+//    @Delete
     abstract Completable delete(CashBoxInfo cashBoxInfo);
 
+//    @Delete
+    abstract Single<Integer> deleteAll();
 
+    abstract LiveData<CashBox.InfoWithCash> getCashBoxInfoWithCashById(long id);
+
+    abstract Single<CashBox> getCashBoxById(long id);
+
+    abstract Completable setCashBoxCurrency(long cashBoxId, Currency currency);
+
+    abstract Completable moveCashBoxToOrderPos(long id, long orderId, long toOrderPos);
 }

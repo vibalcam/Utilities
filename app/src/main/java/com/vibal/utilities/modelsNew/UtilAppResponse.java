@@ -12,6 +12,10 @@ public class UtilAppResponse {
         return success;
     }
 
+    public boolean isSuccessful() {
+        return success==1;
+    }
+
     public void setSuccess(int success) {
         this.success = success;
     }
