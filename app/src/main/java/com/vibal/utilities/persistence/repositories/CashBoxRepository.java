@@ -1,4 +1,4 @@
-package com.vibal.utilities.db;
+package com.vibal.utilities.persistence.repositories;
 
 import android.app.Application;
 
@@ -10,6 +10,8 @@ import com.vibal.utilities.modelsNew.CashBox;
 import com.vibal.utilities.modelsNew.CashBoxInfo;
 import com.vibal.utilities.modelsNew.Entry;
 import com.vibal.utilities.modelsNew.PeriodicEntryPojo;
+import com.vibal.utilities.persistence.db.CashBoxBaseDao;
+import com.vibal.utilities.persistence.db.CashBoxEntryBaseDao;
 import com.vibal.utilities.util.LogUtil;
 
 import java.util.ArrayList;
@@ -29,13 +31,8 @@ public abstract class CashBoxRepository {
 
     protected CashBoxRepository(Application application) {
         // PeriodicWork
-        UtilitiesDatabase database = UtilitiesDatabase.getInstance(application);
-        workRepository = new PeriodicEntryWorkRepository(application);
+        workRepository = PeriodicEntryWorkRepository.getInstance(application);
     }
-
-//    protected void setCashBoxesInfo(LiveData<List<CashBox.InfoWithCash>> cashBoxesInfo) {
-//        this.cashBoxesInfo = cashBoxesInfo;
-//    }
 
     public LiveData<List<CashBox.InfoWithCash>> getCashBoxesInfo() {
         if(cashBoxesInfo == null)
@@ -47,6 +44,28 @@ public abstract class CashBoxRepository {
     protected abstract CashBoxEntryBaseDao getCashBoxEntryDao();
 
     // CashBox Manager
+
+        // Main functionality to Override
+
+    public Single<Long> insertCashBoxInfo(@NonNull CashBoxInfo cashBoxInfo) {
+        return getCashBoxDao().insert(cashBoxInfo);
+    }
+
+    public Completable updateCashBoxInfo(CashBoxInfo cashBoxInfo) {
+        return getCashBoxDao().update(cashBoxInfo);
+    }
+
+    public Completable deleteCashBox(@NonNull CashBoxInfo cashBoxInfo) {
+        workRepository.cancelAllCashBoxWork(cashBoxInfo.getId());
+        return getCashBoxDao().delete(cashBoxInfo);
+    }
+
+    public Single<Integer> deleteAllCashBoxes() {
+        return workRepository.deleteAllPeriodicEntryWorks()
+                .flatMap(integer -> getCashBoxDao().deleteAll());
+    }
+
+        // Rest of functionality
 
     @NonNull
     public LiveData<CashBox> getOrderedCashBox(long id) {
@@ -80,27 +99,18 @@ public abstract class CashBoxRepository {
     }
 
     public Completable insertCashBox(@NonNull CashBox cashBox) {
-//        return getCashBoxDao().insert(cashBox, getCashBoxEntryDao());
         if (cashBox.getEntries().isEmpty())
-            return insertCashBoxInfo(cashBox.getInfoWithCash()).ignoreElement();
+            return insertCashBoxInfo(cashBox.getInfoWithCash().getCashBoxInfo()).ignoreElement();
         else {
-            return insertCashBoxInfo(cashBox.getInfoWithCash())
+            return insertCashBoxInfo(cashBox.getInfoWithCash().getCashBoxInfo())
                     .flatMapCompletable(id -> {
                         LogUtil.debug("Prueba", "Id: " + id);
                         ArrayList<Entry> entryArrayList = new ArrayList<>();
                         for (Entry entry : cashBox.getEntries())
                             entryArrayList.add(entry.getEntryWithCashBoxId(id));
-                        return insertAllEntries(entryArrayList);
+                        return insertEntries(entryArrayList);
                     });
         }
-    }
-
-    public Single<Long> insertCashBoxInfo(@NonNull CashBox.InfoWithCash infoWithCash) {
-        return getCashBoxDao().insert(infoWithCash.getCashBoxInfo());
-    }
-
-    public Completable updateCashBoxInfo(CashBoxInfo cashBoxInfo) {
-        return getCashBoxDao().update(cashBoxInfo);
     }
 
     public Completable setCashBoxCurrency(long cashBoxId, @NonNull Currency currency) {
@@ -112,38 +122,15 @@ public abstract class CashBoxRepository {
                 infoWithCash.getCashBoxInfo().getOrderId(), toOrderPos);
     }
 
-//    public Completable setDeleted(CashBoxInfo cashBoxInfo, boolean deleted) {
-//        if(deleted) //Cancel works associated with the CashBox
-//            workRepository.cancelAllCashBoxWork(cashBoxInfo.getId());
-//        cashBoxInfo.setDeleted(deleted);
-//        return updateCashBoxInfo(cashBoxInfo);
-//    }
-
-//    public Single<Integer> setDeletedAll(boolean deleted) {
-//        if(deleted) // cancel all periodic works and set deleted
-//            return workRepository.deleteAllPeriodicEntryWorks()
-//                    .flatMap(integer -> getCashBoxDao().setDeletedAll(true));
-//        else
-//            return getCashBoxDao().setDeletedAll(false);
-//    }
-
-    public Completable deleteCashBox(@NonNull CashBoxInfo cashBoxInfo) {
-        workRepository.cancelAllCashBoxWork(cashBoxInfo.getId());
-        return getCashBoxDao().delete(cashBoxInfo);
-    }
-
-    public Single<Integer> deleteAllCashBoxes() {
-        return workRepository.deleteAllPeriodicEntryWorks()
-                .flatMap(integer -> getCashBoxDao().deleteAll());
-    }
-
     // Entries
+
+        // Main functionality to override
 
     public Completable insertEntry(Entry entry) {
         return getCashBoxEntryDao().insert(entry);
     }
 
-    public Completable insertAllEntries(Collection<Entry> entries) {
+    public Completable insertEntries(Collection<Entry> entries) {
         return getCashBoxEntryDao().insertAll(entries);
     }
 
@@ -165,19 +152,26 @@ public abstract class CashBoxRepository {
 
     // Group Entries
 
+        // Main functionality to override
+
     public Single<List<Entry>> getGroupEntries(long groupId) {
         return getCashBoxEntryDao().getGroupEntries(groupId);
     }
 
     public Completable modifyGroupEntry(long groupId, double amount, String info, Calendar date) {
+        if(groupId == Entry.NO_GROUP)
+            throw new IllegalArgumentException("Default group id cannot be deleted");
         return getCashBoxEntryDao().modifyGroup(groupId, amount, info, date);
     }
 
     public Single<Integer> deleteGroupEntries(long groupId) {
+        if(groupId == Entry.NO_GROUP)
+            throw new IllegalArgumentException("Default group id cannot be deleted");
         return getCashBoxEntryDao().deleteGroup(groupId);
     }
 
     // Periodic Entries
+
     public Completable addPeriodicEntryWorkRequest(@NonNull PeriodicEntryPojo.PeriodicEntryWorkRequest workRequest) {
         return workRepository.addPeriodicEntryWorkRequest(workRequest);
     }

@@ -9,8 +9,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.vibal.utilities.R;
-import com.vibal.utilities.db.UtilitiesDatabase;
 import com.vibal.utilities.modelsNew.CashBox;
+import com.vibal.utilities.persistence.db.UtilitiesDatabase;
 import com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity;
 
 import java.text.NumberFormat;

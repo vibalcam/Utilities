@@ -1,4 +1,4 @@
-package com.vibal.utilities.db;
+package com.vibal.utilities.persistence.db;
 
 import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
@@ -17,6 +17,7 @@ import java.util.Currency;
 import java.util.List;
 
 import io.reactivex.Completable;
+import io.reactivex.Maybe;
 import io.reactivex.Single;
 
 @Dao
@@ -25,28 +26,28 @@ public abstract class CashBoxOnlineDao extends CashBoxBaseDao  {
     abstract Single<Long> insertWithoutOrderId(CashBoxInfo cashBoxInfo);
 
     @Update(entity = CashBoxInfoOnline.class)
-    abstract Completable update(CashBoxInfo cashBoxInfo);
+    public abstract Completable update(CashBoxInfo cashBoxInfo);
 
     @Update(entity = CashBoxInfoOnline.class)
     abstract Completable updateAll(Collection<CashBoxInfo> cashBoxInfoCollection);
 
     @Delete(entity = CashBoxInfoOnline.class)
-    abstract Completable delete(CashBoxInfo cashBoxInfo);
+    public abstract Completable delete(CashBoxInfo cashBoxInfo);
 
     @Query("DELETE FROM cashBoxesOnline_table")
-    abstract Single<Integer> deleteAll();
+    public abstract Single<Integer> deleteAll();
 
     @Query("SELECT C.id,C.name,C.orderId,SUM(amount) AS cash, C.currency, COUNT(viewed) as hasChanges " +
             "FROM cashBoxesOnline_table AS C LEFT JOIN entriesOnline_table AS E ON C.id=E.cashBoxId " +
             "GROUP BY C.id,C.name,C.orderId, C.currency " +
             "ORDER BY C.orderId ASC")
-    abstract LiveData<List<CashBox.InfoWithCash>> getAllCashBoxesInfo();
+    public abstract LiveData<List<CashBox.InfoWithCash>> getAllCashBoxesInfo();
 
     @Query("SELECT C.id,C.name,C.orderId,SUM(amount) AS cash,C.currency, COUNT(viewed) as hasChanges " +
             "FROM cashBoxesOnline_table AS C LEFT JOIN entriesOnline_table AS E ON C.id=E.cashBoxId " +
             "WHERE C.id=:id " +
             "GROUP BY C.id,C.name,C.orderId, C.currency")
-    abstract LiveData<CashBox.InfoWithCash> getCashBoxInfoWithCashById(long id);
+    public abstract LiveData<CashBox.InfoWithCash> getCashBoxInfoWithCashById(long id);
 
     @Transaction
     @Query("SELECT C.id,C.name,C.orderId,SUM(amount) AS cash,C.currency, COUNT(viewed) as hasChanges " +
@@ -64,7 +65,7 @@ public abstract class CashBoxOnlineDao extends CashBoxBaseDao  {
             "ELSE orderId END " +
             "WHERE orderId BETWEEN :fromOrderPos AND :toOrderPos " +
             "OR orderId BETWEEN :toOrderPos AND :fromOrderPos")
-    abstract Completable moveCashBoxToOrderPos(long cashBoxId, long fromOrderPos, long toOrderPos);
+    public abstract Completable moveCashBoxToOrderPos(long cashBoxId, long fromOrderPos, long toOrderPos);
 
     @Query("UPDATE cashBoxesOnline_table " +
             "SET orderId=:cashBoxId " +
@@ -72,5 +73,13 @@ public abstract class CashBoxOnlineDao extends CashBoxBaseDao  {
     abstract Completable configureOrderId(long cashBoxId);
 
     @Query("UPDATE cashBoxesOnline_table SET currency=:currency WHERE id=:cashBoxId")
-    abstract Completable setCashBoxCurrency(long cashBoxId, Currency currency);
+    public abstract Completable setCashBoxCurrency(long cashBoxId, Currency currency);
+
+    @Query("SELECT * FROM cashBoxesOnline_table WHERE name=:name")
+    public abstract Maybe<CashBoxInfo> getCashBoxInfoByName(String name);
+
+    public Single<Boolean> checkNameAvailable(String name) {
+        return getCashBoxInfoByName(name)
+                .isEmpty();
+    }
 }

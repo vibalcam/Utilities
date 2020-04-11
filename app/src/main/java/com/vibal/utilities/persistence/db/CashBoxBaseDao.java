@@ -1,4 +1,4 @@
-package com.vibal.utilities.db;
+package com.vibal.utilities.persistence.db;
 
 import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
@@ -14,7 +14,7 @@ import io.reactivex.Completable;
 import io.reactivex.Single;
 
 @Dao
-abstract class CashBoxBaseDao {
+public abstract class CashBoxBaseDao {
 //    Completable insert(@NonNull CashBox cashBox, @NonNull CashBoxEntryLocalDao cashBoxEntryDao) {
 //        if (cashBox.getEntries().isEmpty())
 //            return insert(cashBox.getInfoWithCash().getCashBoxInfo()).ignoreElement();
@@ -29,9 +29,9 @@ abstract class CashBoxBaseDao {
 //        }
 //    }
 
-    abstract LiveData<List<CashBox.InfoWithCash>> getAllCashBoxesInfo();
+    public abstract LiveData<List<CashBox.InfoWithCash>> getAllCashBoxesInfo();
 
-    Single<Long> insert(CashBoxInfo cashBoxInfo) {
+    public Single<Long> insert(CashBoxInfo cashBoxInfo) {
         return insertWithoutOrderId(cashBoxInfo)
                 .flatMap(id -> configureOrderId(id)
                         .toSingle(() -> id));
@@ -43,22 +43,22 @@ abstract class CashBoxBaseDao {
     abstract Single<Long> insertWithoutOrderId(CashBoxInfo cashBoxInfo);
 
 //    @Update
-    abstract Completable update(CashBoxInfo cashBoxInfo);
+    public abstract Completable update(CashBoxInfo cashBoxInfo);
 
 //    @Update
     abstract Completable updateAll(Collection<CashBoxInfo> cashBoxInfoCollection);
 
 //    @Delete
-    abstract Completable delete(CashBoxInfo cashBoxInfo);
+    public abstract Completable delete(CashBoxInfo cashBoxInfo);
 
 //    @Delete
-    abstract Single<Integer> deleteAll();
+    public abstract Single<Integer> deleteAll();
 
-    abstract LiveData<CashBox.InfoWithCash> getCashBoxInfoWithCashById(long id);
+    public abstract LiveData<CashBox.InfoWithCash> getCashBoxInfoWithCashById(long id);
 
-    abstract Single<CashBox> getCashBoxById(long id);
+    public abstract Single<CashBox> getCashBoxById(long id);
 
-    abstract Completable setCashBoxCurrency(long cashBoxId, Currency currency);
+    public abstract Completable setCashBoxCurrency(long cashBoxId, Currency currency);
 
-    abstract Completable moveCashBoxToOrderPos(long id, long orderId, long toOrderPos);
+    public abstract Completable moveCashBoxToOrderPos(long id, long orderId, long toOrderPos);
 }

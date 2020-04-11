@@ -83,6 +83,12 @@
 
     <!--CashBox Online Item Fragment-->
     <string name="dialog_inviteTitle">Invite user</string>
+    <string name="dialog_selectUsername">Choose Username</string>
+    <string name="dialog_text_username">
+        Input the username which others will use to find you
+        \n(Do not use your real name)
+    </string>
+    <string name="dialog_hint_username">Username</string>
 
     <!--CashBox Item Menu-->
     <string name="action_reset">Delete All</string>
@@ -158,7 +164,6 @@
     </string>
 
 
-
     <!--Preference Titles-->
     <string name="pref_general_header">General</string>
     <string name="pref_CBM_header">CashBox Manager</string>
@@ -184,11 +189,11 @@
     <string name="allowOnline_acceptMessage">
         By accepting you give consent to Utilities to save your Online CashBox data.
          This data will be saved anonymously with the username of your choice. Take into account
-        that the data introduced may be loosed, deleted or modified due to unexpected incidents.
-         You can withdraw you consent at any time with the "Allow online mode" option in Settings.
+        that the data introduced may be lost, deleted or modified due to unexpected incidents.
+        \nYou can withdraw you consent at any time disabling the \"Allow online mode\" option in Settings.
          By doing so, your user and all your saved data will be deleted from the server.
-         However, the data shared with other users will remain being available to them,
-         but will stop being linked to your user.
+         The data shared with other users will remain being available to them, but will stop being
+         linked to your user.
     </string>
     <string name="allowOnline_cancelMessage">
         By doing so you will withdraw your consent and your user and data will be deleted from the

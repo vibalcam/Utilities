@@ -1,4 +1,4 @@
-package com.vibal.utilities.db;
+package com.vibal.utilities.persistence.db;
 
 import android.content.Context;
 
@@ -75,6 +75,7 @@ public abstract class UtilitiesDatabase extends RoomDatabase { // todo new migra
         public void migrate(@NonNull SupportSQLiteDatabase database) {
             // Online CashBoxInfo
             database.execSQL("CREATE TABLE IF NOT EXISTS `cashBoxesOnline_table` (" +
+                    "`accepted` INTEGER NOT NULL DEFAULT 1, " +
                     "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
                     "`name` TEXT NOT NULL COLLATE NOCASE, " +
                     "`orderId` INTEGER NOT NULL, " +

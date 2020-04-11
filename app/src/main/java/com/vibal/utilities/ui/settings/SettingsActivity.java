@@ -1,5 +1,7 @@
 package com.vibal.utilities.ui.settings;
 
+import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.MenuItem;
 
@@ -43,6 +45,15 @@ public class SettingsActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    public static void acceptOnlineMode(Context context, DialogInterface.OnClickListener onClickListener) {
+        new MyDialogBuilder(context)
+                .setTitle(R.string.pref_online)
+                .setMessage(R.string.allowOnline_acceptMessage)
+                .setCancelOnTouchOutside(true)
+                .setPositiveButton(onClickListener)
+                .show();
+    }
+
     public static class SettingsFragment extends PreferenceFragmentCompat implements Preference.OnPreferenceClickListener {
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -57,20 +68,11 @@ public class SettingsActivity extends AppCompatActivity {
             if(switchPreference.isChecked())
                 cancelOnlineMode(switchPreference);
             else
-                acceptOnlineMode(switchPreference);
+                acceptOnlineMode(requireContext(),(dialog, which) -> switchPreference.setChecked(true));
             return true;
         }
 
         //todo hacer preferences delete
-        private void acceptOnlineMode(SwitchPreference preference) {
-            new MyDialogBuilder(requireContext())
-                    .setTitle(R.string.pref_online)
-                    .setMessage(R.string.allowOnline_acceptMessage)
-                    .setCancelOnTouchOutside(true)
-                    .setPositiveButton((dialog, which) -> preference.setChecked(true))
-                    .show();
-        }
-
         private void cancelOnlineMode(SwitchPreference preference) {
             new MyDialogBuilder(requireContext())
                     .setTitle(R.string.pref_online_cancel)

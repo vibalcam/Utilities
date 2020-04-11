@@ -59,6 +59,12 @@ public class CashBoxInfo implements Cloneable {
     }
 
     @Ignore
+    public CashBoxInfo(long id, @NonNull String name) throws IllegalArgumentException {
+        this.id = id;
+        setName(name);
+    }
+
+    @Ignore
     public CashBoxInfo(@NonNull String name) throws IllegalArgumentException {
         setName(name);
     }
@@ -90,6 +96,19 @@ public class CashBoxInfo implements Cloneable {
             throw new IllegalArgumentException("Name cannot exceed " + MAX_LENGTH_NAME + " characters");
 
         this.name = name;
+    }
+
+    public CashBoxInfo fixName(String extra) throws IllegalArgumentException {
+        if(extra == null)
+            throw new IllegalArgumentException("Invalid extra");
+
+        extra = extra.trim();
+        if(name.length() + 1 + extra.length() > MAX_LENGTH_NAME)
+            setName(name.substring(0,name.length()-extra.length()) + "_" + extra);
+        else
+            setName(name + "_" + extra);
+
+        return this;
     }
 
     public long getOrderId() {
@@ -139,6 +158,17 @@ public class CashBoxInfo implements Cloneable {
                 '}';
     }
 
+    @NonNull
+    public CashBoxInfo cloneContents(long id) {
+        CashBoxInfo cashBoxInfo = clone();
+//        cashBoxInfo.id = NO_ID;
+        cashBoxInfo.id = id;
+        cashBoxInfo.orderId = NO_ORDER_ID;
+//        cashBoxInfo.onlineId = NO_ONLINE_ID;
+        // Currency and deleted are maintained
+        return cashBoxInfo;
+    }
+
     /**
      * Clones the object without conserving the id, the orderId and the onlineId
      *
@@ -146,12 +176,7 @@ public class CashBoxInfo implements Cloneable {
      */
     @NonNull
     public CashBoxInfo cloneContents() {
-        CashBoxInfo cashBoxInfo = clone();
-        cashBoxInfo.id = NO_ID;
-        cashBoxInfo.orderId = NO_ORDER_ID;
-//        cashBoxInfo.onlineId = NO_ONLINE_ID;
-        // Currency and deleted are maintained
-        return cashBoxInfo;
+        return cloneContents(NO_ID);
     }
 
     /**

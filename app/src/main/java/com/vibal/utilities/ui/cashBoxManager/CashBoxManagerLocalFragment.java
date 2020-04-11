@@ -10,15 +10,25 @@ import com.vibal.utilities.viewModels.CashBoxViewModel;
 import io.reactivex.disposables.CompositeDisposable;
 
 public class CashBoxManagerLocalFragment extends CashBoxManagerFragment {
+    private CashBoxLocalViewModel viewModel;
+
     static CashBoxManagerLocalFragment newInstance(int pagerPosition) {
         CashBoxManagerLocalFragment fragment = new CashBoxManagerLocalFragment();
         fragment.setPositionAsArgument(pagerPosition);
         return fragment;
     }
 
+    @NonNull
     @Override
-    protected CashBoxViewModel initializeViewModel() {
-        return new ViewModelProvider(requireParentFragment()).get(CashBoxLocalViewModel.class);
+    protected CashBoxLocalViewModel getViewModel() {
+        return viewModel;
+    }
+
+    @NonNull
+    @Override
+    protected CashBoxLocalViewModel initializeViewModel() {
+        viewModel = new ViewModelProvider(requireParentFragment()).get(CashBoxLocalViewModel.class);
+        return viewModel;
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.vibal.utilities.db;
+package com.vibal.utilities.persistence.db;
 
 import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
@@ -22,7 +22,7 @@ import io.reactivex.Single;
 @Dao
 public abstract class CashBoxLocalDao extends CashBoxBaseDao {
     @Override
-    LiveData<List<CashBox.InfoWithCash>> getAllCashBoxesInfo() {
+    public LiveData<List<CashBox.InfoWithCash>> getAllCashBoxesInfo() {
         return getAllCashBoxesInfo(false);
     }
 
@@ -30,18 +30,18 @@ public abstract class CashBoxLocalDao extends CashBoxBaseDao {
     abstract Single<Long> insertWithoutOrderId(CashBoxInfo cashBoxInfo);
 
     @Update(entity = CashBoxInfoLocal.class)
-    abstract Completable update(CashBoxInfo cashBoxInfo);
+    public abstract Completable update(CashBoxInfo cashBoxInfo);
 
     @Update(entity = CashBoxInfoLocal.class)
     abstract Completable updateAll(Collection<CashBoxInfo> cashBoxInfoCollection);
 
     @Override
-    Completable delete(CashBoxInfo cashBoxInfo) {
+    public Completable delete(CashBoxInfo cashBoxInfo) {
         return setDeleted(cashBoxInfo.getId(),true);
     }
 
     @Override
-    Single<Integer> deleteAll() {
+    public Single<Integer> deleteAll() {
         return setDeletedAll(true);
     }
 
@@ -51,13 +51,13 @@ public abstract class CashBoxLocalDao extends CashBoxBaseDao {
             "WHERE deleted=:deleted " +
             "GROUP BY C.id,C.name,C.orderId, C.deleted, hasChanges, C.currency " +
             "ORDER BY C.orderId ASC")
-    abstract LiveData<List<CashBox.InfoWithCash>> getAllCashBoxesInfo(boolean deleted);
+    public abstract LiveData<List<CashBox.InfoWithCash>> getAllCashBoxesInfo(boolean deleted);
 
     @Query("SELECT C.id,C.name,C.orderId,SUM(amount) AS cash,0 AS hasChanges,C.currency " +
             "FROM cashBoxesInfo_table AS C LEFT JOIN entries_table AS E ON C.id=E.cashBoxId " +
             "WHERE C.id=:id " +
             "GROUP BY C.id,C.name,C.orderId,hasChanges, C.currency")
-    abstract LiveData<CashBox.InfoWithCash> getCashBoxInfoWithCashById(long id);
+    public abstract LiveData<CashBox.InfoWithCash> getCashBoxInfoWithCashById(long id);
 
     @Transaction
     @Query("SELECT C.id,C.name,C.orderId,SUM(amount) AS cash,0 AS hasChanges,C.currency " +
@@ -75,7 +75,7 @@ public abstract class CashBoxLocalDao extends CashBoxBaseDao {
             "ELSE orderId END " +
             "WHERE orderId BETWEEN :fromOrderPos AND :toOrderPos " +
             "OR orderId BETWEEN :toOrderPos AND :fromOrderPos")
-    abstract Completable moveCashBoxToOrderPos(long cashBoxId, long fromOrderPos, long toOrderPos);
+    public abstract Completable moveCashBoxToOrderPos(long cashBoxId, long fromOrderPos, long toOrderPos);
 
     // Get all CashBoxInfo to supply the widget
     @Query("SELECT C.id,C.name,C.orderId,SUM(amount) AS cash,0 AS hasChanges,C.currency " +
@@ -91,16 +91,16 @@ public abstract class CashBoxLocalDao extends CashBoxBaseDao {
     abstract Completable configureOrderId(long cashBoxId);
 
     @Query("UPDATE cashBoxesInfo_table SET currency=:currency WHERE id=:cashBoxId")
-    abstract Completable setCashBoxCurrency(long cashBoxId, Currency currency);
+    public abstract Completable setCashBoxCurrency(long cashBoxId, Currency currency);
 
     @Query("UPDATE cashBoxesInfo_table SET deleted=:deleted WHERE id=:cashBoxId")
-    abstract Completable setDeleted(long cashBoxId, boolean deleted);
+    public abstract Completable setDeleted(long cashBoxId, boolean deleted);
 
     @Query("UPDATE cashBoxesInfo_table SET deleted=:deleted WHERE deleted!=:deleted")
-    abstract Single<Integer> setDeletedAll(boolean deleted);
+    public abstract Single<Integer> setDeletedAll(boolean deleted);
 
     @Delete(entity = CashBoxInfoLocal.class)
-    abstract Completable permanentDelete(CashBoxInfo cashBoxInfo);
+    public abstract Completable permanentDelete(CashBoxInfo cashBoxInfo);
 
     @Query("DELETE FROM cashBoxesInfo_table WHERE deleted=1")
     abstract Single<Integer> clearRecycleBin();

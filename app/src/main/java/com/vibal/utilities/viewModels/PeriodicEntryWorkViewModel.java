@@ -6,8 +6,8 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 
-import com.vibal.utilities.db.PeriodicEntryWorkRepository;
 import com.vibal.utilities.modelsNew.PeriodicEntryPojo;
+import com.vibal.utilities.persistence.repositories.PeriodicEntryWorkRepository;
 
 import java.util.List;
 import java.util.UUID;
@@ -26,7 +26,8 @@ public class PeriodicEntryWorkViewModel extends AndroidViewModel {
 
     public PeriodicEntryWorkViewModel(@NonNull Application application) {
         super(application);
-        repository = new PeriodicEntryWorkRepository(application);
+//        repository = new PeriodicEntryWorkRepository(application);
+        repository = PeriodicEntryWorkRepository.getInstance(application);
         periodicEntries = repository.getPeriodicEntries();
     }
 

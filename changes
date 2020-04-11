@@ -1,6 +1,5 @@
-- Separated repositories into Online, Local and Periodic repositories
-- Created CashBoxEntryBaseDao
-- Changed InfoWithCash to allow Online and Local, and added hasChanges field
-- Created CashBoxInfoLocal: CashBoxInfoLocal and CashBoxInfoOnline extend CashBoxInfo
-- When sending to recycle bin a CashBox, it first cancels all works related to it
-- Added SSL certificate to allow connection
+- Created the "persistence" package for DB, Retrofit and repositories
+- Made repositories singleton
+- Created UtilAppException to hold exceptions expected to be thrown by CashBoxes Online functionality
+- Added accepted value to CashBoxInfo to save if the CashBox has been accepted or not
+- Developed the communication between app and server

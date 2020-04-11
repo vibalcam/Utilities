@@ -49,8 +49,7 @@ public class CashBoxManagerActivity extends AppCompatActivity implements TabLayo
     public static final String GROUP_ID_COUNT_KEY = "com.vibal.utilities.cashBoxManager.GROUP_ID_COUNT";
     public static final String GROUP_ADD_MODE_KEY = "com.vibal.utilities.cashBoxManager.GROUP_ADD_MODE";
     public static final String CLIENT_ID_KEY = "com.vibal.utilities.cashBoxManager.CLIENT_ID";
-
-    public static long ONLINE_ID = 0;
+    public static final String USERNAME_KEY = "com.vibal.utilities.cashBoxManager.USERNAME";
 
     @BindView(R.id.CB_viewPager)
     ViewPager pager;

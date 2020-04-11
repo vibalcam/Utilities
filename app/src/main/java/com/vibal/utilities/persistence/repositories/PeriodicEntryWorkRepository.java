@@ -1,4 +1,4 @@
-package com.vibal.utilities.db;
+package com.vibal.utilities.persistence.repositories;
 
 import android.app.Application;
 
@@ -8,6 +8,8 @@ import androidx.work.WorkManager;
 
 import com.vibal.utilities.backgroundTasks.RxPeriodicEntryWorker;
 import com.vibal.utilities.modelsNew.PeriodicEntryPojo;
+import com.vibal.utilities.persistence.db.PeriodicEntryWorkDao;
+import com.vibal.utilities.persistence.db.UtilitiesDatabase;
 import com.vibal.utilities.util.LogUtil;
 
 import java.util.List;
@@ -18,12 +20,20 @@ import io.reactivex.Completable;
 import io.reactivex.Single;
 
 public class PeriodicEntryWorkRepository {
+    private static PeriodicEntryWorkRepository INSTANCE = null;
+
     // Work Manager
     private WorkManager workManager;
     private PeriodicEntryWorkDao periodicEntryWorkDao;
     private LiveData<List<PeriodicEntryPojo>> periodicEntries = null;
 
-    public PeriodicEntryWorkRepository(Application application) {
+    public static PeriodicEntryWorkRepository getInstance(Application application) {
+        if(INSTANCE == null)
+            INSTANCE = new PeriodicEntryWorkRepository(application);
+        return INSTANCE;
+    }
+
+    private PeriodicEntryWorkRepository(Application application) {
         // WorkManager
         workManager = WorkManager.getInstance(application);
         periodicEntryWorkDao = UtilitiesDatabase.getInstance(application).periodicEntryWorkDao();

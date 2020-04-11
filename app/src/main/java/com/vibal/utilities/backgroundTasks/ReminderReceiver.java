@@ -16,8 +16,8 @@ import androidx.core.app.NotificationManagerCompat;
 
 import com.vibal.utilities.App;
 import com.vibal.utilities.R;
-import com.vibal.utilities.db.UtilitiesDatabase;
 import com.vibal.utilities.modelsNew.CashBoxInfo;
+import com.vibal.utilities.persistence.db.UtilitiesDatabase;
 import com.vibal.utilities.ui.cashBoxManager.CashBoxItemFragment;
 import com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity;
 import com.vibal.utilities.util.LogUtil;

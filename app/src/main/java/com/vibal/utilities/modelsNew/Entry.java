@@ -69,7 +69,8 @@ public class Entry implements Cloneable, DiffDbUsable<Entry> {
     /**
      * Constructor for Room
      */
-    public Entry(long cashBoxId, double amount, @Nullable String info, Calendar date, long groupId) {
+    public Entry(long id, long cashBoxId, double amount, @Nullable String info, Calendar date, long groupId) {
+        this.id = id;
         setInfo(info);
         this.groupId = groupId;
         this.date = date;
@@ -77,14 +78,28 @@ public class Entry implements Cloneable, DiffDbUsable<Entry> {
         this.cashBoxId = cashBoxId;
     }
 
+    /**
+     * Constructor with just the id
+     * @param id entry id
+     */
+    @Ignore
+    public Entry(long id) {
+        this(id,CashBoxInfo.NO_ID,0,"",Calendar.getInstance(),NO_GROUP);
+    }
+
+    @Ignore
+    public Entry(long id, long cashBoxId, double amount, @Nullable String info, Calendar date) {
+        this(id, cashBoxId, amount, info, date, NO_GROUP);
+    }
+
     @Ignore
     public Entry(long cashBoxId, double amount, @Nullable String info, Calendar date) {
-        this(cashBoxId, amount, info, date, NO_GROUP);
+        this(CashBoxInfo.NO_ID, cashBoxId, amount, info, date, NO_GROUP);
     }
 
     @Ignore
     public Entry(double amount, @NonNull String info, Calendar date, long groupId) {
-        this(CashBoxInfo.NO_ID, amount, info, date, groupId);
+        this(CashBoxInfo.NO_ID, CashBoxInfo.NO_ID, amount, info, date, groupId);
     }
 
     @Ignore
@@ -94,20 +109,16 @@ public class Entry implements Cloneable, DiffDbUsable<Entry> {
 
     @Ignore
     private Entry(@NonNull Parcel parcel) {
-        setId(parcel.readLong());
+        this.id = parcel.readLong();
         cashBoxId = parcel.readLong();
         setInfo(parcel.readString());
-        date = Converters.fromTimestamp(parcel.readLong());
+        date = Converters.calendarFromTimestamp(parcel.readLong());
         setAmount(parcel.readDouble());
         this.groupId = parcel.readLong();
     }
 
     public long getId() {
         return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
     }
 
     public long getCashBoxId() {
@@ -178,6 +189,15 @@ public class Entry implements Cloneable, DiffDbUsable<Entry> {
                 info;
     }
 
+    @NonNull
+    public Entry cloneContents(long id, long cashBoxId) {
+        Entry entry = clone();
+        entry.id = id;
+        entry.cashBoxId = cashBoxId;
+//        entry.groupId = NO_GROUP;
+        return entry;
+    }
+
     /**
      * Clones the object without conserving the id and the cashBoxId
      *
@@ -185,11 +205,7 @@ public class Entry implements Cloneable, DiffDbUsable<Entry> {
      */
     @NonNull
     public Entry cloneContents() {
-        Entry entry = clone();
-        entry.id = 0;
-        entry.cashBoxId = CashBoxInfo.NO_ID;
-        entry.groupId = NO_GROUP;
-        return entry;
+        return cloneContents(CashBoxInfo.NO_ID,CashBoxInfo.NO_ID);
     }
 
     /**

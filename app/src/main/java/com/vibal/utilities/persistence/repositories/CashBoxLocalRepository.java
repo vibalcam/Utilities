@@ -1,4 +1,4 @@
-package com.vibal.utilities.db;
+package com.vibal.utilities.persistence.repositories;
 
 import android.app.Application;
 
@@ -6,6 +6,9 @@ import androidx.lifecycle.LiveData;
 
 import com.vibal.utilities.modelsNew.CashBox;
 import com.vibal.utilities.modelsNew.CashBoxInfo;
+import com.vibal.utilities.persistence.db.CashBoxEntryLocalDao;
+import com.vibal.utilities.persistence.db.CashBoxLocalDao;
+import com.vibal.utilities.persistence.db.UtilitiesDatabase;
 
 import java.util.List;
 
@@ -13,11 +16,18 @@ import io.reactivex.Completable;
 import io.reactivex.Single;
 
 public class CashBoxLocalRepository extends CashBoxRepository {
+    private static CashBoxLocalRepository INSTANCE = null;
 
     private CashBoxLocalDao cashBoxLocalDao;
     private CashBoxEntryLocalDao cashBoxEntryLocalDao;
 
-    public CashBoxLocalRepository(Application application) {
+    public static CashBoxLocalRepository getInstance(Application application) {
+        if(INSTANCE == null)
+            INSTANCE = new CashBoxLocalRepository(application);
+        return INSTANCE;
+    }
+
+    private CashBoxLocalRepository(Application application) {
         super(application);
 
         UtilitiesDatabase database = UtilitiesDatabase.getInstance(application);
@@ -47,7 +57,7 @@ public class CashBoxLocalRepository extends CashBoxRepository {
 //                        ArrayList<Entry> entryArrayList = new ArrayList<>();
 //                        for (Entry entry : cashBox.getEntries())
 //                            entryArrayList.add(entry.getEntryWithCashBoxId(id));
-//                        return insertAllEntries(entryArrayList);
+//                        return insertEntries(entryArrayList);
 //                    });
 //        }
 //    }

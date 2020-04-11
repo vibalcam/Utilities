@@ -1,4 +1,4 @@
-package com.vibal.utilities.db;
+package com.vibal.utilities.persistence.db;
 
 import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
@@ -41,6 +41,9 @@ public interface CashBoxEntryOnlineDao extends CashBoxEntryBaseDao {
             "WHERE groupId=:groupId")
     Single<List<Entry>> getGroupEntries(long groupId);
 
+    @Query("SELECT id FROM entriesOnline_table WHERE groupId=:groupId")
+    Single<List<Integer>> getGroupIds(long groupId);
+
     @Query("UPDATE entriesOnline_table " +
             "SET amount=:amount,info=:info,date=:date " +
             "WHERE id=:id")
@@ -57,6 +60,9 @@ public interface CashBoxEntryOnlineDao extends CashBoxEntryBaseDao {
 
     @Query("DELETE FROM entriesOnline_table WHERE cashBoxId=:cashBoxId")
     Single<Integer> deleteAll(long cashBoxId);
+
+    @Query("SELECT id FROM entriesOnline_table WHERE cashBoxId=:cashBoxId")
+    Single<List<Integer>> getCashBoxEntriesIds(long cashBoxId);
 
     //todo viewed changes
 }

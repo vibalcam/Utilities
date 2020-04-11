@@ -1,5 +1,7 @@
 package com.vibal.utilities.util;
 
+import android.os.Build;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.room.TypeConverter;
@@ -14,10 +16,14 @@ public class Converters {
 
     @NonNull
     @TypeConverter
-    public static Calendar fromTimestamp(long millis) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(millis);
-        return calendar;
+    public static Calendar calendarFromTimestamp(long millis) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+            return new Calendar.Builder().setInstant(millis).build();
+        else {
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis(millis);
+            return calendar;
+        }
     }
 
     @TypeConverter

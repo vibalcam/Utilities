@@ -2,6 +2,7 @@ package com.vibal.utilities.ui.cashBoxManager;
 
 import android.view.MenuItem;
 import android.widget.Button;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -10,12 +11,20 @@ import androidx.lifecycle.ViewModelProvider;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.vibal.utilities.R;
+import com.vibal.utilities.persistence.retrofit.UtilAppAPI;
+import com.vibal.utilities.persistence.retrofit.UtilAppException;
+import com.vibal.utilities.util.LogUtil;
 import com.vibal.utilities.util.MyDialogBuilder;
 import com.vibal.utilities.util.Util;
 import com.vibal.utilities.viewModels.CashBoxOnlineViewModel;
 import com.vibal.utilities.viewModels.CashBoxViewModel;
 
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
+
 public class CashBoxItemOnlineFragment extends CashBoxItemFragment {
+    private static final String TAG = "PruebaOnlineItemFrag";
+    private CashBoxOnlineViewModel viewModel;
 
     @NonNull
     static CashBoxItemOnlineFragment newInstance(int pagerPosition) {
@@ -24,9 +33,17 @@ public class CashBoxItemOnlineFragment extends CashBoxItemFragment {
         return fragment;
     }
 
+    @NonNull
+    @Override
+    protected CashBoxViewModel getViewModel() {
+        return viewModel;
+    }
+
+    @NonNull
     @Override
     protected CashBoxViewModel initializeViewModel() {
-        return new ViewModelProvider(requireParentFragment()).get(CashBoxOnlineViewModel.class);
+        viewModel = new ViewModelProvider(requireParentFragment()).get(CashBoxOnlineViewModel.class);
+        return viewModel;
     }
 
     @Override
@@ -39,40 +56,44 @@ public class CashBoxItemOnlineFragment extends CashBoxItemFragment {
     }
 
     private void showInviteDialog() {
-        //todo invite dialog
         new MyDialogBuilder(requireContext())
                 .setTitle(R.string.dialog_inviteTitle)
-                .setView(R.layout.cash_box_input_name)
+                .setView(R.layout.dialog_invite_user)
                 .setPositiveButton(R.string.invite, null)
                 .setCancelOnTouchOutside(true)
                 .setActions(dialog -> {
                     Button positive = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
-                    TextInputEditText inputName = ((AlertDialog) dialog).findViewById(R.id.inputTextChangeName);
-                    TextInputLayout layoutName = ((AlertDialog) dialog).findViewById(R.id.inputLayoutChangeName);
+                    TextInputEditText inputUsername = ((AlertDialog) dialog).findViewById(R.id.inputTextUsername);
+                    TextInputLayout layoutUsername = ((AlertDialog) dialog).findViewById(R.id.inputLayoutUsername);
 
-//                    layoutName.setCounterMaxLength(CashBoxInfo.MAX_LENGTH_NAME);
+                    layoutUsername.setCounterMaxLength(UtilAppAPI.MAX_LENGTH_USERNAME);
                     // Show keyboard and select the whole text
-                    inputName.selectAll();
-                    Util.showKeyboard(requireContext(), inputName);
+                    inputUsername.selectAll();
+                    Util.showKeyboard(requireContext(), inputUsername);
 
-//                    positive.setOnClickListener((View v1) -> {
-//                        String newName = inputName.getText().toString();
-//                        try {
-//                            compositeDisposable.add(
-//                                    viewModel.changeCashBoxName(infoWithCash, newName)
-//                                            .subscribeOn(Schedulers.io())
-//                                            .observeOn(AndroidSchedulers.mainThread())
-//                                            .subscribe(dialog::dismiss, throwable -> {
-//                                                layoutName.setError(getString(R.string.nameInUse));
-//                                                inputName.selectAll();
-//                                                Util.showKeyboard(requireContext(), inputName);
-//                                            }));
-//                        } catch (IllegalArgumentException e) {
-//                            layoutName.setError(e.getMessage());
-//                            inputName.selectAll();
-//                            Util.showKeyboard(requireContext(), inputName);
-//                        }
-//                    });
+                    positive.setOnClickListener(v -> {
+                        String username = inputUsername.getText().toString();
+                        compositeDisposable.add(viewModel.sendInvitation(username)
+                                .subscribeOn(Schedulers.io())
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(() -> {
+                                    dialog.dismiss();
+                                    Toast.makeText(requireContext(),
+                                            "Invitation sent successfully",
+                                            Toast.LENGTH_SHORT).show();
+                                },throwable -> {
+                                    LogUtil.error(TAG,"Invite dialog:",throwable);
+                                    if(throwable instanceof UtilAppException) {
+                                        layoutUsername.setError(throwable.getLocalizedMessage());
+                                        inputUsername.selectAll();
+                                        Util.showKeyboard(requireContext(),inputUsername);
+                                    } else { // should never happen
+                                        dialog.dismiss();
+                                        Toast.makeText(requireContext(), "Unexpected error",
+                                                Toast.LENGTH_SHORT).show();
+                                    }
+                                }));
+                    });
                 }).show();
     }
 
@@ -80,6 +101,4 @@ public class CashBoxItemOnlineFragment extends CashBoxItemFragment {
     protected int getMenuRes() {
         return R.menu.menu_toolbar_cash_box_item_online;
     }
-
-    //todo change adapter to entryonline
 }

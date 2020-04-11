@@ -6,8 +6,8 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 
-import com.vibal.utilities.db.CashBoxLocalRepository;
 import com.vibal.utilities.modelsNew.CashBox;
+import com.vibal.utilities.persistence.repositories.CashBoxLocalRepository;
 
 import java.util.List;
 
@@ -23,7 +23,8 @@ public class CashBoxDeletedViewModel extends AndroidViewModel {
 
     public CashBoxDeletedViewModel(@NonNull Application application) {
         super(application);
-        repository = new CashBoxLocalRepository(application);
+//        repository = new CashBoxLocalRepository(application);
+        repository = CashBoxLocalRepository.getInstance(application);
         cashBoxesInfo = repository.getAllDeletedCashBoxesInfo();
     }
 

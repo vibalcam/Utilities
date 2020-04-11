@@ -6,13 +6,18 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 
-import com.vibal.utilities.db.CashBoxRepository;
 import com.vibal.utilities.modelsNew.CashBox;
 import com.vibal.utilities.modelsNew.CashBoxInfo;
 import com.vibal.utilities.modelsNew.Entry;
 import com.vibal.utilities.modelsNew.PeriodicEntryPojo;
+import com.vibal.utilities.persistence.repositories.CashBoxRepository;
 import com.vibal.utilities.util.LogUtil;
 
+import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -28,19 +33,35 @@ public abstract class CashBoxViewModel extends AndroidViewModel {
     private static final String TAG = "PruebaCashBoxViewModel";
 
 //    private WorkManager workManager;
-    private CashBoxRepository repository;
+//    private CashBoxRepository repository;
     private LiveData<List<CashBox.InfoWithCash>> cashBoxesInfo;
     private LiveData<CashBox> cashBox;
 //    private long currentCashBoxId = NO_CASHBOX;
 //    @NonNull
 //    private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
-    public CashBoxViewModel(@NonNull Application application, @NonNull CashBoxRepository repository) {
+//    public CashBoxViewModel(@NonNull Application application, @NonNull CashBoxRepository repository) {
+//        super(application);
+////        workManager = WorkManager.getInstance(application);
+////        repository = new CashBoxLocalRepository(application);
+////        this.repository = repository;
+//        cashBoxesInfo = repository.getCashBoxesInfo();
+//    }
+
+    protected CashBoxViewModel(@NonNull Application application) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException, IOException {
         super(application);
 //        workManager = WorkManager.getInstance(application);
 //        repository = new CashBoxLocalRepository(application);
-        this.repository = repository;
-        cashBoxesInfo = repository.getCashBoxesInfo();
+//        this.repository = repository;
+        cashBoxesInfo = initializeRepository(application).getCashBoxesInfo();
+    }
+
+    protected abstract CashBoxRepository getRepository();
+
+    protected abstract CashBoxRepository initializeRepository(Application application) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException, KeyManagementException;
+
+    protected void setCashBoxesInfo(LiveData<List<CashBox.InfoWithCash>> cashBoxesInfo) {
+        this.cashBoxesInfo = cashBoxesInfo;
     }
 
     public LiveData<List<CashBox.InfoWithCash>> getCashBoxesInfo() {
@@ -63,35 +84,35 @@ public abstract class CashBoxViewModel extends AndroidViewModel {
     public void setCurrentCashBoxId(long currentCashBoxId) {
         // If different, get the current cashbox
         if (this.getCurrentCashBoxId() != currentCashBoxId)
-            cashBox = repository.getOrderedCashBox(currentCashBoxId);
+            cashBox = getRepository().getOrderedCashBox(currentCashBoxId);
         // Change current cashbox id
 //        this.currentCashBoxId = currentCashBoxId;
     }
 
     public Single<CashBox> getCashBox(long id) {
-        return repository.getCashBox(id);
+        return getRepository().getCashBox(id);
     }
 
     public Completable addCashBoxInfo(@NonNull CashBox.InfoWithCash cashBoxInfo) {
-        return repository.insertCashBoxInfo(cashBoxInfo).ignoreElement();
+        return getRepository().insertCashBoxInfo(cashBoxInfo.getCashBoxInfo()).ignoreElement();
     }
 
     /**
      * CAREFUL: ADDING CASHBOX BEFORE ANOTHER ONE, DOES NOT ASSURE ORDER ID
      */
     public Completable addCashBox(@NonNull CashBox cashBox) {
-        return repository.insertCashBox(cashBox);
+        return getRepository().insertCashBox(cashBox);
     }
 
     public Completable changeCashBoxName(@NonNull CashBox.InfoWithCash cashBoxInfo, @NonNull String newName)
             throws IllegalArgumentException {
         CashBoxInfo changedCashBoxInfo = cashBoxInfo.getCashBoxInfo().clone();
         changedCashBoxInfo.setName(newName);
-        return repository.updateCashBoxInfo(changedCashBoxInfo);
+        return getRepository().updateCashBoxInfo(changedCashBoxInfo);
     }
 
     public Completable setCurrency(long cashBoxId, @NonNull Currency currency) {
-        return repository.setCashBoxCurrency(cashBoxId, currency);
+        return getRepository().setCashBoxCurrency(cashBoxId, currency);
     }
 
     public Completable setCurrentCashBoxCurrency(@NonNull Currency currency) {
@@ -107,14 +128,14 @@ public abstract class CashBoxViewModel extends AndroidViewModel {
 //        //Move to recycle bin
 //        cashBoxInfo.setDeleted(true);
 //        return repository.updateCashBoxInfo(cashBoxInfo);
-        return repository.deleteCashBox(infoWithCash.getCashBoxInfo());
+        return getRepository().deleteCashBox(infoWithCash.getCashBoxInfo());
     }
 
     public Single<Integer> recycleAllCashBoxes() {
 //        //Cancel all works associated with CashBoxes
 //        workManager.cancelAllWorkByTag(RxPeriodicEntryWorker.TAG_PERIODIC);
         //Move all to recycle bin
-        return repository.deleteAllCashBoxes();
+        return getRepository().deleteAllCashBoxes();
     }
 
     public Completable duplicateCashBox(@NonNull CashBox cashBox, @NonNull String newName) {
@@ -124,7 +145,7 @@ public abstract class CashBoxViewModel extends AndroidViewModel {
     }
 
     public Completable duplicateCashBox(long cashBoxId, @NonNull String newName) {
-        return repository.getCashBox(cashBoxId)
+        return getRepository().getCashBox(cashBoxId)
                 .flatMapCompletable(cashBox -> duplicateCashBox(cashBox, newName));
 
 //        CashBox cashBoxClone = cashBox.cloneContents();
@@ -139,7 +160,7 @@ public abstract class CashBoxViewModel extends AndroidViewModel {
         else if (toIndex < 0 || toIndex >= cashBoxInfoList.size())
             return Completable.error(new IndexOutOfBoundsException("Cannot move to index in list"));
 
-        return repository.moveCashBoxInfo(infoWithCash,
+        return getRepository().moveCashBoxInfo(infoWithCash,
                 cashBoxInfoList.get(toIndex).getCashBoxInfo().getOrderId());
     }
 
@@ -148,7 +169,7 @@ public abstract class CashBoxViewModel extends AndroidViewModel {
     }
 
     public Completable addEntry(long cashBoxId, @NonNull Entry entry) {
-        return repository.insertEntry(entry.getEntryWithCashBoxId(cashBoxId));
+        return getRepository().insertEntry(entry.getEntryWithCashBoxId(cashBoxId));
     }
 
     public Completable addAllEntriesToCurrentCashBox(@NonNull List<Entry> entries) {
@@ -160,43 +181,43 @@ public abstract class CashBoxViewModel extends AndroidViewModel {
         ArrayList<Entry> entryArrayList = new ArrayList<>();
         for (Entry entry : entries)
             entryArrayList.add(entry.getEntryWithCashBoxId(cashBoxId));
-        return repository.insertAllEntries(entryArrayList);
+        return getRepository().insertEntries(entryArrayList);
     }
 
     public Completable addAllEntries(@NonNull Collection<Entry> entries) {
-        return repository.insertAllEntries(entries);
+        return getRepository().insertEntries(entries);
     }
 
     public Completable updateEntry(Entry entry) {
-        return repository.updateEntry(entry);
+        return getRepository().updateEntry(entry);
     }
 
     public Completable modifyEntry(@NonNull Entry entry, double amount, String info, Calendar date) {
-        return repository.modifyEntry(entry.getId(), amount, info, date);
+        return getRepository().modifyEntry(entry.getId(), amount, info, date);
     }
 
     public Completable deleteEntry(Entry entry) {
-        return repository.deleteEntry(entry);
+        return getRepository().deleteEntry(entry);
     }
 
     public Single<Integer> deleteAllEntriesFromCurrentCashBox() {
-        return repository.deleteAllEntries(getCurrentCashBoxId());
+        return getRepository().deleteAllEntries(getCurrentCashBoxId());
     }
 
     public Completable addPeriodicEntryWorkRequest(@NonNull PeriodicEntryPojo.PeriodicEntryWorkRequest workRequest) {
-        return repository.addPeriodicEntryWorkRequest(workRequest);
+        return getRepository().addPeriodicEntryWorkRequest(workRequest);
     }
 
     public Single<List<Entry>> getGroupEntries(Entry entry) {
-        return repository.getGroupEntries(entry.getGroupId());
+        return getRepository().getGroupEntries(entry.getGroupId());
     }
 
     public Completable modifyGroupEntry(Entry entry, double amount, String info, Calendar date) {
-        return repository.modifyGroupEntry(entry.getGroupId(), amount, info, date);
+        return getRepository().modifyGroupEntry(entry.getGroupId(), amount, info, date);
     }
 
     public Single<Integer> deleteGroupEntries(Entry entry) {
-        return repository.deleteGroupEntries(entry.getGroupId());
+        return getRepository().deleteGroupEntries(entry.getGroupId());
     }
 
     // Periodic Entries

@@ -19,17 +19,16 @@ public class EntryOnline extends Entry {
     @ColumnInfo(defaultValue = "0")
     private boolean viewed = false;
 
-    public EntryOnline(long cashBoxId, double amount, @Nullable String info, Calendar date,
+    public EntryOnline(long id, long cashBoxId, double amount, @Nullable String info, Calendar date,
                        long groupId, boolean viewed) {
-        super(cashBoxId, amount, info, date, groupId);
+        super(id, cashBoxId, amount, info, date, groupId);
         setViewed(viewed);
     }
 
     @Ignore
     public EntryOnline(@NonNull Entry entry) {
-        this(entry.getCashBoxId(),entry.getAmount(),entry.getInfo(),entry.getDate(),
+        this(entry.getId(),entry.getCashBoxId(),entry.getAmount(),entry.getInfo(),entry.getDate(),
                 entry.getGroupId(),false);
-        setId(entry.id);
     }
 
     @Ignore
@@ -53,6 +52,10 @@ public class EntryOnline extends Entry {
 
     public void setViewed(boolean viewed) {
         this.viewed = viewed;
+    }
+
+    public boolean isOld() {
+        return id < 0;
     }
 
     public boolean setToOld() {
