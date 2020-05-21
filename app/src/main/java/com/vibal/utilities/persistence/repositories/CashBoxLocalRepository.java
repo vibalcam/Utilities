@@ -21,12 +21,6 @@ public class CashBoxLocalRepository extends CashBoxRepository {
     private CashBoxLocalDao cashBoxLocalDao;
     private CashBoxEntryLocalDao cashBoxEntryLocalDao;
 
-    public static CashBoxLocalRepository getInstance(Application application) {
-        if(INSTANCE == null)
-            INSTANCE = new CashBoxLocalRepository(application);
-        return INSTANCE;
-    }
-
     private CashBoxLocalRepository(Application application) {
         super(application);
 
@@ -34,6 +28,12 @@ public class CashBoxLocalRepository extends CashBoxRepository {
         cashBoxLocalDao = database.cashBoxLocalDao();
         cashBoxEntryLocalDao = database.cashBoxEntryLocalDao();
 //        setCashBoxesInfo(cashBoxLocalDao.getAllCashBoxesInfo(false));
+    }
+
+    public static CashBoxLocalRepository getInstance(Application application) {
+        if (INSTANCE == null)
+            INSTANCE = new CashBoxLocalRepository(application);
+        return INSTANCE;
     }
 
     @Override
@@ -69,7 +69,7 @@ public class CashBoxLocalRepository extends CashBoxRepository {
     }
 
     public Completable restore(CashBoxInfo cashBoxInfo) {
-        return getCashBoxDao().setDeleted(cashBoxInfo.getId(),false);
+        return getCashBoxDao().setDeleted(cashBoxInfo.getId(), false);
     }
 
     public Single<Integer> restoreAll() {

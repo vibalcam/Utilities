@@ -10,8 +10,8 @@ import androidx.appcompat.app.AlertDialog;
 import com.vibal.utilities.R;
 
 public class MyDialogBuilder extends AlertDialog.Builder {
-    private static final int POSITIVE_RES =  R.string.confirm;
-    private static final int NEGATIVE_RES =  R.string.cancelDialog;
+    private static final int POSITIVE_RES = R.string.confirm;
+    private static final int NEGATIVE_RES = R.string.cancelDialog;
     private static final boolean CANCELABLE = true;
     private boolean cancelOnTouchOutside = false;
     private DialogInterface.OnShowListener actions;
@@ -40,7 +40,7 @@ public class MyDialogBuilder extends AlertDialog.Builder {
     }
 
     private void setupDialog(AlertDialog dialog) {
-        if(actions != null)
+        if (actions != null)
             dialog.setOnShowListener(actions);
         dialog.setCancelable(CANCELABLE);
         dialog.setCanceledOnTouchOutside(cancelOnTouchOutside);

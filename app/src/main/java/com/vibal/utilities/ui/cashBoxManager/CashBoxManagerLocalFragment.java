@@ -3,11 +3,13 @@ package com.vibal.utilities.ui.cashBoxManager;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.google.android.material.snackbar.Snackbar;
 import com.vibal.utilities.R;
+import com.vibal.utilities.modelsNew.CashBox;
 import com.vibal.utilities.viewModels.CashBoxLocalViewModel;
-import com.vibal.utilities.viewModels.CashBoxViewModel;
 
-import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 
 public class CashBoxManagerLocalFragment extends CashBoxManagerFragment {
     private CashBoxLocalViewModel viewModel;
@@ -47,14 +49,15 @@ public class CashBoxManagerLocalFragment extends CashBoxManagerFragment {
     }
 
     @Override
-    protected int getSideImageResource() {
-        return R.drawable.ic_add;
-    }
-
-    @Override
-    protected void onImageClick(long cashBoxId, @NonNull CashBoxViewModel viewModel,
-                                CompositeDisposable compositeDisposable) {
-        CashBoxItemFragment.getAddEntryDialog(cashBoxId, requireContext(), viewModel,
-                compositeDisposable).show();
+    protected void doOnDelete(CashBox.InfoWithCash infoWithCash) {
+        Snackbar.make(coordinatorLayout,
+                getString(R.string.snackbarEntriesMoveToRecycle, 1),
+                Snackbar.LENGTH_LONG)
+                .setAction(R.string.undo, v ->
+                        compositeDisposable.add(getViewModel().restore(infoWithCash)
+                                .subscribeOn(Schedulers.io())
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe()))
+                .show();
     }
 }

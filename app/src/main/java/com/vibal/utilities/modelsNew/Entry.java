@@ -21,6 +21,7 @@ import com.vibal.utilities.util.Util;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.util.Calendar;
+import java.util.Objects;
 
 import static androidx.room.ForeignKey.CASCADE;
 
@@ -36,7 +37,7 @@ public class Entry implements Cloneable, DiffDbUsable<Entry> {
     public static final long NO_GROUP = 0;
     @Ignore
     public static final String NO_INFO = "(No info)";
-//    @Ignore
+    //    @Ignore
 //    public static final Parcelable.Creator<Entry> CREATOR = new Parcelable.Creator<Entry>() {
 //        @NonNull
 //        @Override
@@ -51,11 +52,11 @@ public class Entry implements Cloneable, DiffDbUsable<Entry> {
 //        }
 //    };
     @Ignore
-    private static final String DIFF_AMOUNT = "amount";
+    public static final String DIFF_AMOUNT = "amount";
     @Ignore
-    private static final String DIFF_DATE = "date";
+    public static final String DIFF_DATE = "date";
     @Ignore
-    private static final String DIFF_INFO = "info";
+    public static final String DIFF_INFO = "info";
 
     @PrimaryKey(autoGenerate = true)
     protected long id;
@@ -79,12 +80,21 @@ public class Entry implements Cloneable, DiffDbUsable<Entry> {
     }
 
     /**
+     * Constructor for JSON
+     */
+    @Ignore
+    public Entry(long id, long cashBoxId, double amount, long date, String info) {
+        this(id, cashBoxId, amount, info, Converters.calendarFromTimestamp(date), NO_GROUP);
+    }
+
+    /**
      * Constructor with just the id
+     *
      * @param id entry id
      */
     @Ignore
     public Entry(long id) {
-        this(id,CashBoxInfo.NO_ID,0,"",Calendar.getInstance(),NO_GROUP);
+        this(id, CashBoxInfo.NO_ID, 0, "", Calendar.getInstance(), NO_GROUP);
     }
 
     @Ignore
@@ -205,7 +215,7 @@ public class Entry implements Cloneable, DiffDbUsable<Entry> {
      */
     @NonNull
     public Entry cloneContents() {
-        return cloneContents(CashBoxInfo.NO_ID,CashBoxInfo.NO_ID);
+        return cloneContents(CashBoxInfo.NO_ID, CashBoxInfo.NO_ID);
     }
 
     /**
@@ -240,6 +250,24 @@ public class Entry implements Cloneable, DiffDbUsable<Entry> {
 //        dest.writeLong(groupId);
 //    }
 
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Entry entry = (Entry) o;
+        return id == entry.id &&
+                cashBoxId == entry.cashBoxId &&
+                Double.compare(entry.amount, amount) == 0 &&
+                Objects.equals(date, entry.date) &&
+                Objects.equals(info, entry.info);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
     //Implements DiffDbUsable
     @Override
     public boolean areItemsTheSame(@NonNull Entry newItem) {
@@ -252,7 +280,6 @@ public class Entry implements Cloneable, DiffDbUsable<Entry> {
                 && this.info.equals(newItem.info);
     }
 
-    @Nullable
     @Override
     public Bundle getChangePayload(@NonNull Entry newItem) {
         Bundle diff = new Bundle();
@@ -263,9 +290,6 @@ public class Entry implements Cloneable, DiffDbUsable<Entry> {
         if (!this.info.equals(newItem.info))
             diff.putString(DIFF_INFO, newItem.info);
 
-        if (diff.size() == 0)
-            return null;
-        else
-            return diff;
+        return diff;
     }
 }

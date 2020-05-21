@@ -1,6 +1,6 @@
 package com.vibal.utilities.persistence.retrofit;
 
-import java.util.Set;
+import java.util.Collection;
 
 import io.reactivex.Single;
 import retrofit2.http.Body;
@@ -48,13 +48,17 @@ public interface UtilAppAPI {
     @POST(REQ_URL)
     Single<UtilAppResponse> signUp(@Field(USERNAME) String username);
 
-//    @FormUrlEncoded
-    @Headers(REQ_CODE+REQ_CASHBOXES)
+    //    @FormUrlEncoded
+    @Headers(REQ_CODE + REQ_CASHBOXES)
     @POST(REQ_URL)
     Single<UtilAppResponse.ModificationResponse> operationCashbox(@Body UtilAppRequest request);
 //    Single<UtilAppResponse.ModificationResponse> createCashbox(@Field("cashBoxes") UtilAppRequest request);
 
-    @Headers(REQ_CODE+REQ_CASHBOXES)
+    @Headers(REQ_CODE + REQ_CASHBOXES)
+    @POST(REQ_URL)
+    Single<UtilAppResponse.EntriesResponse> acceptInvitation(@Body UtilAppRequest request);
+
+    @Headers(REQ_CODE + REQ_CASHBOXES)
     @POST(REQ_URL)
     Single<UtilAppResponse.ModificationResponse> sendInvitation(@Body UtilAppRequest.InvitationRequest request);
 
@@ -62,19 +66,19 @@ public interface UtilAppAPI {
 //    @POST("utilApp.php")
 //    Single<UtilAppResponse.ModificationResponse> delete(@Body UtilAppRequest request);
 
-    @Headers(REQ_CODE+REQ_ENTRIES)
+    @Headers(REQ_CODE + REQ_ENTRIES)
     @POST(REQ_URL)
     Single<UtilAppResponse.ModificationResponse> operationEntry(@Body UtilAppRequest.EntryRequest request);
 
-    @Headers(REQ_CODE+REQ_ENTRIES)
+    @Headers(REQ_CODE + REQ_ENTRIES)
     @POST(REQ_URL)
     Single<UtilAppResponse.ModificationResponse> deleteEntry(@Body UtilAppRequest request);
 
-    @Headers(REQ_CODE+REQ_CHANGES_GET)
+    @Headers(REQ_CODE + REQ_CHANGES_GET)
     @POST(REQ_URL)
     Single<UtilAppResponse.ChangesResponse> getChanges();
 
-    @Headers(REQ_CODE+REQ_CHANGES_RCV)
+    @Headers(REQ_CODE + REQ_CHANGES_RCV)
     @POST(REQ_URL)
-    Single<UtilAppResponse> confirmReceivedChanges(@Body Set<Long> notificationIds);
+    Single<UtilAppResponse> confirmReceivedChanges(@Body Collection<Long> notificationIds);
 }

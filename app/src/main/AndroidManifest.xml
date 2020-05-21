@@ -38,7 +38,7 @@
 
         <activity
             android:name=".ui.settings.SettingsActivity"
-            android:label="@string/title_activity_settings" />
+            android:label="@string/settings" />
 
         <activity
             android:name=".ui.cashBoxManager.CashBoxDeletedFragment"

@@ -32,27 +32,11 @@ import static com.vibal.utilities.modelsNew.CashBoxInfo.NO_ID;
 public abstract class CashBoxViewModel extends AndroidViewModel {
     private static final String TAG = "PruebaCashBoxViewModel";
 
-//    private WorkManager workManager;
-//    private CashBoxRepository repository;
     private LiveData<List<CashBox.InfoWithCash>> cashBoxesInfo;
     private LiveData<CashBox> cashBox;
-//    private long currentCashBoxId = NO_CASHBOX;
-//    @NonNull
-//    private CompositeDisposable compositeDisposable = new CompositeDisposable();
-
-//    public CashBoxViewModel(@NonNull Application application, @NonNull CashBoxRepository repository) {
-//        super(application);
-////        workManager = WorkManager.getInstance(application);
-////        repository = new CashBoxLocalRepository(application);
-////        this.repository = repository;
-//        cashBoxesInfo = repository.getCashBoxesInfo();
-//    }
 
     protected CashBoxViewModel(@NonNull Application application) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException, IOException {
         super(application);
-//        workManager = WorkManager.getInstance(application);
-//        repository = new CashBoxLocalRepository(application);
-//        this.repository = repository;
         cashBoxesInfo = initializeRepository(application).getCashBoxesInfo();
     }
 
@@ -60,23 +44,21 @@ public abstract class CashBoxViewModel extends AndroidViewModel {
 
     protected abstract CashBoxRepository initializeRepository(Application application) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException, KeyManagementException;
 
-    protected void setCashBoxesInfo(LiveData<List<CashBox.InfoWithCash>> cashBoxesInfo) {
-        this.cashBoxesInfo = cashBoxesInfo;
-    }
-
     public LiveData<List<CashBox.InfoWithCash>> getCashBoxesInfo() {
         return cashBoxesInfo;
+    }
+
+    protected void setCashBoxesInfo(LiveData<List<CashBox.InfoWithCash>> cashBoxesInfo) {
+        this.cashBoxesInfo = cashBoxesInfo;
     }
 
     @NonNull
     public LiveData<CashBox> getCurrentCashBox() {
         LogUtil.debug(TAG, "Id cashBox: " + getCurrentCashBoxId());
-//        return repository.getOrderedCashBox(currentCashBoxId);
         return cashBox;
     }
 
     public long getCurrentCashBoxId() {
-//        return currentCashBoxId;
         return cashBox == null || cashBox.getValue() == null ? NO_ID :
                 cashBox.getValue().getInfoWithCash().getId();
     }
@@ -85,8 +67,6 @@ public abstract class CashBoxViewModel extends AndroidViewModel {
         // If different, get the current cashbox
         if (this.getCurrentCashBoxId() != currentCashBoxId)
             cashBox = getRepository().getOrderedCashBox(currentCashBoxId);
-        // Change current cashbox id
-//        this.currentCashBoxId = currentCashBoxId;
     }
 
     public Single<CashBox> getCashBox(long id) {
@@ -119,22 +99,13 @@ public abstract class CashBoxViewModel extends AndroidViewModel {
         return setCurrency(getCurrentCashBoxId(), currency);
     }
 
-    public Completable recycleCashBoxInfo(@NonNull CashBox.InfoWithCash infoWithCash) {
-//        CashBoxInfo cashBoxInfo = infoWithCash.getCashBoxInfo();
-//        //Cancel works associated with the CashBox
-//        workManager.cancelAllWorkByTag(String.format(Locale.US,
-//                RxPeriodicEntryWorker.TAG_CASHBOX_ID, cashBoxInfo.getId()));
-//
-//        //Move to recycle bin
-//        cashBoxInfo.setDeleted(true);
-//        return repository.updateCashBoxInfo(cashBoxInfo);
+    public Completable deleteCashBoxInfo(@NonNull CashBox.InfoWithCash infoWithCash) {
+        //Cancel works associated with the CashBox
         return getRepository().deleteCashBox(infoWithCash.getCashBoxInfo());
     }
 
-    public Single<Integer> recycleAllCashBoxes() {
-//        //Cancel all works associated with CashBoxes
-//        workManager.cancelAllWorkByTag(RxPeriodicEntryWorker.TAG_PERIODIC);
-        //Move all to recycle bin
+    public Single<Integer> deleteAllCashBoxes() {
+        //Cancel all works associated with CashBoxes
         return getRepository().deleteAllCashBoxes();
     }
 
@@ -147,10 +118,6 @@ public abstract class CashBoxViewModel extends AndroidViewModel {
     public Completable duplicateCashBox(long cashBoxId, @NonNull String newName) {
         return getRepository().getCashBox(cashBoxId)
                 .flatMapCompletable(cashBox -> duplicateCashBox(cashBox, newName));
-
-//        CashBox cashBoxClone = cashBox.cloneContents();
-//        cashBoxClone.setName(newName);
-//        return addCashBox(cashBoxClone);
     }
 
     public Completable moveCashBox(@NonNull CashBox.InfoWithCash infoWithCash, int toIndex) {
@@ -223,16 +190,5 @@ public abstract class CashBoxViewModel extends AndroidViewModel {
     // Periodic Entries
 //    public Completable deletePeriodicInactive() {
 //        return repository.deletePeriodicInactive();
-//    }
-
-//    public void addDisposable(@NonNull Disposable disposable) {
-//        compositeDisposable.add(disposable);
-//    }
-//
-//    @Override
-//    protected void onCleared() {
-//        super.onCleared();
-////        compositeDisposable.clear();
-//        LogUtil.debug(TAG, "onCleared: clearing disposable");
 //    }
 }

@@ -22,6 +22,15 @@ public class SettingsActivity extends AppCompatActivity {
     public static final String KEY_NOTIFY_PERIODIC = "notifyPeriodic";
     public static final String KEY_ONLINE = "allowOnline";
 
+    public static void acceptOnlineMode(Context context, DialogInterface.OnClickListener onClickListener) {
+        new MyDialogBuilder(context)
+                .setTitle(R.string.pref_online)
+                .setMessage(R.string.allowOnline_acceptMessage)
+                .setCancelOnTouchOutside(true)
+                .setPositiveButton(onClickListener)
+                .show();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,15 +54,6 @@ public class SettingsActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public static void acceptOnlineMode(Context context, DialogInterface.OnClickListener onClickListener) {
-        new MyDialogBuilder(context)
-                .setTitle(R.string.pref_online)
-                .setMessage(R.string.allowOnline_acceptMessage)
-                .setCancelOnTouchOutside(true)
-                .setPositiveButton(onClickListener)
-                .show();
-    }
-
     public static class SettingsFragment extends PreferenceFragmentCompat implements Preference.OnPreferenceClickListener {
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -65,10 +65,10 @@ public class SettingsActivity extends AppCompatActivity {
         public boolean onPreferenceClick(Preference preference) {
             SwitchPreference switchPreference = (SwitchPreference) preference;
             switchPreference.setChecked(!switchPreference.isChecked());
-            if(switchPreference.isChecked())
+            if (switchPreference.isChecked())
                 cancelOnlineMode(switchPreference);
             else
-                acceptOnlineMode(requireContext(),(dialog, which) -> switchPreference.setChecked(true));
+                acceptOnlineMode(requireContext(), (dialog, which) -> switchPreference.setChecked(true));
             return true;
         }
 
@@ -77,9 +77,9 @@ public class SettingsActivity extends AppCompatActivity {
             new MyDialogBuilder(requireContext())
                     .setTitle(R.string.pref_online_cancel)
                     .setMessage(R.string.allowOnline_cancelMessage)
-                    .setPositiveButton(R.string.deleteLocal,(dialog, which) -> preference.setChecked(false))
-                    .setNegativeButton(R.string.moveLocal,(dialog, which) -> preference.setChecked(false))
-                    .setNeutralButton(R.string.cancelDialog,null)
+                    .setPositiveButton(R.string.deleteLocal, (dialog, which) -> preference.setChecked(false))
+                    .setNegativeButton(R.string.moveLocal, (dialog, which) -> preference.setChecked(false))
+                    .setNeutralButton(R.string.cancelDialog, null)
                     .show();
         }
     }

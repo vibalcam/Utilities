@@ -16,16 +16,16 @@ public interface CashBoxEntryBaseDao {
 
     Single<List<Entry>> getGroupEntries(long groupId);
 
-//    @Insert
+    //    @Insert
     Completable insert(Entry entry);
 
-//    @Insert
+    //    @Insert
     Completable insertAll(Collection<Entry> entries);
 
-//    @Delete
+    //    @Delete
     Completable delete(Entry entry);
 
-//    @Update
+    //    @Update
     Completable update(Entry entry);
 
     Completable modify(long id, double amount, String info, Calendar date);

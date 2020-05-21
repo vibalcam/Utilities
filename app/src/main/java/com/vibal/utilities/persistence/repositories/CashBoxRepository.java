@@ -35,17 +35,18 @@ public abstract class CashBoxRepository {
     }
 
     public LiveData<List<CashBox.InfoWithCash>> getCashBoxesInfo() {
-        if(cashBoxesInfo == null)
+        if (cashBoxesInfo == null)
             cashBoxesInfo = getCashBoxDao().getAllCashBoxesInfo();
         return cashBoxesInfo;
     }
 
     protected abstract CashBoxBaseDao getCashBoxDao();
+
     protected abstract CashBoxEntryBaseDao getCashBoxEntryDao();
 
     // CashBox Manager
 
-        // Main functionality to Override
+    // Main functionality to Override
 
     public Single<Long> insertCashBoxInfo(@NonNull CashBoxInfo cashBoxInfo) {
         return getCashBoxDao().insert(cashBoxInfo);
@@ -65,7 +66,7 @@ public abstract class CashBoxRepository {
                 .flatMap(integer -> getCashBoxDao().deleteAll());
     }
 
-        // Rest of functionality
+    // Rest of functionality
 
     @NonNull
     public LiveData<CashBox> getOrderedCashBox(long id) {
@@ -124,7 +125,7 @@ public abstract class CashBoxRepository {
 
     // Entries
 
-        // Main functionality to override
+    // Main functionality to override
 
     public Completable insertEntry(Entry entry) {
         return getCashBoxEntryDao().insert(entry);
@@ -152,20 +153,20 @@ public abstract class CashBoxRepository {
 
     // Group Entries
 
-        // Main functionality to override
+    // Main functionality to override
 
     public Single<List<Entry>> getGroupEntries(long groupId) {
         return getCashBoxEntryDao().getGroupEntries(groupId);
     }
 
     public Completable modifyGroupEntry(long groupId, double amount, String info, Calendar date) {
-        if(groupId == Entry.NO_GROUP)
+        if (groupId == Entry.NO_GROUP)
             throw new IllegalArgumentException("Default group id cannot be deleted");
         return getCashBoxEntryDao().modifyGroup(groupId, amount, info, date);
     }
 
     public Single<Integer> deleteGroupEntries(long groupId) {
-        if(groupId == Entry.NO_GROUP)
+        if (groupId == Entry.NO_GROUP)
             throw new IllegalArgumentException("Default group id cannot be deleted");
         return getCashBoxEntryDao().deleteGroup(groupId);
     }

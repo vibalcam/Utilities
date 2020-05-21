@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="200dp"
+    android:minWidth="400dp"
+    android:padding="@dimen/paddingDialog"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/dialog_view_changes"
+        android:textAlignment="center"
+        android:textStyle="bold"
+        android:textAppearance="?android:textAppearanceLarge" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvChanges"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:listitem="@layout/dialog_view_changes_item"
+        tools:itemCount="5" />
+</LinearLayout>
+
+    <!--<androidx.recyclerview.widget.RecyclerView-->
+    <!--xmlns:android="http://schemas.android.com/apk/res/android"-->
+    <!--xmlns:tools="http://schemas.android.com/tools"-->
+    <!--android:id="@+id/rvChanges"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:minHeight="200dp"-->
+    <!--android:minWidth="400dp"-->
+    <!--android:padding="@dimen/paddingDialog"-->
+    <!--tools:listitem="@layout/dialog_view_changes_item"-->
+    <!--tools:itemCount="5" />-->
+
+    <!--<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
+    <!--    android:layout_width="match_parent"-->
+    <!--    android:layout_height="wrap_content"-->
+    <!--    xmlns:app="http://schemas.android.com/apk/res-auto"-->
+    <!--    xmlns:tools="http://schemas.android.com/tools">-->
+    <!--    <TextView-->
+    <!--        android:id="@+id/changesOld"-->
+    <!--        android:layout_width="0dp"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:text="@string/old"-->
+    <!--        android:textStyle="bold"-->
+    <!--        android:gravity="center_horizontal"-->
+    <!--        android:textAppearance="?android:attr/textAppearanceMedium"-->
+    <!--        app:layout_constraintTop_toTopOf="parent"-->
+    <!--        app:layout_constraintBottom_toTopOf="@id/changesNew"-->
+    <!--        app:layout_constraintStart_toStartOf="parent"-->
+    <!--        app:layout_constraintEnd_toStartOf="@id/changesDivider"/>-->
+
+    <!--    <view-->
+    <!--        android:id="@+id/changesDivider"-->
+    <!--        android:layout_width="1dp"-->
+    <!--        android:layout_height="0dp"-->
+    <!--        android:background="@color/colorDivider"-->
+    <!--        android:layout_marginVertical="@dimen/divider_marginParent"-->
+    <!--        android:layout_marginHorizontal="@dimen/divider_marginItems"-->
+    <!--        app:layout_constraintTop_toTopOf="parent"-->
+    <!--        app:layout_constraintBottom_toBottomOf="parent"-->
+    <!--        app:layout_constraintStart_toEndOf="@id/changesOld"-->
+    <!--        app:layout_constraintEnd_toStartOf="@id/changesNew" />-->
+
+    <!--    <TextView-->
+    <!--        android:id="@+id/changesNew"-->
+    <!--        android:layout_width="0dp"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:textAlignment="center"-->
+    <!--        android:text="@string/stringNew"-->
+    <!--        android:textStyle="bold"-->
+    <!--        android:gravity="center_horizontal"-->
+    <!--        android:textAppearance="?android:attr/textAppearanceMedium"-->
+    <!--        app:layout_constraintTop_toTopOf="@id/changesOld"-->
+    <!--        app:layout_constraintBottom_toBottomOf="@id/changesOld"-->
+    <!--        app:layout_constraintStart_toEndOf="@id/changesDivider"-->
+    <!--        app:layout_constraintEnd_toEndOf="parent"/>-->
+
+    <!--    <androidx.recyclerview.widget.RecyclerView-->
+    <!--        android:id="@+id/rvChanges"-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        app:layout_constraintTop_toBottomOf="@id/changesOld"-->
+    <!--        app:layout_constraintBottom_toBottomOf="parent"-->
+    <!--        app:layout_constraintStart_toStartOf="@id/changesOld"-->
+    <!--        app:layout_constraintEnd_toEndOf="@id/changesNew"-->
+    <!--        tools:listitem="@layout/dialog_view_changes_item"-->
+    <!--        tools:itemCount="5"/>-->
+    <!--</androidx.constraintlayout.widget.ConstraintLayout>-->

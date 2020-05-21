@@ -39,19 +39,19 @@ public abstract class CashBoxBaseDao {
 
     abstract Completable configureOrderId(long cashBoxId);
 
-//    @Insert
+    //    @Insert
     abstract Single<Long> insertWithoutOrderId(CashBoxInfo cashBoxInfo);
 
-//    @Update
+    //    @Update
     public abstract Completable update(CashBoxInfo cashBoxInfo);
 
-//    @Update
+    //    @Update
     abstract Completable updateAll(Collection<CashBoxInfo> cashBoxInfoCollection);
 
-//    @Delete
+    //    @Delete
     public abstract Completable delete(CashBoxInfo cashBoxInfo);
 
-//    @Delete
+    //    @Delete
     public abstract Single<Integer> deleteAll();
 
     public abstract LiveData<CashBox.InfoWithCash> getCashBoxInfoWithCashById(long id);

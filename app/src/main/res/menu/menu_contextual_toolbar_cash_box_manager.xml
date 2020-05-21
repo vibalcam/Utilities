@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/action_manager_duplicate"
-        android:title="@string/contextualMenu_CBMDuplicate"
+        android:title="@string/duplicate"
         app:showAsAction="ifRoom"
         android:icon="@drawable/ic_copy_white_24dp" />
 </menu>

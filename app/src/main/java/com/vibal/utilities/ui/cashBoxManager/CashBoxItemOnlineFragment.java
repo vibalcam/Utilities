@@ -1,12 +1,18 @@
 package com.vibal.utilities.ui.cashBoxManager;
 
+import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -19,11 +25,14 @@ import com.vibal.utilities.util.Util;
 import com.vibal.utilities.viewModels.CashBoxOnlineViewModel;
 import com.vibal.utilities.viewModels.CashBoxViewModel;
 
+import butterknife.BindView;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
 public class CashBoxItemOnlineFragment extends CashBoxItemFragment {
     private static final String TAG = "PruebaOnlineItemFrag";
+    @BindView(R.id.refreshCBItem)
+    SwipeRefreshLayout refreshLayout;
     private CashBoxOnlineViewModel viewModel;
 
     @NonNull
@@ -31,6 +40,36 @@ public class CashBoxItemOnlineFragment extends CashBoxItemFragment {
         CashBoxItemOnlineFragment fragment = new CashBoxItemOnlineFragment();
         fragment.setPositionAsArgument(pagerPosition);
         return fragment;
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        LogUtil.debug(TAG, "on create:");
+        return inflater.inflate(R.layout.cash_box_online_item_fragment, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        refreshLayout.setOnRefreshListener(this::onRefresh);
+    }
+
+    private void onRefresh() {
+        compositeDisposable.add(viewModel.getChanges()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(() -> refreshLayout.setRefreshing(false),
+                        throwable -> {
+                            refreshLayout.setRefreshing(false);
+                            Toast.makeText(requireContext(),
+                                    throwable instanceof UtilAppException ?
+                                            throwable.getLocalizedMessage() :
+                                            "An unexpected error occurred",
+                                    Toast.LENGTH_SHORT)
+                                    .show();
+                        }));
     }
 
     @NonNull
@@ -48,11 +87,17 @@ public class CashBoxItemOnlineFragment extends CashBoxItemFragment {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if(item.getItemId() == R.id.action_item_invite) {
-            showInviteDialog();
-            return true;
-        } else
-            return super.onOptionsItemSelected(item);
+        switch (item.getItemId()) {
+            case R.id.action_item_invite:
+                showInviteDialog();
+                return true;
+            case R.id.action_item_refresh:
+                refreshLayout.setRefreshing(true);
+                onRefresh();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     private void showInviteDialog() {
@@ -81,12 +126,12 @@ public class CashBoxItemOnlineFragment extends CashBoxItemFragment {
                                     Toast.makeText(requireContext(),
                                             "Invitation sent successfully",
                                             Toast.LENGTH_SHORT).show();
-                                },throwable -> {
-                                    LogUtil.error(TAG,"Invite dialog:",throwable);
-                                    if(throwable instanceof UtilAppException) {
+                                }, throwable -> {
+                                    LogUtil.error(TAG, "Invite dialog:", throwable);
+                                    if (throwable instanceof UtilAppException) {
                                         layoutUsername.setError(throwable.getLocalizedMessage());
                                         inputUsername.selectAll();
-                                        Util.showKeyboard(requireContext(),inputUsername);
+                                        Util.showKeyboard(requireContext(), inputUsername);
                                     } else { // should never happen
                                         dialog.dismiss();
                                         Toast.makeText(requireContext(), "Unexpected error",

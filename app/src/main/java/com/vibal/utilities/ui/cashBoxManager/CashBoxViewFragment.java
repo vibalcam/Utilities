@@ -17,8 +17,8 @@ import com.vibal.utilities.util.LogUtil;
 import butterknife.ButterKnife;
 
 public class CashBoxViewFragment extends PagerFragment {
-    private static final String TAG = "PruebaView";
     public static final String ONLINE_MODE_ARG = "online_arg";
+    private static final String TAG = "PruebaView";
     private boolean onlineMode;
 
     @NonNull

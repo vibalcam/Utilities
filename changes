@@ -1,5 +1,1 @@
-- Created the "persistence" package for DB, Retrofit and repositories
-- Made repositories singleton
-- Created UtilAppException to hold exceptions expected to be thrown by CashBoxes Online functionality
-- Added accepted value to CashBoxInfo to save if the CashBox has been accepted or not
-- Developed the communication between app and server
+- View and get changes, and accept invitation functionality added

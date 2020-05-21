@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import com.vibal.utilities.R;
 import com.vibal.utilities.modelsNew.CashBoxInfo;
 import com.vibal.utilities.modelsNew.Entry;
+import com.vibal.utilities.modelsNew.EntryOnline;
 import com.vibal.utilities.persistence.db.CashBoxEntryOnlineDao;
 import com.vibal.utilities.persistence.db.CashBoxOnlineDao;
 import com.vibal.utilities.persistence.db.UtilitiesDatabase;
@@ -21,6 +22,9 @@ import com.vibal.utilities.util.LogUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketAddress;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -31,8 +35,12 @@ import java.security.cert.CertificateFactory;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -41,7 +49,6 @@ import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
 import io.reactivex.Completable;
-import io.reactivex.CompletableSource;
 import io.reactivex.Single;
 import io.reactivex.SingleSource;
 import io.reactivex.functions.Function;
@@ -60,35 +67,21 @@ import static com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity.CASHB
 
 public class CashBoxOnlineRepository extends CashBoxRepository {
     private static final String TAG = "PruebaOnlineRepo";
+    private static final int TIMEOUT_CHANGES = 5; // in seconds
+    private static final int NUM_RETRIES_CHANGES = 3;
 
     private static final String BASE_URL = "https://192.168.0.41/util/"; //todo temporal para prueba
-    private static long ONLINE_ID = 0;
-
-    private static CashBoxOnlineRepository INSTANCE = null;
     private static final Pattern PATTERN_VALID_USERNAME = Pattern.compile("\\W");
-
+    private static long ONLINE_ID = 0;
+    private static CashBoxOnlineRepository INSTANCE = null;
+    private static UtilAppAPI utilAppAPI = null;
+    //    private final HashSet<Long> confirmedNotifications = new HashSet<>();
+    private final TreeMap<Long, Long> receivedNotifications = new TreeMap<>();
     private CashBoxOnlineDao cashBoxOnlineDao;
     private CashBoxEntryOnlineDao cashBoxEntryOnlineDao;
-    private static UtilAppAPI utilAppAPI = null;
 
-    public static boolean isOnlineIdSet() {
-        return ONLINE_ID != 0;
-    }
-
-    public static void setOnlineId(long onlineId) {
-        if(isOnlineIdSet())
-            throw new IllegalArgumentException("There is already an existing onlineId");
-        else
-            ONLINE_ID = onlineId;
-    }
-
-    public static CashBoxOnlineRepository getInstance(Application application) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException, IOException {
-        if(INSTANCE == null)
-            INSTANCE = new CashBoxOnlineRepository(application);
-        return INSTANCE;
-    }
-
-    private CashBoxOnlineRepository(Application application) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException, KeyManagementException {
+    private CashBoxOnlineRepository(Application application) throws CertificateException,
+            NoSuchAlgorithmException, KeyStoreException, IOException, KeyManagementException {
         super(application);
 
         UtilitiesDatabase database = UtilitiesDatabase.getInstance(application);
@@ -107,26 +100,47 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
 //        pruebaHttp();
     }
 
-    @NonNull
-    private OkHttpClient getOkHttpClient(Context context) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException, IOException {
-        // Create an SSLContext that uses our TrustManager
-        TrustManagerFactory tmf = getTrustManagerFactory(context);
-        SSLContext sslContext = SSLContext.getInstance("TLS");
-        sslContext.init(null, tmf.getTrustManagers(),null);
-
-        return new OkHttpClient.Builder()
-                .hostnameVerifier((hostname, session) -> hostname.equals("192.168.0.41")) // todo temporal para debug
-                .sslSocketFactory(sslContext.getSocketFactory(), (X509TrustManager) (tmf.getTrustManagers()[0]))
-                .addInterceptor(chain -> {
-                    // Include client id and pwd in headers
-                    Request originalRequest = chain.request();
-                    Request newRequest = originalRequest.newBuilder()
-                            .header(UtilAppAPI.CLIENT_ID, String.valueOf(ONLINE_ID))
-                            .header(UtilAppAPI.PASSWORD_HEADER,UtilAppAPI.PASSWORD)
-                            .build();
-                    return chain.proceed(newRequest);
-                }).build();
+    public static boolean isOnlineIdSet() {
+        return ONLINE_ID != 0;
     }
+
+    public static void setOnlineId(long onlineId) {
+        if (isOnlineIdSet())
+            throw new IllegalArgumentException("There is already an existing onlineId");
+        else
+            ONLINE_ID = onlineId;
+    }
+
+    public static CashBoxOnlineRepository getInstance(Application application) throws CertificateException,
+            NoSuchAlgorithmException, KeyStoreException, KeyManagementException, IOException {
+        if (INSTANCE == null)
+            INSTANCE = new CashBoxOnlineRepository(application);
+        return INSTANCE;
+    }
+
+    // TCP/HTTP/DNS (depending on the port, 53=DNS, 80=HTTP, etc.)
+    public static boolean isOnline() {
+        try {
+            int timeoutMs = 1500;
+            Socket sock = new Socket();
+            SocketAddress sockaddr = new InetSocketAddress("8.8.8.8", 53);
+
+            sock.connect(sockaddr, timeoutMs);
+            sock.close();
+
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+//    public static boolean isConnected(@NonNull Context context) {
+//        ConnectivityManager cm =
+//                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+//
+//        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+//        return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+//    }
 
     @NonNull
     private static TrustManagerFactory getTrustManagerFactory(@NonNull Context context) throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
@@ -134,15 +148,15 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
         // Load CAs from an InputStream
         CertificateFactory cf = CertificateFactory.getInstance("X.509");
         Certificate ca;
-        try(InputStream cert = context.getResources().openRawResource(R.raw.cert)) {
+        try (InputStream cert = context.getResources().openRawResource(R.raw.cert)) {
             ca = cf.generateCertificate(cert);
         }
 
         // Create a KeyStore containing our trusted CAs
         String keyStoreType = KeyStore.getDefaultType();
         KeyStore keyStore = KeyStore.getInstance(keyStoreType);
-        keyStore.load(null,null);
-        keyStore.setCertificateEntry("ca",ca);
+        keyStore.load(null, null);
+        keyStore.setCertificateEntry("ca", ca);
 
         // Create a TrustManager that trusts the CAs in our KeyStore
         String tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
@@ -150,6 +164,30 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
         tmf.init(keyStore);
 
         return tmf;
+    }
+
+    @NonNull
+    private OkHttpClient getOkHttpClient(Context context) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException, IOException {
+        // Create an SSLContext that uses our TrustManager
+        TrustManagerFactory tmf = getTrustManagerFactory(context);
+        SSLContext sslContext = SSLContext.getInstance("TLS");
+        sslContext.init(null, tmf.getTrustManagers(), null);
+
+        return new OkHttpClient.Builder()
+                .hostnameVerifier((hostname, session) -> hostname.equals("192.168.0.41")) // todo temporal para debug
+                .sslSocketFactory(sslContext.getSocketFactory(), (X509TrustManager) (tmf.getTrustManagers()[0]))
+                .addInterceptor(chain -> {
+                    if (!isOnline())
+                        throw new UtilAppException.NoConnectivityException();
+
+                    // Include client id and pwd in headers
+                    Request originalRequest = chain.request();
+                    Request newRequest = originalRequest.newBuilder()
+                            .header(UtilAppAPI.CLIENT_ID, String.valueOf(ONLINE_ID))
+                            .header(UtilAppAPI.PASSWORD_HEADER, UtilAppAPI.PASSWORD)
+                            .build();
+                    return chain.proceed(newRequest);
+                }).build();
     }
 
     @Override
@@ -162,26 +200,18 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
         return cashBoxEntryOnlineDao;
     }
 
-//    public void pruebaHttp() {
-//        utilAppAPI.signUp("android")
-//                .subscribeOn(Schedulers.io())
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .subscribe((utilAppResponse) -> LogUtil.debug(utilAppResponse.getMessage()),
-//                        throwable -> LogUtil.error("Error al llamar", throwable));
-//    }
-
     // CashBoxes
 
     public Completable signUp(String username, Context context) throws NullPointerException, UtilAppException {
-        if(username == null) // should never happen
+        if (username == null) // should never happen
             throw new NullPointerException("Username is null");
 
         final String finalUsername = username.trim();
         Matcher matcher;
 
-        if(finalUsername.length() > UtilAppAPI.MAX_LENGTH_USERNAME)
+        if (finalUsername.length() > UtilAppAPI.MAX_LENGTH_USERNAME)
             throw new UtilAppException("Username max length is " + UtilAppAPI.MAX_LENGTH_USERNAME);
-        else if((matcher = PATTERN_VALID_USERNAME.matcher(finalUsername)).find())
+        else if ((matcher = PATTERN_VALID_USERNAME.matcher(finalUsername)).find())
             throw new UtilAppException(finalUsername.charAt(matcher.start()) + " not allowed");
 
         // Do http call and save value to shared preferences
@@ -189,10 +219,10 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
                 .flatMap(new CheckResponseErrorFunction<>())
                 .flatMapCompletable(utilAppResponse -> {
                     long id = Long.parseLong(utilAppResponse.getMessage());
-                    if(context.getSharedPreferences(CASHBOX_MANAGER_PREFERENCE, Context.MODE_PRIVATE)
+                    if (context.getSharedPreferences(CASHBOX_MANAGER_PREFERENCE, Context.MODE_PRIVATE)
                             .edit()
-                            .putString(CashBoxManagerActivity.USERNAME_KEY,finalUsername)
-                            .putLong(CashBoxManagerActivity.CLIENT_ID_KEY,id)
+                            .putString(CashBoxManagerActivity.USERNAME_KEY, finalUsername)
+                            .putLong(CashBoxManagerActivity.CLIENT_ID_KEY, id)
                             .commit()) {
                         ONLINE_ID = id;
                         return Completable.complete();
@@ -205,16 +235,18 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
     public Single<Long> insertCashBoxInfo(@NonNull CashBoxInfo cashBoxInfo) {
         return cashBoxOnlineDao.checkNameAvailable(cashBoxInfo.getName())
                 .flatMap(exists -> {
-                    if(!exists)
-                        throw new SQLiteConstraintException("Name already in use");
+                    if (!exists)
+                        throw new SQLiteConstraintException("Name already in use: " + cashBoxInfo.getName());
 
-                    return utilAppAPI.operationCashbox(new UtilAppRequest(INSERT,1))
+                    return utilAppAPI.operationCashbox(new UtilAppRequest(INSERT, 1))
                             .flatMap(new CheckResponseErrorFunction<>())
                             .flatMap(modificationResponse -> {
                                 if (modificationResponse.operationSuccessful(1)) {
                                     long cashBoxId = modificationResponse.getValue(1);
                                     CashBoxInfo cashBoxCopy = cashBoxInfo.cloneContents(cashBoxId);
-                                    return super.insertCashBoxInfo(cashBoxCopy);
+                                    return super.insertCashBoxInfo(cashBoxCopy)
+                                            .flatMap(aLong -> cashBoxOnlineDao.setCashBoxAccepted(cashBoxId, true)
+                                                    .toSingleDefault(aLong));
 
 //                        return super.insertCashBoxInfo(cashBoxCopy)
 //                                .onErrorResumeNext(throwable ->
@@ -229,13 +261,13 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
     @Override
     public Completable deleteCashBox(@NonNull CashBoxInfo cashBoxInfo) {
         final long id = cashBoxInfo.getId();
-        if(id==ID_ALL)
+        if (id == ID_ALL)
             return Completable.error(new UtilAppException("Id cannot be equal to " + ID_ALL));
         else
             return utilAppAPI.operationCashbox(new UtilAppRequest(DELETE, id))
                     .flatMap(new CheckResponseErrorFunction<>())
                     .flatMapCompletable(modificationResponse -> {
-                        if(modificationResponse.operationSuccessful(id))
+                        if (modificationResponse.operationSuccessful(id))
                             return super.deleteCashBox(cashBoxInfo);
                         else
                             return Completable.error(new UtilAppException());
@@ -247,7 +279,7 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
         return utilAppAPI.operationCashbox(new UtilAppRequest(DELETE, ID_ALL))
                 .flatMap(new CheckResponseErrorFunction<>())
                 .flatMap(modificationResponse -> {
-                    if(modificationResponse.operationSuccessful(ID_ALL))
+                    if (modificationResponse.operationSuccessful(ID_ALL))
                         return super.deleteAllCashBoxes();
                     else
                         return Single.error(new UtilAppException());
@@ -255,31 +287,39 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
     }
 
     public Completable sendInvitationToCashBox(@NonNull String username, long cashBoxId) {
-        if(cashBoxId<=0)
+        if (cashBoxId <= 0)
             return Completable.error(new UtilAppException("Id cannot be less or equal to 0"));
         else
             return utilAppAPI.sendInvitation(new UtilAppRequest.InvitationRequest(UPDATE,
-                    cashBoxId,username.trim()))
+                    cashBoxId, username.trim()))
                     .flatMap(new CheckResponseErrorFunction<>())
                     .flatMapCompletable(modificationResponse -> {
-                        if(modificationResponse.operationSuccessful(cashBoxId))
+                        if (modificationResponse.operationSuccessful(cashBoxId))
                             return Completable.complete();
                         else
                             return Completable.error(new UtilAppException("Username not found"));
                     });
     }
 
-    //todo accept invitation
+    public Completable acceptInvitationToCashBox(long cashBoxId) {
+        if (cashBoxId <= 0)
+            return Completable.error(new UtilAppException("Id cannot be less or equal to 0"));
+        else
+            return utilAppAPI.acceptInvitation(new UtilAppRequest(CASHBOX_INV, cashBoxId))
+                    .flatMap(new CheckResponseErrorFunction<>())
+                    .flatMapCompletable(entriesResponse ->
+                            cashBoxEntryOnlineDao.insertAllJSON(entriesResponse.getEntries(cashBoxId))
+                                    .andThen(cashBoxOnlineDao.setCashBoxAccepted(cashBoxId, true)));
+    }
 
     // Entries
-
 
     @Override
     public Completable insertEntry(Entry entry) {
         return utilAppAPI.operationEntry(new UtilAppRequest.EntryRequest(INSERT, 1, entry))
                 .flatMap(new CheckResponseErrorFunction<>())
                 .flatMapCompletable(modificationResponse -> {
-                    if(modificationResponse.operationSuccessful(1)) {
+                    if (modificationResponse.operationSuccessful(1)) {
                         long id = modificationResponse.getValue(1);
                         return super.insertEntry(entry.cloneContents(id, entry.getCashBoxId()));
                     } else
@@ -299,10 +339,10 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
 
     private Completable updateEntry(@NonNull Entry entry, Completable localUpdate) {
         final long id = entry.getId();
-        return utilAppAPI.operationEntry(new UtilAppRequest.EntryRequest(UPDATE, id,entry))
+        return utilAppAPI.operationEntry(new UtilAppRequest.EntryRequest(UPDATE, id, entry))
                 .flatMap(new CheckResponseErrorFunction<>())
                 .flatMapCompletable(modificationResponse -> {
-                    if(modificationResponse.operationSuccessful(id))
+                    if (modificationResponse.operationSuccessful(id))
                         return localUpdate;
                     else
                         return Completable.error(new UtilAppException());
@@ -318,23 +358,23 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
 //        if(entries.size()<1)
 //            return Completable.complete();
         Completable completable = Completable.complete();
-        for(Entry entry : entries)
+        for (Entry entry : entries)
             completable = completable.andThen(updateEntry(entry));
         return completable;
     }
 
     @Override
     public Completable modifyEntry(long id, double amount, String info, Calendar date) {
-        return updateEntry(new Entry(id,CashBoxInfo.NO_ID,amount,info,date),
+        return updateEntry(new Entry(id, CashBoxInfo.NO_ID, amount, info, date),
                 super.modifyEntry(id, amount, info, date));
     }
 
     private Completable deleteEntry(@NonNull Entry entry, Completable localUpdate) {
         final long id = entry.getId();
-        return utilAppAPI.deleteEntry(new UtilAppRequest(DELETE,id))
+        return utilAppAPI.deleteEntry(new UtilAppRequest(DELETE, id))
                 .flatMap(new CheckResponseErrorFunction<>())
                 .flatMapCompletable(modificationResponse -> {
-                    if(modificationResponse.operationSuccessful(id))
+                    if (modificationResponse.operationSuccessful(id))
                         return localUpdate;
                     else
                         return Completable.error(new UtilAppException());
@@ -347,64 +387,45 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
     }
 
     private Completable deleteEntriesServer(@NonNull Collection<Entry> entries) {
-        if(entries.size()<1)
+        if (entries.size() < 1)
             return Completable.complete();
         Completable completable = Completable.complete();
-        for(Entry entry : entries)
+        for (Entry entry : entries)
             completable = completable.andThen(deleteEntry(entry, Completable.complete()));
         return completable;
     }
 
-//    public Completable deleteEntriesById(Collection<Integer> entriesIds) {
-//        if(entriesIds.size()<1)
-//            return Completable.complete();
-//        Completable completable = Completable.complete();
-//        for(Integer id : entriesIds) {
-//            completable = completable.andThen(
-//                    utilAppAPI.deleteEntry(new UtilAppRequest(UtilAppRequest.DELETE, id))
-//                            .flatMap(new CheckResponseErrorFunction<>())
-//                            .flatMapCompletable(modificationResponse -> {
-//
-//                            })
-//
-//            );
-//        }
-//        return completable;
-//    }
-
     @Override
     public Single<Integer> deleteAllEntries(long cashBoxId) {
-        if(cashBoxId == CashBoxInfo.NO_ID)
+        if (cashBoxId == CashBoxInfo.NO_ID)
             throw new IllegalArgumentException("Not valid cashbox id");
 
         return getCashBoxEntryDao().getCashBoxEntriesIds(cashBoxId)
                 .flatMap(integers -> {
-                    ArrayList<Entry> entries = new ArrayList<>();//todo
+                    ArrayList<Entry> entries = new ArrayList<>();
                     integers.forEach(integer -> entries.add(new Entry(integer)));
                     return deleteEntriesServer(entries)
                             .andThen(super.deleteAllEntries(cashBoxId));
                 });
-
-//        return super.deleteAllEntries(cashBoxId);
     }
 
     @Override
     public Completable modifyGroupEntry(long groupId, double amount, String info, Calendar date) {
-        if(groupId == Entry.NO_GROUP)
+        if (groupId == Entry.NO_GROUP)
             throw new IllegalArgumentException("Default group id cannot be deleted");
 
         return getCashBoxEntryDao().getGroupIds(groupId)
                 .flatMapCompletable(integers -> {
                     Completable completable = Completable.complete();
-                    for(int id : integers)
-                        completable = completable.andThen(modifyEntry(id,amount,info,date));
+                    for (int id : integers)
+                        completable = completable.andThen(modifyEntry(id, amount, info, date));
                     return completable;
                 });
     }
 
     @Override
     public Single<Integer> deleteGroupEntries(long groupId) {
-        if(groupId == Entry.NO_GROUP)
+        if (groupId == Entry.NO_GROUP)
             throw new IllegalArgumentException("Default group id cannot be deleted");
 
         return getCashBoxEntryDao().getGroupIds(groupId)
@@ -422,85 +443,125 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
         return utilAppAPI.getChanges()
                 .flatMap(new CheckResponseErrorFunction<>())
                 .flatMapCompletable(changesResponse -> {
-                    LogUtil.debug(TAG,"Processing " + changesResponse.getChanges().size() + " changes");
+                    LogUtil.debug(TAG, "Processing " + changesResponse.getChanges().size() + " changes");
 
                     // If no new changes
-                    if(changesResponse.getChanges().size()<1)
+                    if (changesResponse.getChanges().size() < 1)
                         return Completable.complete();
 
                     // Process changes
-                    HashSet<Long> notificationIds = new HashSet<>();
                     Completable operation;
                     Completable completable = Completable.complete();
-                    for(UtilAppResponse.ChangesNotification change : changesResponse.getChanges()) {
-//                        switch (change.getOperationCode()) {
-//                            case CASHBOX_INV:
-//                                completable = completable.andThen(
-//                                        insertCashBoxInfo(new CashBoxInfo(change.getId(),change.getInfo())))
-//                                        .ignoreElement();
-//                                break;
-//                            case INSERT:
-//                                completable = completable.andThen(
-//                                        insertEntry(changeNotificationToEntry(change)));
-//                                break;
-//                            case UPDATE:
-//                                completable = completable.andThen(
-//                                        modifyEntry(change.getId(),change.getAmount(),
-//                                                change.getInfo(),change.getDate()));
-//                                break;
-//                            case DELETE:
-//                                completable = completable.andThen(
-//                                        deleteEntry(new Entry(change.getId())));
-//                        }
+                    for (UtilAppResponse.ChangesNotification change : changesResponse.getChanges()) {
+                        LogUtil.debug(TAG, "Processing " + change.getNotificationId() + "...");
+
+                        // Check if its an older version of another notification
+                        if (change.getOperationCode() != CASHBOX_INV &&
+                                receivedNotifications.tailMap(change.getNotificationId()).containsValue(change.getId())) {
+                            receivedNotifications.put(change.getNotificationId(), change.getId());
+                            continue; // skip since its an older version
+                        }
 
                         switch (change.getOperationCode()) {
                             case CASHBOX_INV:
-                                operation = insertCashBoxInfo(new CashBoxInfo(change.getId(),change.getInfo()))
-                                        .ignoreElement();
+                                operation = cashBoxOnlineDao.insert(new CashBoxInfo(change.getId(), change.getInfo()))
+                                        .onErrorResumeNext(throwable -> {
+                                            if (throwable instanceof SQLiteConstraintException)
+                                                return cashBoxOnlineDao.insert(new CashBoxInfo(
+                                                        change.getId(), change.getInfo())
+                                                        .fixName(Long.toString(change.getId())));
+                                            else
+                                                return Single.error(throwable);
+                                        }).ignoreElement();
                                 break;
                             case INSERT:
-                                operation = insertEntry(changeNotificationToEntry(change));
+                                operation = cashBoxEntryOnlineDao.insert(changeNotificationToEntry(change));
                                 break;
                             case UPDATE:
-                                operation = modifyEntry(change.getId(),change.getAmount(),
-                                                change.getInfo(),change.getDate());
+                                operation = cashBoxEntryOnlineDao.setChangeDate(change.getId(), Calendar.getInstance())
+                                        .andThen(cashBoxEntryOnlineDao.copyAsNonViewedOld(change.getId()))
+                                        .andThen(cashBoxEntryOnlineDao.modify(change.getId(), change.getAmount(),
+                                                change.getInfo(), change.getDateAsCalendar()));
+//                                operation = cashBoxEntryOnlineDao.modify(change.getId(), change.getAmount(),
+//                                        change.getInfo(), change.getDateAsCalendar())
+//                                        .andThen(cashBoxEntryOnlineDao.setChangeDate(change.getId(), Calendar.getInstance()));
                                 break;
                             case DELETE:
-                                operation = deleteEntry(new Entry(change.getId()));
+                                operation = cashBoxEntryOnlineDao.copyAsNonViewedOld(change.getId(), Calendar.getInstance())
+                                        .andThen(cashBoxEntryOnlineDao.delete(change.getId()));
+//                                operation = cashBoxEntryOnlineDao.delete(change.getId());
                                 break;
                             default:
                                 operation = null;
                         }
                         if (operation != null) {
-                            operation = operation.andThen((CompletableSource) co ->
-                                    notificationIds.add(change.getNotificationId()))
-                                    .onErrorComplete();
+                            receivedNotifications.put(change.getNotificationId(), change.getId()); // add to received notifications
+                            operation = operation.andThen(Completable.fromAction(() ->
+                                    receivedNotifications.put(change.getNotificationId(), change.getId()))) //todo use shared preferences
+                                    .onErrorComplete(throwable -> {
+                                        LogUtil.error(TAG, "changes: ", throwable);
+                                        return true;
+                                    })
+                                    .doOnComplete(() -> LogUtil.debug(TAG, "realizado: " + receivedNotifications.toString()));
                             completable = completable.andThen(operation);
                         }
                     }
 
-                    return completable.andThen(confirmReceivedChanges(notificationIds));
+                    return completable.andThen(confirmReceivedChanges());
                 });
     }
 
-    private Entry changeNotificationToEntry(UtilAppResponse.ChangesNotification change) {
-        return new Entry(change.getId(),change.getCashBoxId(),change.getAmount(),change.getInfo(),
-                change.getDate(), Entry.NO_GROUP);
+    private EntryOnline changeNotificationToEntry(UtilAppResponse.ChangesNotification change) {
+        return new EntryOnline(change.getId(), change.getCashBoxId(), change.getAmount(), change.getInfo(),
+                change.getDateAsCalendar(), Entry.NO_GROUP, Calendar.getInstance());
     }
 
-    public Completable confirmReceivedChanges(Set<Long> notificationIds) {
-        return utilAppAPI.confirmReceivedChanges(notificationIds)
-                .flatMap(new CheckResponseErrorFunction<>())
-                .ignoreElement();
+    private Completable confirmReceivedChanges() {
+        return utilAppAPI.confirmReceivedChanges(receivedNotifications.keySet())
+                .flatMap(new CheckResponseErrorFunction<>()) //todo use shared preferences for confirmed
+                .flatMapCompletable(appResponse -> Completable.fromAction(receivedNotifications::clear))
+                .timeout(TIMEOUT_CHANGES, TimeUnit.SECONDS) //todo dont clear, delete only confirmed
+                .retry(NUM_RETRIES_CHANGES, throwable ->
+                        !(throwable instanceof UtilAppException.NoConnectivityException));
+//                .doOnComplete(() -> LogUtil.debug(TAG,"terminado"));
         //todo save notifications not send to send after
-        //todo retry checking connection
+    }
+
+    // View changes
+
+    public Single<List<EntryOnline.EntryChanges>> getNonViewedEntries(long cashBoxId) {
+        return cashBoxEntryOnlineDao.getNonViewedEntriesByCashBoxId(cashBoxId)
+                .map(entryOnlines -> {
+                    Map<Long, EntryOnline> entryMap = new HashMap<>();//todo
+                    TreeSet<EntryOnline.EntryChanges> entryChanges = new TreeSet<>();
+                    EntryOnline entryObtained;
+
+                    // Old and new
+                    for (EntryOnline entry : entryOnlines) {
+                        // Get old/new version
+                        entryObtained = entryMap.remove(-entry.getId());
+                        if (entryObtained == null) // no partner, so just store
+                            entryMap.put(entry.getId(), entry);
+                        else // group with partner
+                            entryChanges.add(new EntryOnline.EntryChanges(entry, entryObtained));
+                    }
+                    // Only old or new (insert or delete)
+                    entryMap.forEach((aLong, entryOnline) ->
+                            entryChanges.add(new EntryOnline.EntryChanges(entryOnline)));
+                    return new ArrayList<>(entryChanges);
+                });
+    }
+
+    public Completable doViewedEntries(long cashBoxId) {//todo delete views and delete old when already existing old
+        return cashBoxEntryOnlineDao.deleteOldEntries(cashBoxId)
+                .andThen(cashBoxEntryOnlineDao.setViewedAll(cashBoxId));
     }
 
     private static class CheckResponseErrorFunction<T extends UtilAppResponse>
             implements Function<T, SingleSource<T>> {
         @Override
         public SingleSource<T> apply(@NonNull T response) {
-            if(response.isSuccessful())
+            if (response.isSuccessful())
                 return Single.just(response);
             else
                 return Single.error(new UtilAppException(response.getMessage()));

@@ -27,22 +27,22 @@ public class PeriodicEntryWorkRepository {
     private PeriodicEntryWorkDao periodicEntryWorkDao;
     private LiveData<List<PeriodicEntryPojo>> periodicEntries = null;
 
-    public static PeriodicEntryWorkRepository getInstance(Application application) {
-        if(INSTANCE == null)
-            INSTANCE = new PeriodicEntryWorkRepository(application);
-        return INSTANCE;
-    }
-
     private PeriodicEntryWorkRepository(Application application) {
         // WorkManager
         workManager = WorkManager.getInstance(application);
         periodicEntryWorkDao = UtilitiesDatabase.getInstance(application).periodicEntryWorkDao();
     }
 
+    public static PeriodicEntryWorkRepository getInstance(Application application) {
+        if (INSTANCE == null)
+            INSTANCE = new PeriodicEntryWorkRepository(application);
+        return INSTANCE;
+    }
+
     // WorkManager
 
     public LiveData<List<PeriodicEntryPojo>> getPeriodicEntries() {
-        if(periodicEntries == null)
+        if (periodicEntries == null)
             periodicEntries = periodicEntryWorkDao.getAllWorkPojos();
         return periodicEntries;
     }

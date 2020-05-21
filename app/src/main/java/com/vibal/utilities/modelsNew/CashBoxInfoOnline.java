@@ -36,7 +36,7 @@ public class CashBoxInfoOnline extends CashBoxInfo {
     @NonNull
     @Override
     public CashBoxInfoOnline cloneContents() {
-        return   (CashBoxInfoOnline) super.cloneContents();
+        return (CashBoxInfoOnline) super.cloneContents();
     }
 
     @NonNull

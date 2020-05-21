@@ -37,7 +37,7 @@ public abstract class CashBoxLocalDao extends CashBoxBaseDao {
 
     @Override
     public Completable delete(CashBoxInfo cashBoxInfo) {
-        return setDeleted(cashBoxInfo.getId(),true);
+        return setDeleted(cashBoxInfo.getId(), true);
     }
 
     @Override
@@ -46,24 +46,24 @@ public abstract class CashBoxLocalDao extends CashBoxBaseDao {
     }
 
     // Non deleted CashBoxes
-    @Query("SELECT C.id,C.name,C.orderId,SUM(amount) AS cash, 0 AS hasChanges, currency " +
+    @Query("SELECT C.id,C.name,C.orderId,SUM(amount) AS cash, 0 AS changes, currency " +
             "FROM cashBoxesInfo_table AS C LEFT JOIN entries_table AS E ON C.id=E.cashBoxId " +
             "WHERE deleted=:deleted " +
-            "GROUP BY C.id,C.name,C.orderId, C.deleted, hasChanges, C.currency " +
+            "GROUP BY C.id,C.name,C.orderId, C.deleted, changes, C.currency " +
             "ORDER BY C.orderId ASC")
     public abstract LiveData<List<CashBox.InfoWithCash>> getAllCashBoxesInfo(boolean deleted);
 
-    @Query("SELECT C.id,C.name,C.orderId,SUM(amount) AS cash,0 AS hasChanges,C.currency " +
+    @Query("SELECT C.id,C.name,C.orderId,SUM(amount) AS cash,0 AS changes,C.currency " +
             "FROM cashBoxesInfo_table AS C LEFT JOIN entries_table AS E ON C.id=E.cashBoxId " +
             "WHERE C.id=:id " +
-            "GROUP BY C.id,C.name,C.orderId,hasChanges, C.currency")
+            "GROUP BY C.id,C.name,C.orderId,changes, C.currency")
     public abstract LiveData<CashBox.InfoWithCash> getCashBoxInfoWithCashById(long id);
 
     @Transaction
-    @Query("SELECT C.id,C.name,C.orderId,SUM(amount) AS cash,0 AS hasChanges,C.currency " +
+    @Query("SELECT C.id,C.name,C.orderId,SUM(amount) AS cash,0 AS changes,C.currency " +
             "FROM cashBoxesInfo_table AS C LEFT JOIN entries_table AS E ON C.id=E.cashBoxId " +
             "WHERE C.id=:id " +
-            "GROUP BY C.id,C.name,C.orderId,hasChanges,C.currency")
+            "GROUP BY C.id,C.name,C.orderId,changes,C.currency")
     public abstract Single<CashBox> getCashBoxById(long id);
 
     //todo mejorar coger from directamente
@@ -78,10 +78,10 @@ public abstract class CashBoxLocalDao extends CashBoxBaseDao {
     public abstract Completable moveCashBoxToOrderPos(long cashBoxId, long fromOrderPos, long toOrderPos);
 
     // Get all CashBoxInfo to supply the widget
-    @Query("SELECT C.id,C.name,C.orderId,SUM(amount) AS cash,0 AS hasChanges,C.currency " +
+    @Query("SELECT C.id,C.name,C.orderId,SUM(amount) AS cash,0 AS changes,C.currency " +
             "FROM cashBoxesInfo_table AS C LEFT JOIN entries_table AS E ON C.id=E.cashBoxId " +
             "WHERE C.deleted=0 " +
-            "GROUP BY C.id,C.name,C.orderId,C.deleted,hasChanges,C.currency " +
+            "GROUP BY C.id,C.name,C.orderId,C.deleted,changes,C.currency " +
             "ORDER BY C.orderId DESC")
     public abstract List<CashBox.InfoWithCash> getAllCashBoxInfoForWidget();
 

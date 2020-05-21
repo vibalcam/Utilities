@@ -4,6 +4,7 @@ import android.app.Application;
 
 import androidx.annotation.NonNull;
 
+import com.vibal.utilities.modelsNew.EntryOnline;
 import com.vibal.utilities.persistence.repositories.CashBoxOnlineRepository;
 import com.vibal.utilities.persistence.repositories.CashBoxRepository;
 import com.vibal.utilities.persistence.retrofit.UtilAppException;
@@ -13,17 +14,17 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.util.List;
 
 import io.reactivex.Completable;
+import io.reactivex.Single;
 
 public class CashBoxOnlineViewModel extends CashBoxViewModel {
     private CashBoxOnlineRepository repository;
 
-    public CashBoxOnlineViewModel(@NonNull Application application) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException, IOException {
-//        super(application, new CashBoxOnlineRepository(application));
-//        super(application, CashBoxOnlineRepository.getInstance(application));
+    public CashBoxOnlineViewModel(@NonNull Application application) throws CertificateException,
+            NoSuchAlgorithmException, KeyStoreException, KeyManagementException, IOException {
         super(application);
-//        repository = CashBoxOnlineRepository.getInstance(application);
     }
 
     @Override
@@ -32,7 +33,8 @@ public class CashBoxOnlineViewModel extends CashBoxViewModel {
     }
 
     @Override
-    protected CashBoxRepository initializeRepository(Application application) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException, KeyManagementException {
+    protected CashBoxRepository initializeRepository(Application application) throws CertificateException,
+            NoSuchAlgorithmException, KeyStoreException, IOException, KeyManagementException {
         repository = CashBoxOnlineRepository.getInstance(application);
         return repository;
     }
@@ -42,6 +44,20 @@ public class CashBoxOnlineViewModel extends CashBoxViewModel {
     }
 
     public Completable sendInvitation(String username) {
-        return repository.sendInvitationToCashBox(username,getCurrentCashBoxId());
+        return repository.sendInvitationToCashBox(username, getCurrentCashBoxId());
+    }
+
+    public Completable acceptInvitation(long cashBoxId) {
+        return repository.acceptInvitationToCashBox(cashBoxId);
+    }
+
+    public Completable getChanges() {
+        return repository.getChanges();
+    }
+
+    public Single<List<EntryOnline.EntryChanges>> getNonViewedEntries(long cashBoxId) {
+        return repository.getNonViewedEntries(cashBoxId)
+                .flatMap(entryChanges -> repository.doViewedEntries(cashBoxId)
+                        .toSingleDefault(entryChanges));
     }
 }

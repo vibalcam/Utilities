@@ -8,14 +8,20 @@
     android:background="@android:color/white"
     tools:context=".ui.cashBoxManager.CashBoxItemFragment">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvCashBoxItem"
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/refreshCBItem"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginBottom="@dimen/marginItemRecyclerView"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        tools:listitem="@layout/cash_box_item_item"
-        tools:itemCount="5"/>
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvCashBoxItem"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:listitem="@layout/cash_box_item_item"
+            tools:itemCount="5" />
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -23,17 +29,20 @@
         android:background="@android:color/white"
         android:layout_gravity="fill_horizontal|bottom"
         app:layout_dodgeInsetEdges="bottom">
+
         <View
             android:id="@+id/dividerRVItem"
             android:layout_width="0dp"
             android:layout_height="1dp"
             android:background="@color/colorDivider"
-            android:layout_marginHorizontal="@dimen/divider_marginParent"
-            android:layout_marginVertical="@dimen/divider_marginItems"
+            android:layout_marginStart="@dimen/main_marginHorizontal"
+            android:layout_marginEnd="@dimen/main_marginHorizontal"
             app:layout_constraintTop_toBottomOf="parent"
             app:layout_constraintBottom_toTopOf="@id/itemCash"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp" />
 
         <TextView
             android:id="@+id/titleItemCash"
@@ -49,6 +58,7 @@
             app:layout_constraintBottom_toBottomOf="@id/itemCash"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/itemCash" />
+
         <TextView
             android:id="@+id/itemCash"
             android:layout_width="0dp"
@@ -62,7 +72,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginBottom="@dimen/fab_margin"
             android:layout_marginEnd="90dp"
-            tools:text="50,00 €"/>
+            tools:text="50,00 €" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton

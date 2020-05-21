@@ -21,6 +21,8 @@ public class CashBoxInfo implements Cloneable {
     public static final long NO_ORDER_ID = 0;
     @Ignore
     public static final int MAX_LENGTH_NAME = 15;
+    @Ignore
+    public static final char FIX_NAME_CHARACTER = ':';
 //    @Ignore
 //    public static final long NO_ONLINE_ID = 0;
 
@@ -41,7 +43,7 @@ public class CashBoxInfo implements Cloneable {
 //    @ColumnInfo(defaultValue = ""+NO_ONLINE_ID)
 //    private long onlineId = NO_ONLINE_ID;
 
-//    public CashBoxInfo(long id, @NonNull String name, long orderId, boolean deleted,
+    //    public CashBoxInfo(long id, @NonNull String name, long orderId, boolean deleted,
 //                       Currency currency,long onlineId) {
 //    public CashBoxInfo(long id, @NonNull String name, long orderId, boolean deleted, Currency currency) {
 //        this.id = id;
@@ -99,14 +101,14 @@ public class CashBoxInfo implements Cloneable {
     }
 
     public CashBoxInfo fixName(String extra) throws IllegalArgumentException {
-        if(extra == null)
+        if (extra == null)
             throw new IllegalArgumentException("Invalid extra");
 
         extra = extra.trim();
-        if(name.length() + 1 + extra.length() > MAX_LENGTH_NAME)
-            setName(name.substring(0,name.length()-extra.length()) + "_" + extra);
+        if (name.length() + 1 + extra.length() > MAX_LENGTH_NAME)
+            setName(name.substring(0, name.length() - extra.length()) + FIX_NAME_CHARACTER + extra);
         else
-            setName(name + "_" + extra);
+            setName(name + FIX_NAME_CHARACTER + extra);
 
         return this;
     }

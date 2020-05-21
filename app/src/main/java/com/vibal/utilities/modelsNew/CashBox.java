@@ -36,23 +36,28 @@ public class CashBox {
     @Relation(parentColumn = "id", entityColumn = "cashBoxId")
     private List<Entry> entries;
 
-    @Ignore
-    public static CashBox createLocal(String name) throws IllegalArgumentException {
-        return new CashBox(InfoWithCash.createLocal(name), new ArrayList<>());
-    }
-
-    @Ignore
-    public static CashBox createOnline(String name) throws IllegalArgumentException {
-        return new CashBox(InfoWithCash.createOnline(name), new ArrayList<>());
-    }
-
     /**
      * Used to create a puppet CashBox
+     *
      * @param name Name for the puppet CashBox
      */
     @Ignore
     public CashBox(String name) {
         this(new InfoWithCash(name), new ArrayList<>());
+    }
+
+    /**
+     * You must ensure that cash is the sum of all the amounts.
+     * Should not be used directly.
+     */
+    public CashBox(InfoWithCash infoWithCash, @NonNull List<Entry> entries) throws IllegalArgumentException {
+        this.infoWithCash = infoWithCash;
+        this.entries = entries;
+    }
+
+    @Ignore
+    public static CashBox createLocal(String name) throws IllegalArgumentException {
+        return new CashBox(InfoWithCash.createLocal(name), new ArrayList<>());
     }
 
 //    @Ignore
@@ -66,13 +71,9 @@ public class CashBox {
 //        infoWithCash = new InfoWithCash(name, calculateCash(entries));
 //    }
 
-    /**
-     * You must ensure that cash is the sum of all the amounts.
-     * Should not be used directly.
-     */
-    public CashBox(InfoWithCash infoWithCash, @NonNull List<Entry> entries) throws IllegalArgumentException {
-        this.infoWithCash = infoWithCash;
-        this.entries = entries;
+    @Ignore
+    public static CashBox createOnline(String name) throws IllegalArgumentException {
+        return new CashBox(InfoWithCash.createOnline(name), new ArrayList<>());
     }
 
 //    @Ignore
@@ -174,6 +175,7 @@ public class CashBox {
 
 
     public static class InfoWithCash implements Cloneable, DiffDbUsable<InfoWithCash> {
+        public static final int CHANGE_NEW = -1;
         private static final String DIFF_CASH = "cash";
         private static final String DIFF_NAME = "name";
 //        public static final Parcelable.Creator<InfoWithCash> CREATOR = new Parcelable.Creator<InfoWithCash>() {
@@ -194,22 +196,23 @@ public class CashBox {
         @Embedded
         private final CashBoxInfo cashBoxInfo;
         private double cash; //sum of amounts
-        private boolean hasChanges; // if the CashBox has any unviewed changes
+        private int changes; // if the CashBox has any unviewed changes
 
+
+        @Ignore
+        public InfoWithCash(String name) {
+            this(new CashBoxInfo(name), 0, 0);
+        }
+
+        public InfoWithCash(@NonNull CashBoxInfo cashBoxInfo, double cash, int changes) {
+            this.cashBoxInfo = cashBoxInfo;
+            this.cash = cash;
+            this.changes = changes;
+        }
 
         @Ignore
         public static InfoWithCash createLocal(String name) {
-            return new InfoWithCash(new CashBoxInfoLocal(name),0, false);
-        }
-
-        @Ignore
-        public static InfoWithCash createOnline(String name) {
-            return new InfoWithCash(new CashBoxInfoOnline(name),0, false);
-        }
-
-        @Ignore
-        public InfoWithCash (String name) {
-            this(new CashBoxInfo(name), 0, false);
+            return new InfoWithCash(new CashBoxInfoLocal(name), 0, 0);
         }
 
 //        @Ignore
@@ -222,10 +225,9 @@ public class CashBox {
 //            this(name, 0);
 //        }
 
-        public InfoWithCash(@NonNull CashBoxInfo cashBoxInfo, double cash, boolean hasChanges) {
-            this.cashBoxInfo = cashBoxInfo;
-            this.cash = cash;
-            this.hasChanges = hasChanges;
+        @Ignore
+        public static InfoWithCash createOnline(String name) {
+            return new InfoWithCash(new CashBoxInfoOnline(name), 0, 0);
         }
 
 //        @Ignore
@@ -244,7 +246,11 @@ public class CashBox {
         }
 
         public boolean hasChanges() {
-            return hasChanges;
+            return changes != 0;
+        }
+
+        public boolean isNew() {
+            return changes == CHANGE_NEW;
         }
 
         @NonNull
@@ -270,12 +276,13 @@ public class CashBox {
             return "InfoWithCash{" +
                     "cashBoxInfo=" + cashBoxInfo.toString() +
                     ", cash=" + cash +
+                    ", changes=" + changes +
                     '}';
         }
 
         @NonNull
         public InfoWithCash cloneContents() {
-            return new InfoWithCash(cashBoxInfo.cloneContents(), cash, hasChanges);
+            return new InfoWithCash(cashBoxInfo.cloneContents(), cash, changes);
         }
 
         // Implementation of Parcelable
@@ -302,6 +309,7 @@ public class CashBox {
         @Override
         public boolean areContentsTheSame(@NonNull InfoWithCash newItem) {
             return this.cash == newItem.cash &&
+                    this.changes == newItem.changes &&
                     this.cashBoxInfo.areContentsTheSame(newItem.cashBoxInfo);
         }
 

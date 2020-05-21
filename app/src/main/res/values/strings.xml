@@ -8,11 +8,11 @@
     <string name="titleCBM_online">Cloud</string>
     <string name="title_periodicEntry">Periodic Entries</string>
     <string name="title_deletedCashBox">Recycle Bin</string>
-    <string name="title_activity_settings">Settings</string>
+    <!--    <string name="title_activity_settings">Settings</string>-->
 
-    <string name="settings">Settings</string>
+
     <string name="action_about">About this app</string>
-    <string name="add">Add</string>
+
     <string name="roll">Roll The Dice</string>
     <string name="shuffle">Shuffle List</string>
     <string name="randomChooser_title">Contestants</string>
@@ -37,12 +37,10 @@
     <string name="helperEnterNameDialog">Max. 15 characters</string>
     <string name="contentDescriptionLogoMain">App\'s logo</string>
 
-    <!--Dialog Buttons-->
-
-
     <!--Menu Actions-->
     <string name="action_help">Help</string>
     <string name="action_versions">What\'s New?</string>
+    <string name="settings">Settings</string>
 
     <!--Dialogs and SnackBars-->
     <string name="confirmDeleteAllDialog">Confirm Delete All</string>
@@ -54,6 +52,11 @@
     <string name="snackbarEntriesDeleted">%d deleted</string>
     <string name="snackbarEntriesMoveToRecycle">%d moved to recycle bin</string>
     <string name="snackbarEntriesRestored">%d restored</string>
+    <string name="accept">Accept</string>
+    <string name="reject">Reject</string>
+    <string name="invite">Invite</string>
+    <string name="duplicate">Duplicate</string>
+    <string name="add">Add</string>
 
     <!--CashBox Manager Fragment-->
     <string name="no_cashbox_selected">No CashBox Selected</string>
@@ -67,8 +70,7 @@
     <string name="menuCBM_notifications">Notifications</string>
 
     <!--CashBox Manager Contextual Menu-->
-    <string name="contextualMenu_CBMDuplicate">Duplicate</string>
-    <string name="invite">Invite</string>
+
 
     <!--CashBox Item Fragment-->
     <string name="titleGroupEntryDelete">Delete Group Entry</string>
@@ -81,7 +83,7 @@
     <string name="enterInfoDialog">Info</string>
     <string name="enterAmountDialog">Amount</string>
 
-    <!--CashBox Online Item Fragment-->
+    <!--CashBox Online Fragments-->
     <string name="dialog_inviteTitle">Invite user</string>
     <string name="dialog_selectUsername">Choose Username</string>
     <string name="dialog_text_username">
@@ -89,6 +91,9 @@
         \n(Do not use your real name)
     </string>
     <string name="dialog_hint_username">Username</string>
+    <string name="dialog_acceptInvitation_title">New CashBox Invitation</string>
+    <string name="dialog_acceptInvitation_message">%s has invited yo to a shared online cashBox</string>
+    <string name="dialog_view_changes">Non viewed changes</string>
 
     <!--CashBox Item Menu-->
     <string name="action_reset">Delete All</string>
@@ -97,6 +102,7 @@
     <string name="menu_item_share">Share</string>
     <string name="menu_item_currency">Currency</string>
     <string name="menu_item_invite">Invite</string>
+    <string name="menu_refresh">Refresh</string>
 
     <!--CashBox Deleted Menu-->
     <string name="action_restoreAll">Restore All</string>
@@ -146,7 +152,10 @@
         \nTo delete all entries, click the trashcan symbol at the top of the app.
     </string>
     <string name="changesVersions">
-        <b>2.4.3</b>
+        <b>2.5</b>
+        \n-\tAdded online cashBoxes. Now you will be able having a shared cashBoxes with your
+        friends.
+        \n<b>2.4.3</b>
         \n-\tAdded tabs to easily navigate to recycle bin and periodic entries.
         \n-\tFixed memory bugs.
         \n<b>2.4.2</b>

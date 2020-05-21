@@ -70,7 +70,7 @@ public abstract class UtilitiesDatabase extends RoomDatabase { // todo new migra
         }
     };
 
-    private static final Migration MIGRATION_3_4 = new Migration(3,4) {
+    private static final Migration MIGRATION_3_4 = new Migration(3, 4) {
         @Override
         public void migrate(@NonNull SupportSQLiteDatabase database) {
             // Online CashBoxInfo
@@ -86,7 +86,7 @@ public abstract class UtilitiesDatabase extends RoomDatabase { // todo new migra
             // Online Entry
             database.execSQL("CREATE TABLE IF NOT EXISTS `entriesOnline_table` (" +
                     "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
-                    "`viewed` INTEGER NOT NULL DEFAULT 0, " +
+                    "`changeDate` INTEGER DEFAULT NULL, " +
                     "`cashBoxId` INTEGER NOT NULL, " +
                     "`amount` REAL NOT NULL, " +
                     "`date` INTEGER, " +
