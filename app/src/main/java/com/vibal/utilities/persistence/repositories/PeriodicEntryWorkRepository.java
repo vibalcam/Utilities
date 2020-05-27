@@ -1,6 +1,6 @@
 package com.vibal.utilities.persistence.repositories;
 
-import android.app.Application;
+import android.content.Context;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
@@ -27,15 +27,16 @@ public class PeriodicEntryWorkRepository {
     private PeriodicEntryWorkDao periodicEntryWorkDao;
     private LiveData<List<PeriodicEntryPojo>> periodicEntries = null;
 
-    private PeriodicEntryWorkRepository(Application application) {
+    private PeriodicEntryWorkRepository(Context context) {
+        context = context.getApplicationContext();
         // WorkManager
-        workManager = WorkManager.getInstance(application);
-        periodicEntryWorkDao = UtilitiesDatabase.getInstance(application).periodicEntryWorkDao();
+        workManager = WorkManager.getInstance(context);
+        periodicEntryWorkDao = UtilitiesDatabase.getInstance(context).periodicEntryWorkDao();
     }
 
-    public static PeriodicEntryWorkRepository getInstance(Application application) {
+    public static PeriodicEntryWorkRepository getInstance(Context context) {
         if (INSTANCE == null)
-            INSTANCE = new PeriodicEntryWorkRepository(application);
+            INSTANCE = new PeriodicEntryWorkRepository(context);
         return INSTANCE;
     }
 

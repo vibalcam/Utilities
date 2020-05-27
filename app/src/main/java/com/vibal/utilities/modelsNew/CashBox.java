@@ -15,7 +15,7 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CashBox {
+public abstract class CashBox {
 //    public static final Parcelable.Creator<CashBox> CREATOR = new Parcelable.Creator<CashBox>() {
 //        @NonNull
 //        @Override
@@ -32,9 +32,14 @@ public class CashBox {
 
     @Embedded
     private InfoWithCash infoWithCash;
-    @NonNull
-    @Relation(parentColumn = "id", entityColumn = "cashBoxId")
-    private List<Entry> entries;
+//    @NonNull
+//    @Relation(parentColumn = "id", entityColumn = "cashBoxId", entity = EntryOnline.class)
+//    private List<Entry> entries;
+
+    @Ignore
+    public CashBox(InfoWithCash infoWithCash) {
+        this.infoWithCash = infoWithCash;
+    }
 
     /**
      * Used to create a puppet CashBox
@@ -42,38 +47,36 @@ public class CashBox {
      * @param name Name for the puppet CashBox
      */
     @Ignore
-    public CashBox(String name) {
-        this(new InfoWithCash(name), new ArrayList<>());
-    }
-
-    /**
-     * You must ensure that cash is the sum of all the amounts.
-     * Should not be used directly.
-     */
-    public CashBox(InfoWithCash infoWithCash, @NonNull List<Entry> entries) throws IllegalArgumentException {
-        this.infoWithCash = infoWithCash;
-        this.entries = entries;
+    public static CashBox create(String name) {
+        return new CashBox.Local(new InfoWithCash(name), new ArrayList<>());
     }
 
     @Ignore
     public static CashBox createLocal(String name) throws IllegalArgumentException {
-        return new CashBox(InfoWithCash.createLocal(name), new ArrayList<>());
+        return new CashBox.Local(InfoWithCash.createLocal(name), new ArrayList<>());
     }
 
-//    @Ignore
-//    public CashBox(@NonNull String name) throws IllegalArgumentException {
-//        this(new InfoWithCash(name, 0), new ArrayList<>());
-//    }
-
-//    @Ignore
-//    public CashBox(@NonNull String name, @NonNull List<Entry> entries) throws IllegalArgumentException {
+//    /**
+//     * You must ensure that cash is the sum of all the amounts.
+//     * Should not be used directly.
+//     */
+//    public CashBox(InfoWithCash infoWithCash, @NonNull List<Entry> entries) throws IllegalArgumentException {
+//        this.infoWithCash = infoWithCash;
 //        this.entries = entries;
-//        infoWithCash = new InfoWithCash(name, calculateCash(entries));
 //    }
 
     @Ignore
     public static CashBox createOnline(String name) throws IllegalArgumentException {
-        return new CashBox(InfoWithCash.createOnline(name), new ArrayList<>());
+        return new CashBox.Online(InfoWithCash.createOnline(name), new ArrayList<>());
+    }
+
+    @NonNull
+    public InfoWithCash getInfoWithCash() {
+        return infoWithCash;
+    }
+
+    public void setInfoWithCash(InfoWithCash infoWithCash) {
+        this.infoWithCash = infoWithCash;
     }
 
 //    @Ignore
@@ -94,15 +97,6 @@ public class CashBox {
 //    }
 
     @NonNull
-    public InfoWithCash getInfoWithCash() {
-        return infoWithCash;
-    }
-
-    public void setInfoWithCash(InfoWithCash infoWithCash) {
-        this.infoWithCash = infoWithCash;
-    }
-
-    @NonNull
     public String getName() {
         return infoWithCash.getCashBoxInfo().getName();
     }
@@ -116,13 +110,9 @@ public class CashBox {
     }
 
     @NonNull
-    public List<Entry> getEntries() {
-        return entries;
-    }
+    abstract public List<Entry> getEntries();
 
-    public void setEntries(List<Entry> entries) {
-        this.entries = entries;
-    }
+    abstract public void setEntries(List<Entry> entries);
 
     private int calculateCash(@NonNull List<Entry> entries) {
         int sum = 0;
@@ -144,9 +134,14 @@ public class CashBox {
     @NonNull
     public CashBox cloneContents() {
         List<Entry> entryList = new ArrayList<>();
-        for (Entry entry : entries)
+        for (Entry entry : getEntries())
             entryList.add(entry.cloneContents());
-        return new CashBox(infoWithCash.cloneContents(), entryList);
+        if (this instanceof CashBox.Online)
+            return new CashBox.Online(infoWithCash.cloneContents(), entryList);
+        else if (this instanceof CashBox.Local)
+            return new CashBox.Local(infoWithCash.cloneContents(), entryList);
+        else // should never happen
+            throw new RuntimeException("CashBox is not online nor local: cannot clone");
     }
 
     @Override
@@ -159,7 +154,7 @@ public class CashBox {
         builder.append("*")
                 .append(infoWithCash.getCashBoxInfo().getName())
                 .append("*");
-        for (Entry entry : entries)
+        for (Entry entry : getEntries())
             builder.append("\n\n")
                     .append(entry.toString(currencyFormat, dateFormat));
         builder.append("\n*TotalCash: ")
@@ -173,6 +168,57 @@ public class CashBox {
         return infoWithCash.hashCode();
     }
 
+    public static class Local extends CashBox {
+        @NonNull
+        @Relation(parentColumn = "id", entityColumn = "cashBoxId", entity = Entry.class)
+        private List<Entry> entries;
+
+        /**
+         * You must ensure that cash is the sum of all the amounts.
+         * Should not be used directly.
+         */
+        public Local(InfoWithCash infoWithCash, @NonNull List<Entry> entries) {
+            super(infoWithCash);
+            this.entries = entries;
+        }
+
+        @Override
+        @NonNull
+        public List<Entry> getEntries() {
+            return entries;
+        }
+
+        @Override
+        public void setEntries(@NonNull List<Entry> entries) {
+            this.entries = entries;
+        }
+    }
+
+    public static class Online extends CashBox {
+        @NonNull
+        @Relation(parentColumn = "id", entityColumn = "cashBoxId", entity = EntryOnline.class)
+        private List<Entry> entries;
+
+        /**
+         * You must ensure that cash is the sum of all the amounts.
+         * Should not be used directly.
+         */
+        public Online(InfoWithCash infoWithCash, @NonNull List<Entry> entries) {
+            super(infoWithCash);
+            this.entries = entries;
+        }
+
+        @Override
+        @NonNull
+        public List<Entry> getEntries() {
+            return entries;
+        }
+
+        @Override
+        public void setEntries(@NonNull List<Entry> entries) {
+            this.entries = entries;
+        }
+    }
 
     public static class InfoWithCash implements Cloneable, DiffDbUsable<InfoWithCash> {
         public static final int CHANGE_NEW = -1;
@@ -214,16 +260,6 @@ public class CashBox {
         public static InfoWithCash createLocal(String name) {
             return new InfoWithCash(new CashBoxInfoLocal(name), 0, 0);
         }
-
-//        @Ignore
-//        public InfoWithCash(@NonNull String name, double cash) throws IllegalArgumentException {
-//            this(new CashBoxInfo(name), cash);
-//        }
-//
-//        @Ignore
-//        public InfoWithCash(@NonNull String name) throws IllegalArgumentException {
-//            this(name, 0);
-//        }
 
         @Ignore
         public static InfoWithCash createOnline(String name) {

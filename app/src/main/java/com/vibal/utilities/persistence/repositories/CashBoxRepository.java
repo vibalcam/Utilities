@@ -1,6 +1,6 @@
 package com.vibal.utilities.persistence.repositories;
 
-import android.app.Application;
+import android.content.Context;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
@@ -29,9 +29,9 @@ public abstract class CashBoxRepository {
     // CashBox Manager
     private LiveData<List<CashBox.InfoWithCash>> cashBoxesInfo = null;
 
-    protected CashBoxRepository(Application application) {
+    protected CashBoxRepository(Context context) {
         // PeriodicWork
-        workRepository = PeriodicEntryWorkRepository.getInstance(application);
+        workRepository = PeriodicEntryWorkRepository.getInstance(context.getApplicationContext());
     }
 
     public LiveData<List<CashBox.InfoWithCash>> getCashBoxesInfo() {
@@ -71,7 +71,7 @@ public abstract class CashBoxRepository {
     @NonNull
     public LiveData<CashBox> getOrderedCashBox(long id) {
         MediatorLiveData<CashBox> liveDataMerger = new MediatorLiveData<>();
-        liveDataMerger.setValue(new CashBox("Loading...")); // Puppet CashBox to be changed
+        liveDataMerger.setValue(CashBox.create("Loading...")); // Puppet CashBox to be changed
 
         liveDataMerger.addSource(getCashBoxDao().getCashBoxInfoWithCashById(id),
                 infoWithCash -> {

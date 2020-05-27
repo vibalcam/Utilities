@@ -6,9 +6,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.widget.ContentLoadingProgressBar;
 import androidx.fragment.app.DialogFragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DividerItemDecoration;
@@ -37,6 +39,11 @@ public class CashBoxChangesDialogFragment extends DialogFragment {
     private static final String TAG = "PruebaChangesDialog";
     private static final String ARGS_CASHBOX_ID = "cashBoxId";
 
+    @BindView(R.id.progressChanges)
+    ContentLoadingProgressBar progressBar;
+    @BindView(R.id.rvChanges)
+    RecyclerView rvPeriodicEntry;
+
     private CashBoxChangesRecyclerAdapter adapter;
     private CashBoxOnlineViewModel viewModel;
     private Disposable disposable;
@@ -61,7 +68,6 @@ public class CashBoxChangesDialogFragment extends DialogFragment {
         ButterKnife.bind(this, view);
 
         //Set up the RecyclerView
-        RecyclerView rvPeriodicEntry = view.findViewById(R.id.rvChanges);
         rvPeriodicEntry.setHasFixedSize(true);
         LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
         rvPeriodicEntry.setLayoutManager(layoutManager);
@@ -76,17 +82,20 @@ public class CashBoxChangesDialogFragment extends DialogFragment {
 
         long cashBoxId = getArguments().getLong(ARGS_CASHBOX_ID);
         viewModel = new ViewModelProvider(requireParentFragment()).get(CashBoxOnlineViewModel.class);
-        if (cashBoxId == CashBoxInfo.NO_ID)
+        if (cashBoxId == CashBoxInfo.NO_ID) {
+            LogUtil.debug(TAG, "Tried to get changes for NO_ID");
             dismiss();
-        else
+        } else {
             disposable = viewModel.getNonViewedEntries(cashBoxId)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(entryOnlineBundleMap -> adapter.submitNew(entryOnlineBundleMap),
                             throwable -> {
                                 LogUtil.error(TAG, "Obtaining non viewed: ", throwable);
+                                Toast.makeText(requireParentFragment().getContext(), "Unexpected error", Toast.LENGTH_SHORT).show();
                                 dismiss();
                             });
+        }
     }
 
     @Override
@@ -96,7 +105,7 @@ public class CashBoxChangesDialogFragment extends DialogFragment {
             disposable.dispose();
     }
 
-    static class CashBoxChangesRecyclerAdapter extends RecyclerView.Adapter<CashBoxChangesRecyclerAdapter.ViewHolder> {
+    class CashBoxChangesRecyclerAdapter extends RecyclerView.Adapter<CashBoxChangesRecyclerAdapter.ViewHolder> {
         private final NumberFormat formatCurrency = NumberFormat.getCurrencyInstance();
         private final DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
 
@@ -111,8 +120,14 @@ public class CashBoxChangesDialogFragment extends DialogFragment {
         }
 
         private void submitNew(List<EntryOnline.EntryChanges> entryChanges) {
+            if (entryChanges == null)
+                return;
             this.changesList = entryChanges;
             notifyDataSetChanged();
+
+            //Stop showing progress bar
+            progressBar.hide();
+            rvPeriodicEntry.setVisibility(View.VISIBLE);
         }
 
         @Override
@@ -269,7 +284,7 @@ public class CashBoxChangesDialogFragment extends DialogFragment {
             return changesList.size();
         }
 
-        static class ViewHolder extends RecyclerView.ViewHolder {
+        class ViewHolder extends RecyclerView.ViewHolder {
             @BindView(R.id.changesOldDate)
             TextView oldDate;
             @BindView(R.id.changesNewDate)

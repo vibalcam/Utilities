@@ -59,11 +59,14 @@ public class PeriodicEntryPojo implements DiffDbUsable<PeriodicEntryPojo> {
                 this.workInfo.repetitions == newItem.workInfo.repetitions;
     }
 
+    /**
+     * Periodic Entry Work only for local purposes, not available for online
+     */
     @Entity(tableName = "periodicWork_table",
             foreignKeys = @ForeignKey(entity = CashBoxInfoLocal.class, parentColumns = "id",
                     childColumns = "cashBoxId", onDelete = CASCADE, onUpdate = CASCADE),
             indices = {@Index(value = "cashBoxId")})
-    public static class PeriodicEntryWorkInfo { //todo choose if allow in online or not, if yes, extend class
+    public static class PeriodicEntryWorkInfo {
         @PrimaryKey(autoGenerate = true)
         private long id;
         @NonNull

@@ -13,6 +13,7 @@ public interface UtilAppAPI {
     // Request codes
     String REQ_URL = "utilApp.php";
     String REQ_CODE = "reqCode: ";
+    int REQ_DELETE_USER = -1;
     int REQ_CASHBOXES = 0;
     int REQ_ENTRIES = 1;
     int REQ_CHANGES_GET = 2;
@@ -81,4 +82,8 @@ public interface UtilAppAPI {
     @Headers(REQ_CODE + REQ_CHANGES_RCV)
     @POST(REQ_URL)
     Single<UtilAppResponse> confirmReceivedChanges(@Body Collection<Long> notificationIds);
+
+    @Headers(REQ_CODE + REQ_DELETE_USER)
+    @POST(REQ_URL)
+    Single<UtilAppResponse> deleteUser();
 }

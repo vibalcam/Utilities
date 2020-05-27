@@ -17,6 +17,7 @@ import java.security.cert.CertificateException;
 import java.util.List;
 
 import io.reactivex.Completable;
+import io.reactivex.Observable;
 import io.reactivex.Single;
 
 public class CashBoxOnlineViewModel extends CashBoxViewModel {
@@ -51,7 +52,7 @@ public class CashBoxOnlineViewModel extends CashBoxViewModel {
         return repository.acceptInvitationToCashBox(cashBoxId);
     }
 
-    public Completable getChanges() {
+    public Observable<Object> getChanges() {
         return repository.getChanges();
     }
 

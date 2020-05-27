@@ -1,1 +1,5 @@
-- View and get changes, and accept invitation functionality added
+- Fixed bug with submitList() in CashBoxItemFragment and CashBoxManagerFragment (now only one single running at a time with a concurrent pending list)
+- Changed CashBox for Local and Online @Relation (Room relation one-to-many) with Entries
+- Fixed getCashBoxesById that returns a Single from CashBoxDaos
+- Added option to delete user
+- Changed trusted SSL to none, not needed any longer

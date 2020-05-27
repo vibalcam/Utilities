@@ -41,4 +41,28 @@ public class DiffCallback<T extends DiffDbUsable<T>> extends DiffUtil.Callback {
     public Bundle getChangePayload(int oldItemPosition, int newItemPosition) {
         return oldList.get(oldItemPosition).getChangePayload(newList.get(newItemPosition));
     }
+
+    public static class DiffResultWithList<T extends DiffDbUsable<T>> {
+        private DiffUtil.DiffResult diffResult;
+        private List<T> newList;
+
+        public DiffResultWithList(DiffUtil.DiffResult diffResult, List<T> newList) {
+            this.diffResult = diffResult;
+            this.newList = newList;
+        }
+
+        public static <T extends DiffDbUsable<T>> DiffResultWithList<T> calculateDiff(
+                List<T> oldList, List<T> newList, boolean detectMoves) {
+            return new DiffResultWithList<>(
+                    DiffUtil.calculateDiff(new DiffCallback<>(oldList, newList), detectMoves), newList);
+        }
+
+        public DiffUtil.DiffResult getDiffResult() {
+            return diffResult;
+        }
+
+        public List<T> getNewList() {
+            return newList;
+        }
+    }
 }

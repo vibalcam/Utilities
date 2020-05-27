@@ -33,7 +33,6 @@ import androidx.appcompat.view.ActionMode;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.preference.PreferenceManager;
-import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -43,7 +42,6 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.android.material.textview.MaterialTextView;
 import com.vibal.utilities.R;
-import com.vibal.utilities.models.CashBoxManager;
 import com.vibal.utilities.modelsNew.CashBox;
 import com.vibal.utilities.modelsNew.CashBoxInfo;
 import com.vibal.utilities.modelsNew.Entry;
@@ -59,26 +57,21 @@ import com.vibal.utilities.util.MyDialogBuilder;
 import com.vibal.utilities.util.Util;
 import com.vibal.utilities.viewModels.CashBoxViewModel;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.OnTouch;
 import io.reactivex.Completable;
-import io.reactivex.Maybe;
-import io.reactivex.MaybeOnSubscribe;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
@@ -276,13 +269,6 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
         setHasOptionsMenu(true);
     }
 
-//    @NonNull
-//    static CashBoxManagerFragment newInstance(int pagerPosition) {
-//        CashBoxManagerFragment fragment = new CashBoxManagerLocalFragment();
-//        fragment.setPositionAsArgument(pagerPosition);
-//        return fragment;
-//    }
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -318,7 +304,7 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
         initializeViewModel().getCashBoxesInfo().observe(getViewLifecycleOwner(), infoWithCashes ->
                 adapter.submitList(infoWithCashes));
 
-        checkFileForCashBoxes();
+//        checkFileForCashBoxes();
     }
 
     @NonNull
@@ -333,66 +319,67 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
         compositeDisposable.dispose();
     }
 
-    /**
-     * Left for compability with previous versions that used file storage
-     */
-    private void checkFileForCashBoxes() {
-        compositeDisposable.add(Maybe.create((MaybeOnSubscribe<CashBoxManager>) emitter -> {
-            LogUtil.debug(TAG, "Inicio check file");
-            //Check if the file exists
-            File originalFile = requireContext().getFileStreamPath("cashBoxManager");
-            File tempFile = requireContext().getFileStreamPath("cashBoxManagerTemp");
-            if (!originalFile.exists() && !tempFile.exists()) {
-                LogUtil.debug(TAG, "No files found");
-                emitter.onComplete();
-                return;
-            }
-            LogUtil.debug(TAG, Arrays.toString(originalFile.getParentFile().list()));
-
-            //If it does, upload all the cashBoxes to the new DB version
-            String fileName = tempFile.lastModified() > originalFile.lastModified() ?
-                    "cashBoxManagerTemp" : "cashBoxManager";
-            Object cashBoxManager;
-            try (ObjectInputStream objectInputStream = new ObjectInputStream(requireContext().openFileInput(fileName))) {
-                cashBoxManager = objectInputStream.readObject();
-                if (cashBoxManager instanceof CashBoxManager)
-                    emitter.onSuccess((CashBoxManager) cashBoxManager);
-                else
-                    emitter.onComplete();
-            } catch (@NonNull IOException | ClassNotFoundException e) {
-                LogUtil.error(TAG, "loadData: error al leer archivo", e);
-                emitter.onError(e);
-            }
-        }).flatMapCompletable(manager -> {
-            LogUtil.debug(TAG, "Analyze cashboxmanager");
-            Completable completable = Completable.complete();
-            CashBox.InfoWithCash infoWithCash;
-            List<Entry> entryList;
-            com.vibal.utilities.models.CashBox cashBox;
-            com.vibal.utilities.models.CashBox.Entry entry;
-            for (int k = 0; k < manager.size(); k++) {
-                cashBox = manager.get(k);
-                infoWithCash = new CashBox.InfoWithCash(cashBox.getName());
-                entryList = new ArrayList<>();
-                for (int i = 0; i < cashBox.sizeEntries(); i++) {
-                    entry = cashBox.getEntry(i);
-                    entryList.add(new Entry(entry.getAmount(), entry.getInfo(), entry.getDate()));
-                }
-
-                completable = completable.andThen(getViewModel().addCashBox(new CashBox(infoWithCash, entryList)));
-                LogUtil.debug(TAG, new CashBox(infoWithCash, entryList).toString());
-            }
-            return completable.doOnComplete(() -> {
-                //Delete files
-                requireContext().deleteFile("cashBoxManager");
-                requireContext().deleteFile("cashBoxManagerTemp");
-                LogUtil.debug(TAG, "Success delete");
-                LogUtil.debug(TAG, Arrays.toString(requireContext().getFileStreamPath("cashBoxManager").getParentFile().list()));
-            });
-        }).subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe());
-    }
+    //todo delete from file to db
+//    /**
+//     * Left for compability with previous versions that used file storage
+//     */
+//    private void checkFileForCashBoxes() {
+//        compositeDisposable.add(Maybe.create((MaybeOnSubscribe<CashBoxManager>) emitter -> {
+//            LogUtil.debug(TAG, "Inicio check file");
+//            //Check if the file exists
+//            File originalFile = requireContext().getFileStreamPath("cashBoxManager");
+//            File tempFile = requireContext().getFileStreamPath("cashBoxManagerTemp");
+//            if (!originalFile.exists() && !tempFile.exists()) {
+//                LogUtil.debug(TAG, "No files found");
+//                emitter.onComplete();
+//                return;
+//            }
+//            LogUtil.debug(TAG, Arrays.toString(originalFile.getParentFile().list()));
+//
+//            //If it does, upload all the cashBoxes to the new DB version
+//            String fileName = tempFile.lastModified() > originalFile.lastModified() ?
+//                    "cashBoxManagerTemp" : "cashBoxManager";
+//            Object cashBoxManager;
+//            try (ObjectInputStream objectInputStream = new ObjectInputStream(requireContext().openFileInput(fileName))) {
+//                cashBoxManager = objectInputStream.readObject();
+//                if (cashBoxManager instanceof CashBoxManager)
+//                    emitter.onSuccess((CashBoxManager) cashBoxManager);
+//                else
+//                    emitter.onComplete();
+//            } catch (@NonNull IOException | ClassNotFoundException e) {
+//                LogUtil.error(TAG, "loadData: error al leer archivo", e);
+//                emitter.onError(e);
+//            }
+//        }).flatMapCompletable(manager -> {
+//            LogUtil.debug(TAG, "Analyze cashboxmanager");
+//            Completable completable = Completable.complete();
+//            CashBox.InfoWithCash infoWithCash;
+//            List<Entry> entryList;
+//            com.vibal.utilities.models.CashBox cashBox;
+//            com.vibal.utilities.models.CashBox.Entry entry;
+//            for (int k = 0; k < manager.size(); k++) {
+//                cashBox = manager.get(k);
+//                infoWithCash = new CashBox.InfoWithCash(cashBox.getName());
+//                entryList = new ArrayList<>();
+//                for (int i = 0; i < cashBox.sizeEntries(); i++) {
+//                    entry = cashBox.getEntry(i);
+//                    entryList.add(new Entry(entry.getAmount(), entry.getInfo(), entry.getDate()));
+//                }
+//
+//                completable = completable.andThen(getViewModel().addCashBox(new CashBox(infoWithCash, entryList)));
+//                LogUtil.debug(TAG, new CashBox(infoWithCash, entryList).toString());
+//            }
+//            return completable.doOnComplete(() -> {
+//                //Delete files
+//                requireContext().deleteFile("cashBoxManager");
+//                requireContext().deleteFile("cashBoxManagerTemp");
+//                LogUtil.debug(TAG, "Success delete");
+//                LogUtil.debug(TAG, Arrays.toString(requireContext().getFileStreamPath("cashBoxManager").getParentFile().list()));
+//            });
+//        }).subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribe());
+//    }
 
     @Override
     public void onStart() {
@@ -407,17 +394,6 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
         super.onResume();
         LogUtil.debug("PruebaView", getParentFragmentManager().getFragments().toString());
     }
-
-//    @Override
-//    public void onStop() {
-//        super.onStop();
-//        // Delete all periodic tasks which are no longer active
-//        LogUtil.debug(TAG, "On stop: delete periodic inactive");
-//        compositeDisposable.add(viewModel.deletePeriodicInactive()
-//                .subscribeOn(Schedulers.io())
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .subscribe());
-//    }
 
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
@@ -639,7 +615,7 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
                         inputLayoutInitCash.setError(null);
                         inputLayoutName.setError(null);
                         try {
-                            CashBox cashBox = new CashBox(inputTextName.getText().toString());
+                            CashBox cashBox = CashBox.create(inputTextName.getText().toString());
                             String strInitCash = inputTextInitCash.getText().toString().trim();
                             if (!strInitCash.isEmpty()) {
                                 double initCash = Util.parseExpression(strInitCash);
@@ -856,6 +832,8 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
         private static final String TAG = "PruebaManagerActivity";
 
         private final NumberFormat currencyFormat = NumberFormat.getCurrencyInstance();
+        @NonNull
+        private final ConcurrentLinkedQueue<Single<DiffCallback.DiffResultWithList<CashBox.InfoWithCash>>> pendingSubmitted = new ConcurrentLinkedQueue<>();
         private Set<Integer> selectedItems = new HashSet<>();
         private OnStartDragListener onStartDragListener;
         @NonNull
@@ -867,23 +845,53 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
 
         /**
          * Submit a new list of elements for the adapter to show.
-         * All changes in adapter lis must go through submitList.
+         * All changes in adapter list must go through submitList.
          *
          * @param newList New list to be submitted
          */
         void submitList(@NonNull List<CashBox.InfoWithCash> newList) {
             LogUtil.debug(TAG, "New list submitted: " + newList.toString());
+            pendingSubmitted.add(Single.create(emitter ->
+                    emitter.onSuccess(DiffCallback.DiffResultWithList.calculateDiff(
+                            currentList, newList, false))));
+            // If pending is empty, add and start this work
+            // if there is already another work in progress, just add to pending
+            if (pendingSubmitted.size() == 1)
+                runPendingSubmitted();
 
-            compositeDisposable.add(Single.just(DiffUtil.calculateDiff(
-                    new DiffCallback<>(currentList, newList), false))
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(diffResult -> {
-                        LogUtil.debug(TAG, "DiffResult calculated");
-                        currentList.clear();
-                        currentList.addAll(newList);
-                        diffResult.dispatchUpdatesTo(CashBoxManagerRecyclerAdapter.this);
-                    }));
+
+//            compositeDisposable.add(Single.just(DiffUtil.calculateDiff(
+//                    new DiffCallback<>(currentList, newList), false))
+//                    .subscribeOn(Schedulers.io())
+//                    .observeOn(AndroidSchedulers.mainThread())
+//                    .subscribe(diffResult -> {
+//                        LogUtil.debug(TAG, "DiffResult calculated");
+//                        currentList.clear();
+//                        currentList.addAll(newList);
+//                        diffResult.dispatchUpdatesTo(CashBoxManagerRecyclerAdapter.this);
+//                    }));
+        }
+
+        private void runPendingSubmitted() {
+            Single<DiffCallback.DiffResultWithList<CashBox.InfoWithCash>> single = pendingSubmitted.peek();
+            if (single != null) {
+                compositeDisposable.add(single
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(diffResultWithList -> {
+                            LogUtil.debug(TAG, "DiffResult calculated");
+                            // Show diff changes
+                            currentList.clear();
+                            currentList.addAll(diffResultWithList.getNewList());
+                            diffResultWithList.getDiffResult()
+                                    .dispatchUpdatesTo(CashBoxManagerRecyclerAdapter.this);
+
+                            // Delete this work from pending
+                            pendingSubmitted.poll();
+                            // Run next pending
+                            runPendingSubmitted();
+                        }));
+            }
         }
 
         @NonNull

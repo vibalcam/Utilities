@@ -28,7 +28,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.ShareActionProvider;
 import androidx.core.view.MenuItemCompat;
 import androidx.preference.PreferenceManager;
-import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -61,6 +60,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -230,9 +230,9 @@ public abstract class CashBoxItemFragment extends PagerFragment {
         super.onCreateOptionsMenu(menu, inflater);
 
         // Set Title
-        ActionBar actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
-        if (actionBar != null)
-            actionBar.setTitle(getViewModel().getCurrentCashBox().getValue().getName());
+//        ActionBar actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
+//        if (actionBar != null)
+//            actionBar.setTitle(getViewModel().getCurrentCashBox().getValue().getName());
 
         // Change options menu if not in landscape mode
         View viewLand = requireView().findViewById(R.id.containerItem);
@@ -446,23 +446,60 @@ public abstract class CashBoxItemFragment extends PagerFragment {
     public class CashBoxItemRecyclerAdapter extends RecyclerView.Adapter<CashBoxItemRecyclerAdapter.ViewHolder> implements CashBoxAdapterSwipable {
         private static final boolean DRAG_ENABLED = false;
         private static final boolean SWIPE_ENABLED = true;
-
+        @NonNull
+        private final ConcurrentLinkedQueue<Single<DiffCallback.DiffResultWithList<Entry>>> pendingSubmitted = new ConcurrentLinkedQueue<>();
         @NonNull
         private DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
         @NonNull
         private List<Entry> currentList = new ArrayList<>();
 
+        /**
+         * Submit a new list of elements for the adapter to show.
+         * All changes in adapter list must go through submitList.
+         *
+         * @param newList New list to be submitted
+         */
         void submitList(@NonNull List<Entry> newList) {
-            compositeDisposable.add(Single.just(DiffUtil.calculateDiff(
-                    new DiffCallback<>(currentList, newList), false))
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(diffResult -> {
-                        LogUtil.debug(TAG, "DiffResult calculated");
-                        currentList.clear();
-                        currentList.addAll(newList);
-                        diffResult.dispatchUpdatesTo(CashBoxItemRecyclerAdapter.this);
-                    }));
+            pendingSubmitted.add(Single.create(emitter ->
+                    emitter.onSuccess(DiffCallback.DiffResultWithList.calculateDiff(
+                            currentList, newList, false))));
+            // If pending is empty, add and start this work
+            // if there is already another work in progress, just add to pending
+            if (pendingSubmitted.size() == 1)
+                runPendingSubmitted();
+
+//            compositeDisposable.add(Single.just(DiffUtil.calculateDiff(
+//                    new DiffCallback<>(currentList, newList), false))
+//                    .subscribeOn(Schedulers.io())
+//                    .observeOn(AndroidSchedulers.mainThread())
+//                    .subscribe(diffResult -> {
+//                        LogUtil.debug(TAG, "DiffResult calculated");
+//                        currentList.clear();
+//                        currentList.addAll(newList);
+//                        diffResult.dispatchUpdatesTo(CashBoxItemRecyclerAdapter.this);
+//                    }));
+        }
+
+        private void runPendingSubmitted() {
+            Single<DiffCallback.DiffResultWithList<Entry>> single = pendingSubmitted.peek();
+            if (single != null) {
+                compositeDisposable.add(single
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(diffResultWithList -> {
+                            LogUtil.debug(TAG, "DiffResult calculated");
+                            // Show diff changes
+                            currentList.clear();
+                            currentList.addAll(diffResultWithList.getNewList());
+                            diffResultWithList.getDiffResult()
+                                    .dispatchUpdatesTo(CashBoxItemRecyclerAdapter.this);
+
+                            // Delete this work from pending
+                            pendingSubmitted.poll();
+                            // Run next pending
+                            runPendingSubmitted();
+                        }));
+            }
         }
 
         @NonNull

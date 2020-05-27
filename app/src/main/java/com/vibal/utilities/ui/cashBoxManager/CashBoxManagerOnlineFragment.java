@@ -33,6 +33,7 @@ import butterknife.BindView;
 import io.reactivex.Completable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.observers.DisposableObserver;
 import io.reactivex.schedulers.Schedulers;
 
 public class CashBoxManagerOnlineFragment extends CashBoxManagerFragment {
@@ -57,26 +58,46 @@ public class CashBoxManagerOnlineFragment extends CashBoxManagerFragment {
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
         refreshLayout.setOnRefreshListener(this::onRefresh);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Show to add dialog when first go in
+        if (!CashBoxOnlineRepository.isOnlineIdSet())
+            showAddDialog();
     }
 
     private void onRefresh() {
         compositeDisposable.add(viewModel.getChanges()
-                .subscribeOn(Schedulers.io())
+//                .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(() -> refreshLayout.setRefreshing(false),
-                        throwable -> {
-                            LogUtil.error(TAG, "Error on refresh: ", throwable);
-                            refreshLayout.setRefreshing(false);
-                            Toast.makeText(requireContext(),
-                                    throwable instanceof UtilAppException ?
-                                            throwable.getLocalizedMessage() :
-                                            "An unexpected error occurred",
-                                    Toast.LENGTH_SHORT)
-                                    .show();
-                        }));
+                .subscribeWith(new DisposableObserver<Object>() {
+                    @Override
+                    public void onNext(Object o) {
+                    }
+
+                    @Override
+                    public void onError(Throwable throwable) {
+                        LogUtil.error(TAG, "Error on refresh: ", throwable);
+                        refreshLayout.setRefreshing(false);
+                        Toast.makeText(requireContext(),
+                                throwable instanceof UtilAppException ?
+                                        throwable.getLocalizedMessage() :
+                                        "An unexpected error occurred",
+                                Toast.LENGTH_SHORT)
+                                .show();
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        Toast.makeText(requireContext(), "Up to date!", Toast.LENGTH_SHORT).show();
+                        refreshLayout.setRefreshing(false);
+                    }
+                }));
     }
 
     @Override

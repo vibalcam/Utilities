@@ -16,12 +16,26 @@
         android:textStyle="bold"
         android:textAppearance="?android:textAppearanceLarge" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvChanges"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:listitem="@layout/dialog_view_changes_item"
-        tools:itemCount="5" />
+        android:minHeight="100dp">
+
+        <androidx.core.widget.ContentLoadingProgressBar
+            android:id="@+id/progressChanges"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            style="@android:style/Widget.Material.Light.ProgressBar.Large" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvChanges"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            tools:listitem="@layout/dialog_view_changes_item"
+            tools:itemCount="5" />
+    </FrameLayout>
 </LinearLayout>
 
     <!--<androidx.recyclerview.widget.RecyclerView-->

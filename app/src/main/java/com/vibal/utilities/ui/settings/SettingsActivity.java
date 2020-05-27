@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -13,7 +14,20 @@ import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.SwitchPreference;
 
 import com.vibal.utilities.R;
+import com.vibal.utilities.persistence.repositories.CashBoxOnlineRepository;
+import com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity;
+import com.vibal.utilities.util.LogUtil;
 import com.vibal.utilities.util.MyDialogBuilder;
+
+import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.schedulers.Schedulers;
 
 public class SettingsActivity extends AppCompatActivity {
     public static final String KEY_DEFAULT_START = "defaultStart";
@@ -55,6 +69,8 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat implements Preference.OnPreferenceClickListener {
+        private CompositeDisposable compositeDisposable = new CompositeDisposable();
+
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setPreferencesFromResource(R.xml.preferences, rootKey);
@@ -72,15 +88,46 @@ public class SettingsActivity extends AppCompatActivity {
             return true;
         }
 
-        //todo hacer preferences delete
         private void cancelOnlineMode(SwitchPreference preference) {
             new MyDialogBuilder(requireContext())
                     .setTitle(R.string.pref_online_cancel)
                     .setMessage(R.string.allowOnline_cancelMessage)
-                    .setPositiveButton(R.string.deleteLocal, (dialog, which) -> preference.setChecked(false))
-                    .setNegativeButton(R.string.moveLocal, (dialog, which) -> preference.setChecked(false))
-                    .setNeutralButton(R.string.cancelDialog, null)
+                    .setPositiveButton(R.string.deleteLocal, (dialog, which) -> {
+                        if (!preference.isChecked())
+                            return;
+
+                        try {
+                            CashBoxOnlineRepository repository = CashBoxOnlineRepository.getInstance(requireActivity().getApplication());
+                            compositeDisposable.add(repository.deleteUser()
+                                    .subscribeOn(Schedulers.io())
+                                    .observeOn(AndroidSchedulers.mainThread())
+                                    .subscribe(string -> {
+                                                requireActivity().getSharedPreferences(
+                                                        CashBoxManagerActivity.CASHBOX_MANAGER_PREFERENCE, Context.MODE_PRIVATE)
+                                                        .edit()
+                                                        .remove(CashBoxManagerActivity.USERNAME_KEY)
+                                                        .remove(CashBoxManagerActivity.CLIENT_ID_KEY)
+                                                        .apply();
+                                                CashBoxOnlineRepository.setOnlineId(0);
+                                                preference.setChecked(false);
+                                                Toast.makeText(requireContext(), string, Toast.LENGTH_SHORT).show();
+                                            },
+                                            throwable -> Toast.makeText(requireContext(),
+                                                    "An unexpected error occured...", Toast.LENGTH_SHORT).show()));
+                        } catch (CertificateException | NoSuchAlgorithmException | KeyStoreException | IOException | KeyManagementException e) {
+                            LogUtil.error("PruebaSettings", "Delete user:", e);
+                            Toast.makeText(requireContext(), "An unexpected error occured...", Toast.LENGTH_SHORT).show();
+                        }
+                    }).setNegativeButton(R.string.cancelDialog, null)
+//                    .setNeutralButton(R.string.cancelDialog, null)
+//                    .setNegativeButton(R.string.moveLocal, (dialog, which) -> preference.setChecked(false))
                     .show();
+        }
+
+        @Override
+        public void onDestroy() {
+            super.onDestroy();
+            compositeDisposable.dispose();
         }
     }
 }

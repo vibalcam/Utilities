@@ -27,6 +27,7 @@ import com.vibal.utilities.viewModels.CashBoxViewModel;
 
 import butterknife.BindView;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.observers.DisposableObserver;
 import io.reactivex.schedulers.Schedulers;
 
 public class CashBoxItemOnlineFragment extends CashBoxItemFragment {
@@ -51,25 +52,38 @@ public class CashBoxItemOnlineFragment extends CashBoxItemFragment {
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
         refreshLayout.setOnRefreshListener(this::onRefresh);
     }
 
     private void onRefresh() {
         compositeDisposable.add(viewModel.getChanges()
-                .subscribeOn(Schedulers.io())
+//                .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(() -> refreshLayout.setRefreshing(false),
-                        throwable -> {
-                            refreshLayout.setRefreshing(false);
-                            Toast.makeText(requireContext(),
-                                    throwable instanceof UtilAppException ?
-                                            throwable.getLocalizedMessage() :
-                                            "An unexpected error occurred",
-                                    Toast.LENGTH_SHORT)
-                                    .show();
-                        }));
+                .subscribeWith(new DisposableObserver<Object>() {
+                    @Override
+                    public void onNext(Object o) {
+                    }
+
+                    @Override
+                    public void onError(Throwable throwable) {
+                        LogUtil.error(TAG, "Error on refresh: ", throwable);
+                        refreshLayout.setRefreshing(false);
+                        Toast.makeText(requireContext(),
+                                throwable instanceof UtilAppException ?
+                                        throwable.getLocalizedMessage() :
+                                        "An unexpected error occurred",
+                                Toast.LENGTH_SHORT)
+                                .show();
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        Toast.makeText(requireContext(), "Up to date!", Toast.LENGTH_SHORT).show();
+                        refreshLayout.setRefreshing(false);
+                    }
+                }));
     }
 
     @NonNull

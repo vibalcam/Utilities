@@ -62,14 +62,6 @@ public class EntryOnline extends Entry implements Comparable<EntryOnline> {
 
     public boolean isOld() {
         return id < 0;
-    } //todo
-
-    public boolean setToOld() {
-        if (id > 0) {
-            id = -id;
-            return true;
-        } else
-            return false;
     }
 
     @NonNull

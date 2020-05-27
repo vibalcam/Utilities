@@ -13,6 +13,7 @@ import com.vibal.utilities.modelsNew.CashBoxInfo;
 import com.vibal.utilities.modelsNew.CashBoxInfoLocal;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Currency;
 import java.util.List;
 
@@ -64,7 +65,17 @@ public abstract class CashBoxLocalDao extends CashBoxBaseDao {
             "FROM cashBoxesInfo_table AS C LEFT JOIN entries_table AS E ON C.id=E.cashBoxId " +
             "WHERE C.id=:id " +
             "GROUP BY C.id,C.name,C.orderId,changes,C.currency")
-    public abstract Single<CashBox> getCashBoxById(long id);
+    abstract Single<CashBox.Local> getCashBoxLocalById(long id);
+
+    @Override
+    public Single<CashBox> getCashBoxById(long id) {
+        return getCashBoxLocalById(id)
+                .map(local -> {
+                    Collections.sort(local.getEntries(),
+                            (o1, o2) -> o1.getDate().compareTo(o2.getDate()));
+                    return local;
+                });
+    }
 
     //todo mejorar coger from directamente
     @Query("UPDATE cashBoxesInfo_table " +

@@ -79,25 +79,6 @@ public class RxPeriodicEntryWorker extends RxWorker {
                     LogUtil.debug(TAG, "Didn't found the corresponding work info");
                     return Result.success();
                 });
-
-
-//        LogUtil.debug(TAG,"Do job");
-//        UtilitiesDatabase database = UtilitiesDatabase.getInstance(getApplicationContext());
-//        return database.periodicEntryWorkDao().getWorkPojoByUUID(getId())
-//                .flatMap(periodicEntryPojo -> {
-//                    PeriodicEntryPojo.PeriodicEntryWorkInfo workInfo = periodicEntryPojo.getWorkInfo();
-//                    Entry entry = new Entry(workInfo.getCashBoxId(),workInfo.getAmount(),
-//                            "Periodic: " + workInfo.getInfo(), Calendar.getInstance());
-//                    return database.cashBoxEntryLocalDao().insert(entry)
-//                            .toSingle(() -> {
-//                                LogUtil.debug(TAG,"Success");
-//                                showNotification(periodicEntryPojo);
-//                                return Result.success();
-//                            }).onErrorReturn(throwable -> {
-//                                LogUtil.error(TAG,"Error en periodic", throwable);
-//                                return Result.failure();
-//                            });
-//                });
     }
 
     private void showNotification(@NonNull PeriodicEntryPojo periodicEntryPojo) {

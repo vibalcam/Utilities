@@ -1,12 +1,11 @@
 package com.vibal.utilities.persistence.repositories;
 
-import android.app.Application;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteConstraintException;
 
 import androidx.annotation.NonNull;
 
-import com.vibal.utilities.R;
 import com.vibal.utilities.modelsNew.CashBoxInfo;
 import com.vibal.utilities.modelsNew.Entry;
 import com.vibal.utilities.modelsNew.EntryOnline;
@@ -21,37 +20,33 @@ import com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity;
 import com.vibal.utilities.util.LogUtil;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.security.KeyManagementException;
-import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509TrustManager;
-
 import io.reactivex.Completable;
+import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.SingleSource;
 import io.reactivex.functions.Function;
+import io.reactivex.schedulers.Schedulers;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import retrofit2.Retrofit;
@@ -67,37 +62,47 @@ import static com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity.CASHB
 
 public class CashBoxOnlineRepository extends CashBoxRepository {
     private static final String TAG = "PruebaOnlineRepo";
-    private static final int TIMEOUT_CHANGES = 5; // in seconds
+    private static final int TIMEOUT_CHANGES = 30; // in seconds
     private static final int NUM_RETRIES_CHANGES = 3;
+    private static final String KEY_ONLINE_PREFERENCE = "com.vibal.utilities.persistence.ONLINE_NOTIFICATIONS";
 
     private static final String BASE_URL = "https://192.168.0.41/util/"; //todo temporal para prueba
     private static final Pattern PATTERN_VALID_USERNAME = Pattern.compile("\\W");
     private static long ONLINE_ID = 0;
     private static CashBoxOnlineRepository INSTANCE = null;
-    private static UtilAppAPI utilAppAPI = null;
-    //    private final HashSet<Long> confirmedNotifications = new HashSet<>();
     private final TreeMap<Long, Long> receivedNotifications = new TreeMap<>();
+    private UtilAppAPI utilAppAPI = null;
     private CashBoxOnlineDao cashBoxOnlineDao;
     private CashBoxEntryOnlineDao cashBoxEntryOnlineDao;
+    private SharedPreferences notificationsPreference = null;
 
-    private CashBoxOnlineRepository(Application application) throws CertificateException,
+    //    private CashBoxOnlineRepository(Application application) throws CertificateException,
+    private CashBoxOnlineRepository(Context context) throws CertificateException,
             NoSuchAlgorithmException, KeyStoreException, IOException, KeyManagementException {
-        super(application);
+        super(context);
+        context = context.getApplicationContext();
 
-        UtilitiesDatabase database = UtilitiesDatabase.getInstance(application);
+        // Database
+        UtilitiesDatabase database = UtilitiesDatabase.getInstance(context);
         cashBoxOnlineDao = database.cashBoxOnlineDao();
         cashBoxEntryOnlineDao = database.cashBoxEntryOnlineDao();
+
+        // Confirmed notifications
+        if (notificationsPreference == null)
+            notificationsPreference = context.getSharedPreferences(KEY_ONLINE_PREFERENCE, Context.MODE_PRIVATE);
+        // Load received notifications
+        notificationsPreference.getAll().forEach((s, o) -> receivedNotifications.put(Long.parseLong(s), (Long) o));
+
+        // Retrofit api
         if (utilAppAPI == null) {
             Retrofit retrofit = new Retrofit.Builder()
                     .baseUrl(BASE_URL)
-                    .client(getOkHttpClient(application))
+                    .client(getOkHttpClient(context))
                     .addConverterFactory(GsonConverterFactory.create())
                     .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                     .build();
             utilAppAPI = retrofit.create(UtilAppAPI.class);
         }
-
-//        pruebaHttp();
     }
 
     public static boolean isOnlineIdSet() {
@@ -105,27 +110,28 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
     }
 
     public static void setOnlineId(long onlineId) {
-        if (isOnlineIdSet())
+        if (isOnlineIdSet() && onlineId != 0)
             throw new IllegalArgumentException("There is already an existing onlineId");
         else
             ONLINE_ID = onlineId;
     }
 
-    public static CashBoxOnlineRepository getInstance(Application application) throws CertificateException,
+    //    public static CashBoxOnlineRepository getInstance(Application application) throws CertificateException,
+    public static CashBoxOnlineRepository getInstance(Context context) throws CertificateException,
             NoSuchAlgorithmException, KeyStoreException, KeyManagementException, IOException {
         if (INSTANCE == null)
-            INSTANCE = new CashBoxOnlineRepository(application);
+            INSTANCE = new CashBoxOnlineRepository(context);
         return INSTANCE;
     }
 
     // TCP/HTTP/DNS (depending on the port, 53=DNS, 80=HTTP, etc.)
-    public static boolean isOnline() {
+    private static boolean isOnline() {
         try {
             int timeoutMs = 1500;
             Socket sock = new Socket();
-            SocketAddress sockaddr = new InetSocketAddress("8.8.8.8", 53);
+            SocketAddress socketAddress = new InetSocketAddress("8.8.8.8", 53);
 
-            sock.connect(sockaddr, timeoutMs);
+            sock.connect(socketAddress, timeoutMs);
             sock.close();
 
             return true;
@@ -134,48 +140,40 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
         }
     }
 
-//    public static boolean isConnected(@NonNull Context context) {
-//        ConnectivityManager cm =
-//                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+//    @NonNull
+//    private static TrustManagerFactory getTrustManagerFactory(@NonNull Context context) throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException {
+//        // Admit ssl certificate
+//        // Load CAs from an InputStream
+//        CertificateFactory cf = CertificateFactory.getInstance("X.509");
+//        Certificate ca;
+//        try (InputStream cert = context.getResources().openRawResource(R.raw.cert)) {
+//            ca = cf.generateCertificate(cert);
+//        }
 //
-//        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-//        return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+//        // Create a KeyStore containing our trusted CAs
+//        String keyStoreType = KeyStore.getDefaultType();
+//        KeyStore keyStore = KeyStore.getInstance(keyStoreType);
+//        keyStore.load(null, null);
+//        keyStore.setCertificateEntry("ca", ca);
+//
+//        // Create a TrustManager that trusts the CAs in our KeyStore
+//        String tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
+//        TrustManagerFactory tmf = TrustManagerFactory.getInstance(tmfAlgorithm);
+//        tmf.init(keyStore);
+//
+//        return tmf;
 //    }
-
-    @NonNull
-    private static TrustManagerFactory getTrustManagerFactory(@NonNull Context context) throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
-        // Admit ssl certificate
-        // Load CAs from an InputStream
-        CertificateFactory cf = CertificateFactory.getInstance("X.509");
-        Certificate ca;
-        try (InputStream cert = context.getResources().openRawResource(R.raw.cert)) {
-            ca = cf.generateCertificate(cert);
-        }
-
-        // Create a KeyStore containing our trusted CAs
-        String keyStoreType = KeyStore.getDefaultType();
-        KeyStore keyStore = KeyStore.getInstance(keyStoreType);
-        keyStore.load(null, null);
-        keyStore.setCertificateEntry("ca", ca);
-
-        // Create a TrustManager that trusts the CAs in our KeyStore
-        String tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
-        TrustManagerFactory tmf = TrustManagerFactory.getInstance(tmfAlgorithm);
-        tmf.init(keyStore);
-
-        return tmf;
-    }
 
     @NonNull
     private OkHttpClient getOkHttpClient(Context context) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException, IOException {
         // Create an SSLContext that uses our TrustManager
-        TrustManagerFactory tmf = getTrustManagerFactory(context);
-        SSLContext sslContext = SSLContext.getInstance("TLS");
-        sslContext.init(null, tmf.getTrustManagers(), null);
+//        TrustManagerFactory tmf = getTrustManagerFactory(context);
+//        SSLContext sslContext = SSLContext.getInstance("TLS");
+//        sslContext.init(null, tmf.getTrustManagers(), null);
 
         return new OkHttpClient.Builder()
                 .hostnameVerifier((hostname, session) -> hostname.equals("192.168.0.41")) // todo temporal para debug
-                .sslSocketFactory(sslContext.getSocketFactory(), (X509TrustManager) (tmf.getTrustManagers()[0]))
+//                .sslSocketFactory(sslContext.getSocketFactory(), (X509TrustManager) (tmf.getTrustManagers()[0]))
                 .addInterceptor(chain -> {
                     if (!isOnline())
                         throw new UtilAppException.NoConnectivityException();
@@ -231,6 +229,12 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
                 });
     }
 
+    public Single<String> deleteUser() {
+        return utilAppAPI.deleteUser()
+                .flatMap(new CheckResponseErrorFunction<>())
+                .map(UtilAppResponse::getMessage);
+    }
+
     @Override
     public Single<Long> insertCashBoxInfo(@NonNull CashBoxInfo cashBoxInfo) {
         return cashBoxOnlineDao.checkNameAvailable(cashBoxInfo.getName())
@@ -247,10 +251,6 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
                                     return super.insertCashBoxInfo(cashBoxCopy)
                                             .flatMap(aLong -> cashBoxOnlineDao.setCashBoxAccepted(cashBoxId, true)
                                                     .toSingleDefault(aLong));
-
-//                        return super.insertCashBoxInfo(cashBoxCopy)
-//                                .onErrorResumeNext(throwable ->
-//                                        super.insertCashBoxInfo(cashBoxCopy.fixName(Long.toString(cashBoxId))));
                                 } else {
                                     return Single.error(new UtilAppException());
                                 }
@@ -329,8 +329,6 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
 
     @Override
     public Completable insertEntries(@NonNull Collection<Entry> entries) {
-//        if(entries.size()<1)
-//            return Completable.complete();
         Completable completable = Completable.complete();
         for (Entry entry : entries)
             completable = completable.andThen(insertEntry(entry));
@@ -355,8 +353,6 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
     }
 
     public Completable updateEntries(@NonNull Collection<Entry> entries) {
-//        if(entries.size()<1)
-//            return Completable.complete();
         Completable completable = Completable.complete();
         for (Entry entry : entries)
             completable = completable.andThen(updateEntry(entry));
@@ -387,8 +383,6 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
     }
 
     private Completable deleteEntriesServer(@NonNull Collection<Entry> entries) {
-        if (entries.size() < 1)
-            return Completable.complete();
         Completable completable = Completable.complete();
         for (Entry entry : entries)
             completable = completable.andThen(deleteEntry(entry, Completable.complete()));
@@ -439,15 +433,23 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
 
     // Download changes
 
-    public Completable getChanges() {
+    public Completable getCompletableChanges() {
         return utilAppAPI.getChanges()
                 .flatMap(new CheckResponseErrorFunction<>())
                 .flatMapCompletable(changesResponse -> {
                     LogUtil.debug(TAG, "Processing " + changesResponse.getChanges().size() + " changes");
+//                    Thread.sleep(1000);
+//                    LogUtil.debug(TAG, "Half " + changesResponse.getChanges().size() + " changes");
+//                    Thread.sleep(1000);
+//                    LogUtil.debug(TAG, "Finish " + changesResponse.getChanges().size() + " changes");
 
                     // If no new changes
-                    if (changesResponse.getChanges().size() < 1)
-                        return Completable.complete();
+                    if (changesResponse.getChanges().size() < 1) {
+                        if (notificationsPreference.getAll().isEmpty())
+                            return Completable.complete();
+                        else
+                            return confirmReceivedChanges();
+                    }
 
                     // Process changes
                     Completable operation;
@@ -458,7 +460,11 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
                         // Check if its an older version of another notification
                         if (change.getOperationCode() != CASHBOX_INV &&
                                 receivedNotifications.tailMap(change.getNotificationId()).containsValue(change.getId())) {
-                            receivedNotifications.put(change.getNotificationId(), change.getId());
+                            if (notificationsPreference.edit()
+                                    .putLong(Long.toString(change.getNotificationId()), change.getId())
+                                    .commit()) {
+                                receivedNotifications.put(change.getNotificationId(), change.getId());
+                            }
                             continue; // skip since its an older version
                         }
 
@@ -482,27 +488,29 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
                                         .andThen(cashBoxEntryOnlineDao.copyAsNonViewedOld(change.getId()))
                                         .andThen(cashBoxEntryOnlineDao.modify(change.getId(), change.getAmount(),
                                                 change.getInfo(), change.getDateAsCalendar()));
-//                                operation = cashBoxEntryOnlineDao.modify(change.getId(), change.getAmount(),
-//                                        change.getInfo(), change.getDateAsCalendar())
-//                                        .andThen(cashBoxEntryOnlineDao.setChangeDate(change.getId(), Calendar.getInstance()));
                                 break;
                             case DELETE:
                                 operation = cashBoxEntryOnlineDao.copyAsNonViewedOld(change.getId(), Calendar.getInstance())
                                         .andThen(cashBoxEntryOnlineDao.delete(change.getId()));
-//                                operation = cashBoxEntryOnlineDao.delete(change.getId());
                                 break;
                             default:
                                 operation = null;
                         }
                         if (operation != null) {
                             receivedNotifications.put(change.getNotificationId(), change.getId()); // add to received notifications
-                            operation = operation.andThen(Completable.fromAction(() ->
-                                    receivedNotifications.put(change.getNotificationId(), change.getId()))) //todo use shared preferences
-                                    .onErrorComplete(throwable -> {
-                                        LogUtil.error(TAG, "changes: ", throwable);
-                                        return true;
-                                    })
-                                    .doOnComplete(() -> LogUtil.debug(TAG, "realizado: " + receivedNotifications.toString()));
+                            operation = operation.andThen(Completable.fromAction(() -> {
+                                // add notification id to shared preference, or delete from received if failed
+                                if (!notificationsPreference.edit()
+                                        .putLong(Long.toString(change.getNotificationId()), change.getId())
+                                        .commit()) {
+                                    receivedNotifications.remove(change.getNotificationId());
+                                }
+                            })).onErrorComplete(throwable -> {
+                                // delete from received notifications
+                                receivedNotifications.remove(change.getNotificationId());
+                                LogUtil.error(TAG, "changes: ", throwable);
+                                return true;
+                            }).doOnComplete(() -> LogUtil.debug(TAG, "realizado: " + receivedNotifications.toString()));
                             completable = completable.andThen(operation);
                         }
                     }
@@ -511,28 +519,56 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
                 });
     }
 
+    public Observable<Object> getChanges() {
+        // network calls not on main thread
+        return getCompletableChanges()
+                .subscribeOn(Schedulers.io())
+                .toObservable()
+                .publish()
+                .autoConnect();
+    }
+
     private EntryOnline changeNotificationToEntry(UtilAppResponse.ChangesNotification change) {
         return new EntryOnline(change.getId(), change.getCashBoxId(), change.getAmount(), change.getInfo(),
                 change.getDateAsCalendar(), Entry.NO_GROUP, Calendar.getInstance());
     }
 
     private Completable confirmReceivedChanges() {
-        return utilAppAPI.confirmReceivedChanges(receivedNotifications.keySet())
-                .flatMap(new CheckResponseErrorFunction<>()) //todo use shared preferences for confirmed
-                .flatMapCompletable(appResponse -> Completable.fromAction(receivedNotifications::clear))
-                .timeout(TIMEOUT_CHANGES, TimeUnit.SECONDS) //todo dont clear, delete only confirmed
-                .retry(NUM_RETRIES_CHANGES, throwable ->
-                        !(throwable instanceof UtilAppException.NoConnectivityException));
-//                .doOnComplete(() -> LogUtil.debug(TAG,"terminado"));
-        //todo save notifications not send to send after
+        Set<Long> sentConfirmations = new HashSet<>();
+
+        return Completable.fromAction(() -> {
+            // first get the notifications to confirm
+            for (String s : notificationsPreference.getAll().keySet())
+                sentConfirmations.add(Long.parseLong(s));
+        }).andThen(
+                // send confirmations
+                utilAppAPI.confirmReceivedChanges(sentConfirmations)
+                        .flatMap(new CheckResponseErrorFunction<>())
+                        .flatMapCompletable(appResponse -> Completable.fromAction(() -> {
+                            // Delete confirmed notifications
+                            SharedPreferences.Editor editor = notificationsPreference.edit();
+                            for (Long aLong : sentConfirmations) {
+                                editor.remove(Long.toString(aLong));
+                                receivedNotifications.remove(aLong);
+                            }
+                            editor.apply();
+                        })).timeout(TIMEOUT_CHANGES, TimeUnit.SECONDS)
+                        .retry(NUM_RETRIES_CHANGES, throwable ->
+                                !(throwable instanceof UtilAppException.NoConnectivityException))
+        );
     }
+
+//    public Observable<Object> startupUpdate() {
+//        return confirmReceivedChanges()
+//                .andThen(getChanges());
+//    }
 
     // View changes
 
     public Single<List<EntryOnline.EntryChanges>> getNonViewedEntries(long cashBoxId) {
         return cashBoxEntryOnlineDao.getNonViewedEntriesByCashBoxId(cashBoxId)
                 .map(entryOnlines -> {
-                    Map<Long, EntryOnline> entryMap = new HashMap<>();//todo
+                    Map<Long, EntryOnline> entryMap = new HashMap<>();
                     TreeSet<EntryOnline.EntryChanges> entryChanges = new TreeSet<>();
                     EntryOnline entryObtained;
 
@@ -552,7 +588,7 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
                 });
     }
 
-    public Completable doViewedEntries(long cashBoxId) {//todo delete views and delete old when already existing old
+    public Completable doViewedEntries(long cashBoxId) {
         return cashBoxEntryOnlineDao.deleteOldEntries(cashBoxId)
                 .andThen(cashBoxEntryOnlineDao.setViewedAll(cashBoxId));
     }
