@@ -92,7 +92,7 @@ public class SettingsActivity extends AppCompatActivity {
             new MyDialogBuilder(requireContext())
                     .setTitle(R.string.pref_online_cancel)
                     .setMessage(R.string.allowOnline_cancelMessage)
-                    .setPositiveButton(R.string.deleteLocal, (dialog, which) -> {
+                    .setPositiveButton(R.string.delete, (dialog, which) -> {
                         if (!preference.isChecked())
                             return;
 

@@ -18,8 +18,8 @@ android {
         applicationId "com.utilities.vibal.utilities"
         minSdkVersion 24
         targetSdkVersion 29
-        versionCode 17
-        versionName "2.4.3"
+        versionCode 18
+        versionName "3.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         resValue "string", "aboutApp", "Utilities v" + versionName + "\\n\\nvibal " + (new Date().format("dd/MM/yyyy"))
     }

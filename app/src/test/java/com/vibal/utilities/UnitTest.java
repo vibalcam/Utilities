@@ -2,6 +2,7 @@ package com.vibal.utilities;
 
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import io.reactivex.Completable;
@@ -231,5 +232,12 @@ public class UnitTest {
         }
         Thread.sleep(6000);
         assert pending.isEmpty();
+    }
+
+    @Test
+    public void testSplitString() {
+        String s = "probando;probando;";
+        String[] result = s.split(";");
+        System.out.println(Arrays.toString(result));
     }
 }

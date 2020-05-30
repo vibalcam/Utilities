@@ -131,7 +131,7 @@ public class CashBoxSwipeController extends ItemTouchHelper.Callback {
             if (drawable != null) {
                 c.drawRect(rectTotal, paint);
 
-                int size = drawable.getIntrinsicHeight() > rectTotal.height() ? rectTotal.height() : drawable.getIntrinsicHeight();
+                int size = Math.min(drawable.getIntrinsicHeight(), rectTotal.height());
                 int padding = (rectTotal.height() - size) / 2;
                 if (dX > 0)    // icon on the left side when swiping right
                     drawable.setBounds(rectTotal.left + padding, rectTotal.top + padding, rectTotal.left + padding + size, rectTotal.bottom - padding);

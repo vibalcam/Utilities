@@ -54,7 +54,7 @@ public class PeriodicEntryWorkRepository {
 
     public Completable addPeriodicEntryWorkRequest(@NonNull PeriodicEntryPojo.PeriodicEntryWorkRequest workRequest) {
         LogUtil.debug("PruebaPeriodicViewModel", "Add new periodic work");
-        workManager.enqueue(workRequest.getWorkRequest()); //todo observe, calculate difference between lists
+        workManager.enqueue(workRequest.getWorkRequest());
         //Add the data to database
         return periodicEntryWorkDao.insert(workRequest.getWorkInfo());
     }

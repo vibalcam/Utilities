@@ -21,7 +21,7 @@ import com.vibal.utilities.util.Converters;
         EntryOnline.class, PeriodicEntryPojo.PeriodicEntryWorkInfo.class}, version = 4,
         exportSchema = false)
 @TypeConverters(Converters.class)
-public abstract class UtilitiesDatabase extends RoomDatabase { // todo new migration online
+public abstract class UtilitiesDatabase extends RoomDatabase {
     private static final Migration MIGRATION_1_2 = new Migration(1, 2) {
         @Override
         public void migrate(@NonNull SupportSQLiteDatabase database) {
@@ -75,7 +75,7 @@ public abstract class UtilitiesDatabase extends RoomDatabase { // todo new migra
         public void migrate(@NonNull SupportSQLiteDatabase database) {
             // Online CashBoxInfo
             database.execSQL("CREATE TABLE IF NOT EXISTS `cashBoxesOnline_table` (" +
-                    "`accepted` INTEGER NOT NULL DEFAULT 1, " +
+                    "`accepted` INTEGER NOT NULL DEFAULT 0, " +
                     "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
                     "`name` TEXT NOT NULL COLLATE NOCASE, " +
                     "`orderId` INTEGER NOT NULL, " +

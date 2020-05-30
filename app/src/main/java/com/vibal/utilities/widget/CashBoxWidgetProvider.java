@@ -20,6 +20,8 @@ public class CashBoxWidgetProvider extends AppWidgetProvider {
     public static final int ADD_REQUEST = 1;
     public static final int DETAILS_REQUEST = 2;
 
+    public static final String ACTION_REFRESH = "com.vibal.utilities.widget.CASHBOX_REFRESH";
+
     @Override
     public void onUpdate(@NonNull Context context, @NonNull AppWidgetManager appWidgetManager, @NonNull int[] appWidgetIds) {
         // There may be multiple widgets active, so update all of them
@@ -48,10 +50,21 @@ public class CashBoxWidgetProvider extends AppWidgetProvider {
 
             // Instruct the widget manager to update the widget
             appWidgetManager.updateAppWidget(appWidgetId, views);
+            appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.listCBMWidget);
         }
     }
 
-//    @Override
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        if (ACTION_REFRESH.equals(intent.getAction())) {
+            int[] appWidgetInts = intent.getIntArrayExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS);
+            AppWidgetManager.getInstance(context)
+                    .notifyAppWidgetViewDataChanged(appWidgetInts, R.id.listCBMWidget);
+        }
+        super.onReceive(context, intent);
+    }
+
+    //    @Override
 //    public void onReceive(Context context, Intent intent) {
 //        if(ACTION_DETAILS.equals(intent.getAction())) {
 //            int appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,AppWidgetManager.INVALID_APPWIDGET_ID);

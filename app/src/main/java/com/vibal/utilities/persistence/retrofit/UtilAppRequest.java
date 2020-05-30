@@ -30,7 +30,7 @@ public class UtilAppRequest {
     }
 
     public void setId(long id) {
-//        if(id == 0) //todo
+//        if(id == 0)
 //            throw new IllegalArgumentException("Id cannot be 0");
         this.id = id;
     }

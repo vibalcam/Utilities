@@ -29,13 +29,17 @@
     <string name="modifyEntry">Modify Entry</string>
     <string name="addEntryDialog">Add Entry</string>
     <string name="item_totalCash">Total Cash</string>
-    <string name="outOfRange">Out of range</string>
-    <string name="required">*Required</string>
     <string name="errorMessageAmount">" "</string>
     <string name="noEntriesDelete">"No entries to delete"</string>
     <string name="menu_contextualToolbar">Edit Mode</string>
     <string name="helperEnterNameDialog">Max. 15 characters</string>
     <string name="contentDescriptionLogoMain">App\'s logo</string>
+
+    <!--General-->
+    <string name="newList">New List</string>
+    <string name="required">*Required</string>
+    <string name="outOfRange">Out of range</string>
+    <string name="dialog_hint_name">Name</string>
 
     <!--Menu Actions-->
     <string name="action_help">Help</string>
@@ -152,9 +156,11 @@
         \nTo delete all entries, click the trashcan symbol at the top of the app.
     </string>
     <string name="changesVersions">
-        <b>2.5</b>
-        \n-\tAdded online cashBoxes. Now you will be able having a shared cashBoxes with your
+        <b>3.0</b>
+        \n-\tAdded online cashBoxes. Now you will be able to have a shared cashBoxes with your
         friends.
+        \n-\tAdded lists to Random Chooser. Now you can save your most frequently used lists and
+        retrieve them later.
         \n<b>2.4.3</b>
         \n-\tAdded tabs to easily navigate to recycle bin and periodic entries.
         \n-\tFixed memory bugs.
@@ -208,7 +214,7 @@
         By doing so you will withdraw your consent and your user and data will be deleted from the
         server. The data cannot be restored. What do you want to do with your online cashboxes?
     </string>
-    <string name="deleteLocal">Delete</string>
+    <string name="delete">Delete</string>
     <string name="moveLocal">Make local</string>
 
     <!--CashBox Manager Widget-->

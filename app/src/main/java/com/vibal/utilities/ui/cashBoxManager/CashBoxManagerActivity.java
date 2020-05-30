@@ -97,14 +97,17 @@ public class CashBoxManagerActivity extends AppCompatActivity implements TabLayo
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
+    protected void onPause() {
+        super.onPause();
+        LogUtil.debug("PruebaCBActivity", "On pause");
+
         // Update app widget
-        //todo update app widget
         Intent intent = new Intent(this, CashBoxWidgetProvider.class);
-        intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
-        int[] ids = AppWidgetManager.getInstance(getApplicationContext())
-                .getAppWidgetIds(new ComponentName(getApplicationContext(), CashBoxWidgetProvider.class));
+        intent.setAction(CashBoxWidgetProvider.ACTION_REFRESH);
+        // Use an array and EXTRA_APPWIDGET_IDS instead of AppWidgetManager.EXTRA_APPWIDGET_ID,
+        // since it seems the onUpdate() is only fired on that:
+        int[] ids = AppWidgetManager.getInstance(getApplication())
+                .getAppWidgetIds(new ComponentName(getApplication(), CashBoxWidgetProvider.class));
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
         sendBroadcast(intent);
     }

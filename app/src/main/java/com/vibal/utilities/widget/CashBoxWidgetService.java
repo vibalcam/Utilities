@@ -25,7 +25,6 @@ public class CashBoxWidgetService extends RemoteViewsService {
 
     class CashBoxWidgetItemFactory implements RemoteViewsFactory {
         private Context context;
-        @Nullable
         private UtilitiesDatabase database;
         private List<CashBox.InfoWithCash> cashBoxInfos;
         private NumberFormat currencyFormat;
@@ -37,11 +36,13 @@ public class CashBoxWidgetService extends RemoteViewsService {
 
         @Override
         public void onCreate() {
+            // on create widget
             database = UtilitiesDatabase.getInstance(getApplicationContext());
         }
 
         @Override
         public void onDataSetChanged() {
+            // refresh data
             cashBoxInfos = database.cashBoxLocalDao().getAllCashBoxInfoForWidget();
             currencyFormat = NumberFormat.getCurrencyInstance();
         }
