@@ -4,8 +4,8 @@ import android.app.Application;
 
 import androidx.lifecycle.LiveData;
 
-import com.vibal.utilities.modelsNew.CashBox;
-import com.vibal.utilities.modelsNew.CashBoxInfo;
+import com.vibal.utilities.models.CashBox;
+import com.vibal.utilities.models.CashBoxInfo;
 import com.vibal.utilities.persistence.db.CashBoxEntryLocalDao;
 import com.vibal.utilities.persistence.db.CashBoxLocalDao;
 import com.vibal.utilities.persistence.db.UtilitiesDatabase;

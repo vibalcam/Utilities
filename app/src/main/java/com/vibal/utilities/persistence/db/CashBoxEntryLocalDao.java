@@ -7,7 +7,7 @@ import androidx.room.Insert;
 import androidx.room.Query;
 import androidx.room.Update;
 
-import com.vibal.utilities.modelsNew.Entry;
+import com.vibal.utilities.models.Entry;
 
 import java.util.Calendar;
 import java.util.Collection;

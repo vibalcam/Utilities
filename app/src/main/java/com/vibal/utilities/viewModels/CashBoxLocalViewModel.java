@@ -4,7 +4,7 @@ import android.app.Application;
 
 import androidx.annotation.NonNull;
 
-import com.vibal.utilities.modelsNew.CashBox;
+import com.vibal.utilities.models.CashBox;
 import com.vibal.utilities.persistence.repositories.CashBoxLocalRepository;
 import com.vibal.utilities.persistence.repositories.CashBoxRepository;
 

@@ -6,10 +6,10 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 
-import com.vibal.utilities.modelsNew.CashBox;
-import com.vibal.utilities.modelsNew.CashBoxInfo;
-import com.vibal.utilities.modelsNew.Entry;
-import com.vibal.utilities.modelsNew.PeriodicEntryPojo;
+import com.vibal.utilities.models.CashBox;
+import com.vibal.utilities.models.CashBoxInfo;
+import com.vibal.utilities.models.Entry;
+import com.vibal.utilities.models.PeriodicEntryPojo;
 import com.vibal.utilities.persistence.db.CashBoxBaseDao;
 import com.vibal.utilities.persistence.db.CashBoxEntryBaseDao;
 import com.vibal.utilities.util.LogUtil;

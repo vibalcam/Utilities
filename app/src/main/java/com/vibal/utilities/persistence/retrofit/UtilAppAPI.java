@@ -40,7 +40,6 @@ public interface UtilAppAPI {
     // Authentication
     String CLIENT_ID = "ClientId";
     String PASSWORD_HEADER = "pwd";
-    String PASSWORD = "probando";
 
     // Other constants
     int MAX_LENGTH_USERNAME = 15;

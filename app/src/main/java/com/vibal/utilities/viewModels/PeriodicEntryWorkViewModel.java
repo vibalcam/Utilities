@@ -6,7 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 
-import com.vibal.utilities.modelsNew.PeriodicEntryPojo;
+import com.vibal.utilities.models.PeriodicEntryPojo;
 import com.vibal.utilities.persistence.repositories.PeriodicEntryWorkRepository;
 
 import java.util.List;

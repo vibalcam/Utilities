@@ -6,10 +6,10 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 
-import com.vibal.utilities.modelsNew.CashBox;
-import com.vibal.utilities.modelsNew.CashBoxInfo;
-import com.vibal.utilities.modelsNew.Entry;
-import com.vibal.utilities.modelsNew.PeriodicEntryPojo;
+import com.vibal.utilities.models.CashBox;
+import com.vibal.utilities.models.CashBoxInfo;
+import com.vibal.utilities.models.Entry;
+import com.vibal.utilities.models.PeriodicEntryPojo;
 import com.vibal.utilities.persistence.repositories.CashBoxRepository;
 import com.vibal.utilities.util.LogUtil;
 
@@ -27,7 +27,7 @@ import java.util.List;
 import io.reactivex.Completable;
 import io.reactivex.Single;
 
-import static com.vibal.utilities.modelsNew.CashBoxInfo.NO_ID;
+import static com.vibal.utilities.models.CashBoxInfo.NO_ID;
 
 public abstract class CashBoxViewModel extends AndroidViewModel {
     private static final String TAG = "PruebaCashBoxViewModel";

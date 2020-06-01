@@ -1,4 +1,4 @@
-package com.vibal.utilities.modelsNew;
+package com.vibal.utilities.models;
 
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;

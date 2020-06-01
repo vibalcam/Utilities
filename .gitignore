@@ -12,3 +12,4 @@
 /captures
 .externalNativeBuild
 /app/src/main/res/raw/cert.cer
+/keystore.properties

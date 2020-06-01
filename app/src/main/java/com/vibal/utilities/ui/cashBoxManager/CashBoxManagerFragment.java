@@ -42,10 +42,10 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.android.material.textview.MaterialTextView;
 import com.vibal.utilities.R;
-import com.vibal.utilities.modelsNew.CashBox;
-import com.vibal.utilities.modelsNew.CashBoxInfo;
-import com.vibal.utilities.modelsNew.Entry;
-import com.vibal.utilities.modelsNew.PeriodicEntryPojo;
+import com.vibal.utilities.models.CashBox;
+import com.vibal.utilities.models.CashBoxInfo;
+import com.vibal.utilities.models.Entry;
+import com.vibal.utilities.models.PeriodicEntryPojo;
 import com.vibal.utilities.ui.settings.SettingsActivity;
 import com.vibal.utilities.ui.swipeController.CashBoxAdapterSwipable;
 import com.vibal.utilities.ui.swipeController.CashBoxSwipeController;
@@ -318,68 +318,6 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
         super.onDestroy();
         compositeDisposable.dispose();
     }
-
-    //todo delete from file to db
-//    /**
-//     * Left for compability with previous versions that used file storage
-//     */
-//    private void checkFileForCashBoxes() {
-//        compositeDisposable.add(Maybe.create((MaybeOnSubscribe<CashBoxManager>) emitter -> {
-//            LogUtil.debug(TAG, "Inicio check file");
-//            //Check if the file exists
-//            File originalFile = requireContext().getFileStreamPath("cashBoxManager");
-//            File tempFile = requireContext().getFileStreamPath("cashBoxManagerTemp");
-//            if (!originalFile.exists() && !tempFile.exists()) {
-//                LogUtil.debug(TAG, "No files found");
-//                emitter.onComplete();
-//                return;
-//            }
-//            LogUtil.debug(TAG, Arrays.toString(originalFile.getParentFile().list()));
-//
-//            //If it does, upload all the cashBoxes to the new DB version
-//            String fileName = tempFile.lastModified() > originalFile.lastModified() ?
-//                    "cashBoxManagerTemp" : "cashBoxManager";
-//            Object cashBoxManager;
-//            try (ObjectInputStream objectInputStream = new ObjectInputStream(requireContext().openFileInput(fileName))) {
-//                cashBoxManager = objectInputStream.readObject();
-//                if (cashBoxManager instanceof CashBoxManager)
-//                    emitter.onSuccess((CashBoxManager) cashBoxManager);
-//                else
-//                    emitter.onComplete();
-//            } catch (@NonNull IOException | ClassNotFoundException e) {
-//                LogUtil.error(TAG, "loadData: error al leer archivo", e);
-//                emitter.onError(e);
-//            }
-//        }).flatMapCompletable(manager -> {
-//            LogUtil.debug(TAG, "Analyze cashboxmanager");
-//            Completable completable = Completable.complete();
-//            CashBox.InfoWithCash infoWithCash;
-//            List<Entry> entryList;
-//            com.vibal.utilities.models.CashBox cashBox;
-//            com.vibal.utilities.models.CashBox.Entry entry;
-//            for (int k = 0; k < manager.size(); k++) {
-//                cashBox = manager.get(k);
-//                infoWithCash = new CashBox.InfoWithCash(cashBox.getName());
-//                entryList = new ArrayList<>();
-//                for (int i = 0; i < cashBox.sizeEntries(); i++) {
-//                    entry = cashBox.getEntry(i);
-//                    entryList.add(new Entry(entry.getAmount(), entry.getInfo(), entry.getDate()));
-//                }
-//
-//                completable = completable.andThen(getViewModel().addCashBox(new CashBox(infoWithCash, entryList)));
-//                LogUtil.debug(TAG, new CashBox(infoWithCash, entryList).toString());
-//            }
-//            return completable.doOnComplete(() -> {
-//                //Delete files
-//                requireContext().deleteFile("cashBoxManager");
-//                requireContext().deleteFile("cashBoxManagerTemp");
-//                LogUtil.debug(TAG, "Success delete");
-//                LogUtil.debug(TAG, Arrays.toString(requireContext().getFileStreamPath("cashBoxManager").getParentFile().list()));
-//            });
-//        }).subscribeOn(Schedulers.io())
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .subscribe());
-//    }
 
     @Override
     public void onStart() {

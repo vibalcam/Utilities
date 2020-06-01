@@ -32,7 +32,7 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.android.material.textview.MaterialTextView;
 import com.vibal.utilities.R;
-import com.vibal.utilities.modelsNew.PeriodicEntryPojo;
+import com.vibal.utilities.models.PeriodicEntryPojo;
 import com.vibal.utilities.ui.settings.SettingsActivity;
 import com.vibal.utilities.ui.swipeController.CashBoxAdapterSwipable;
 import com.vibal.utilities.ui.swipeController.CashBoxSwipeController;

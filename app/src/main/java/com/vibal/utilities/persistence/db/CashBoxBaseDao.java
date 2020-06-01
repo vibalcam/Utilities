@@ -3,8 +3,8 @@ package com.vibal.utilities.persistence.db;
 import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 
-import com.vibal.utilities.modelsNew.CashBox;
-import com.vibal.utilities.modelsNew.CashBoxInfo;
+import com.vibal.utilities.models.CashBox;
+import com.vibal.utilities.models.CashBoxInfo;
 
 import java.util.Collection;
 import java.util.Currency;

@@ -18,8 +18,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.vibal.utilities.R;
-import com.vibal.utilities.modelsNew.CashBoxInfo;
-import com.vibal.utilities.modelsNew.EntryOnline;
+import com.vibal.utilities.models.CashBoxInfo;
+import com.vibal.utilities.models.EntryOnline;
 import com.vibal.utilities.util.LogUtil;
 import com.vibal.utilities.viewModels.CashBoxOnlineViewModel;
 

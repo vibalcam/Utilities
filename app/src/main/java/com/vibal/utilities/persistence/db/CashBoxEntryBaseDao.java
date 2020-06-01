@@ -2,7 +2,7 @@ package com.vibal.utilities.persistence.db;
 
 import androidx.lifecycle.LiveData;
 
-import com.vibal.utilities.modelsNew.Entry;
+import com.vibal.utilities.models.Entry;
 
 import java.util.Calendar;
 import java.util.Collection;

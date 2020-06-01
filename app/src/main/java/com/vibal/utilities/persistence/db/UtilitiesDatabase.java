@@ -10,11 +10,11 @@ import androidx.room.TypeConverters;
 import androidx.room.migration.Migration;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
-import com.vibal.utilities.modelsNew.CashBoxInfoLocal;
-import com.vibal.utilities.modelsNew.CashBoxInfoOnline;
-import com.vibal.utilities.modelsNew.Entry;
-import com.vibal.utilities.modelsNew.EntryOnline;
-import com.vibal.utilities.modelsNew.PeriodicEntryPojo;
+import com.vibal.utilities.models.CashBoxInfoLocal;
+import com.vibal.utilities.models.CashBoxInfoOnline;
+import com.vibal.utilities.models.Entry;
+import com.vibal.utilities.models.EntryOnline;
+import com.vibal.utilities.models.PeriodicEntryPojo;
 import com.vibal.utilities.util.Converters;
 
 @Database(entities = {CashBoxInfoLocal.class, Entry.class, CashBoxInfoOnline.class,

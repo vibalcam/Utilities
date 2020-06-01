@@ -7,7 +7,7 @@ import androidx.lifecycle.LiveData;
 import androidx.work.WorkManager;
 
 import com.vibal.utilities.backgroundTasks.RxPeriodicEntryWorker;
-import com.vibal.utilities.modelsNew.PeriodicEntryPojo;
+import com.vibal.utilities.models.PeriodicEntryPojo;
 import com.vibal.utilities.persistence.db.PeriodicEntryWorkDao;
 import com.vibal.utilities.persistence.db.UtilitiesDatabase;
 import com.vibal.utilities.util.LogUtil;

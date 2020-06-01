@@ -6,7 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 
-import com.vibal.utilities.modelsNew.CashBox;
+import com.vibal.utilities.models.CashBox;
 import com.vibal.utilities.persistence.repositories.CashBoxLocalRepository;
 
 import java.util.List;

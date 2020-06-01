@@ -6,9 +6,10 @@ import android.database.sqlite.SQLiteConstraintException;
 
 import androidx.annotation.NonNull;
 
-import com.vibal.utilities.modelsNew.CashBoxInfo;
-import com.vibal.utilities.modelsNew.Entry;
-import com.vibal.utilities.modelsNew.EntryOnline;
+import com.vibal.utilities.BuildConfig;
+import com.vibal.utilities.models.CashBoxInfo;
+import com.vibal.utilities.models.Entry;
+import com.vibal.utilities.models.EntryOnline;
 import com.vibal.utilities.persistence.db.CashBoxEntryOnlineDao;
 import com.vibal.utilities.persistence.db.CashBoxOnlineDao;
 import com.vibal.utilities.persistence.db.UtilitiesDatabase;
@@ -66,12 +67,11 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
     private static final int NUM_RETRIES_CHANGES = 3;
     private static final String KEY_ONLINE_PREFERENCE = "com.vibal.utilities.persistence.ONLINE_NOTIFICATIONS";
 
-    private static final String BASE_URL = "https://192.168.0.41/util/"; //todo temporal para prueba
     private static final Pattern PATTERN_VALID_USERNAME = Pattern.compile("\\W");
     private static long ONLINE_ID = 0;
     private static CashBoxOnlineRepository INSTANCE = null;
+    private static UtilAppAPI UTILAPP_API = null;
     private final TreeMap<Long, Long> receivedNotifications = new TreeMap<>();
-    private UtilAppAPI utilAppAPI = null;
     private CashBoxOnlineDao cashBoxOnlineDao;
     private CashBoxEntryOnlineDao cashBoxEntryOnlineDao;
     private SharedPreferences notificationsPreference = null;
@@ -94,14 +94,14 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
         notificationsPreference.getAll().forEach((s, o) -> receivedNotifications.put(Long.parseLong(s), (Long) o));
 
         // Retrofit api
-        if (utilAppAPI == null) {
+        if (UTILAPP_API == null) {
             Retrofit retrofit = new Retrofit.Builder()
-                    .baseUrl(BASE_URL)
+                    .baseUrl(BuildConfig.BASE_URL)
                     .client(getOkHttpClient(context))
                     .addConverterFactory(GsonConverterFactory.create())
                     .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                     .build();
-            utilAppAPI = retrofit.create(UtilAppAPI.class);
+            UTILAPP_API = retrofit.create(UtilAppAPI.class);
         }
     }
 
@@ -171,8 +171,7 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
 //        SSLContext sslContext = SSLContext.getInstance("TLS");
 //        sslContext.init(null, tmf.getTrustManagers(), null);
 
-        return new OkHttpClient.Builder()
-                .hostnameVerifier((hostname, session) -> hostname.equals("192.168.0.41")) // todo temporal para debug
+        OkHttpClient.Builder httpClientBuilder = new OkHttpClient.Builder()
 //                .sslSocketFactory(sslContext.getSocketFactory(), (X509TrustManager) (tmf.getTrustManagers()[0]))
                 .addInterceptor(chain -> {
                     if (!isOnline())
@@ -182,10 +181,15 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
                     Request originalRequest = chain.request();
                     Request newRequest = originalRequest.newBuilder()
                             .header(UtilAppAPI.CLIENT_ID, String.valueOf(ONLINE_ID))
-                            .header(UtilAppAPI.PASSWORD_HEADER, UtilAppAPI.PASSWORD)
+                            .header(UtilAppAPI.PASSWORD_HEADER, BuildConfig.ONLINE_PWD)
                             .build();
                     return chain.proceed(newRequest);
-                }).build();
+                });
+        // for usage in debug
+        if (BuildConfig.DEBUG_MODE)
+            httpClientBuilder.hostnameVerifier((hostname, session) -> hostname.equals("192.168.0.41"));
+
+        return httpClientBuilder.build();
     }
 
     @Override
@@ -213,7 +217,7 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
             throw new UtilAppException(finalUsername.charAt(matcher.start()) + " not allowed");
 
         // Do http call and save value to shared preferences
-        return utilAppAPI.signUp(finalUsername)
+        return UTILAPP_API.signUp(finalUsername)
                 .flatMap(new CheckResponseErrorFunction<>())
                 .flatMapCompletable(utilAppResponse -> {
                     long id = Long.parseLong(utilAppResponse.getMessage());
@@ -230,7 +234,7 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
     }
 
     public Single<String> deleteUser() {
-        return utilAppAPI.deleteUser()
+        return UTILAPP_API.deleteUser()
                 .flatMap(new CheckResponseErrorFunction<>())
                 .map(UtilAppResponse::getMessage);
     }
@@ -242,7 +246,7 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
                     if (!exists)
                         throw new SQLiteConstraintException("Name already in use: " + cashBoxInfo.getName());
 
-                    return utilAppAPI.operationCashbox(new UtilAppRequest(INSERT, 1))
+                    return UTILAPP_API.operationCashbox(new UtilAppRequest(INSERT, 1))
                             .flatMap(new CheckResponseErrorFunction<>())
                             .flatMap(modificationResponse -> {
                                 if (modificationResponse.operationSuccessful(1)) {
@@ -264,7 +268,7 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
         if (id == ID_ALL)
             return Completable.error(new UtilAppException("Id cannot be equal to " + ID_ALL));
         else
-            return utilAppAPI.operationCashbox(new UtilAppRequest(DELETE, id))
+            return UTILAPP_API.operationCashbox(new UtilAppRequest(DELETE, id))
                     .flatMap(new CheckResponseErrorFunction<>())
                     .flatMapCompletable(modificationResponse -> {
                         if (modificationResponse.operationSuccessful(id))
@@ -276,7 +280,7 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
 
     @Override
     public Single<Integer> deleteAllCashBoxes() {
-        return utilAppAPI.operationCashbox(new UtilAppRequest(DELETE, ID_ALL))
+        return UTILAPP_API.operationCashbox(new UtilAppRequest(DELETE, ID_ALL))
                 .flatMap(new CheckResponseErrorFunction<>())
                 .flatMap(modificationResponse -> {
                     if (modificationResponse.operationSuccessful(ID_ALL))
@@ -290,7 +294,7 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
         if (cashBoxId <= 0)
             return Completable.error(new UtilAppException("Id cannot be less or equal to 0"));
         else
-            return utilAppAPI.sendInvitation(new UtilAppRequest.InvitationRequest(UPDATE,
+            return UTILAPP_API.sendInvitation(new UtilAppRequest.InvitationRequest(UPDATE,
                     cashBoxId, username.trim()))
                     .flatMap(new CheckResponseErrorFunction<>())
                     .flatMapCompletable(modificationResponse -> {
@@ -305,7 +309,7 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
         if (cashBoxId <= 0)
             return Completable.error(new UtilAppException("Id cannot be less or equal to 0"));
         else
-            return utilAppAPI.acceptInvitation(new UtilAppRequest(CASHBOX_INV, cashBoxId))
+            return UTILAPP_API.acceptInvitation(new UtilAppRequest(CASHBOX_INV, cashBoxId))
                     .flatMap(new CheckResponseErrorFunction<>())
                     .flatMapCompletable(entriesResponse ->
                             cashBoxEntryOnlineDao.insertAllJSON(entriesResponse.getEntries(cashBoxId))
@@ -316,7 +320,7 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
 
     @Override
     public Completable insertEntry(Entry entry) {
-        return utilAppAPI.operationEntry(new UtilAppRequest.EntryRequest(INSERT, 1, entry))
+        return UTILAPP_API.operationEntry(new UtilAppRequest.EntryRequest(INSERT, 1, entry))
                 .flatMap(new CheckResponseErrorFunction<>())
                 .flatMapCompletable(modificationResponse -> {
                     if (modificationResponse.operationSuccessful(1)) {
@@ -337,7 +341,7 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
 
     private Completable updateEntry(@NonNull Entry entry, Completable localUpdate) {
         final long id = entry.getId();
-        return utilAppAPI.operationEntry(new UtilAppRequest.EntryRequest(UPDATE, id, entry))
+        return UTILAPP_API.operationEntry(new UtilAppRequest.EntryRequest(UPDATE, id, entry))
                 .flatMap(new CheckResponseErrorFunction<>())
                 .flatMapCompletable(modificationResponse -> {
                     if (modificationResponse.operationSuccessful(id))
@@ -367,7 +371,7 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
 
     private Completable deleteEntry(@NonNull Entry entry, Completable localUpdate) {
         final long id = entry.getId();
-        return utilAppAPI.deleteEntry(new UtilAppRequest(DELETE, id))
+        return UTILAPP_API.deleteEntry(new UtilAppRequest(DELETE, id))
                 .flatMap(new CheckResponseErrorFunction<>())
                 .flatMapCompletable(modificationResponse -> {
                     if (modificationResponse.operationSuccessful(id))
@@ -434,7 +438,7 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
     // Download changes
 
     public Completable getCompletableChanges() {
-        return utilAppAPI.getChanges()
+        return UTILAPP_API.getChanges()
                 .flatMap(new CheckResponseErrorFunction<>())
                 .flatMapCompletable(changesResponse -> {
                     LogUtil.debug(TAG, "Processing " + changesResponse.getChanges().size() + " changes");
@@ -542,7 +546,7 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
                 sentConfirmations.add(Long.parseLong(s));
         }).andThen(
                 // send confirmations
-                utilAppAPI.confirmReceivedChanges(sentConfirmations)
+                UTILAPP_API.confirmReceivedChanges(sentConfirmations)
                         .flatMap(new CheckResponseErrorFunction<>())
                         .flatMapCompletable(appResponse -> Completable.fromAction(() -> {
                             // Delete confirmed notifications

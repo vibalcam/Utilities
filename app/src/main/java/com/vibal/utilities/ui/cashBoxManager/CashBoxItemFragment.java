@@ -39,7 +39,7 @@ import com.google.android.material.textfield.TextInputLayout;
 import com.google.android.material.textview.MaterialTextView;
 import com.vibal.utilities.R;
 import com.vibal.utilities.backgroundTasks.ReminderReceiver;
-import com.vibal.utilities.modelsNew.Entry;
+import com.vibal.utilities.models.Entry;
 import com.vibal.utilities.ui.settings.SettingsActivity;
 import com.vibal.utilities.ui.swipeController.CashBoxAdapterSwipable;
 import com.vibal.utilities.ui.swipeController.CashBoxSwipeController;

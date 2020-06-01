@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.snackbar.Snackbar;
 import com.vibal.utilities.R;
-import com.vibal.utilities.modelsNew.CashBox;
+import com.vibal.utilities.models.CashBox;
 import com.vibal.utilities.viewModels.CashBoxLocalViewModel;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;

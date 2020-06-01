@@ -8,9 +8,9 @@ import androidx.room.Query;
 import androidx.room.Transaction;
 import androidx.room.Update;
 
-import com.vibal.utilities.modelsNew.CashBox;
-import com.vibal.utilities.modelsNew.CashBoxInfo;
-import com.vibal.utilities.modelsNew.CashBoxInfoLocal;
+import com.vibal.utilities.models.CashBox;
+import com.vibal.utilities.models.CashBoxInfo;
+import com.vibal.utilities.models.CashBoxInfoLocal;
 
 import java.util.Collection;
 import java.util.Collections;

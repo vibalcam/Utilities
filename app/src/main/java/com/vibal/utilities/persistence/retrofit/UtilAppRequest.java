@@ -3,7 +3,7 @@ package com.vibal.utilities.persistence.retrofit;
 import androidx.annotation.NonNull;
 
 import com.google.gson.annotations.SerializedName;
-import com.vibal.utilities.modelsNew.Entry;
+import com.vibal.utilities.models.Entry;
 import com.vibal.utilities.util.Converters;
 
 public class UtilAppRequest {

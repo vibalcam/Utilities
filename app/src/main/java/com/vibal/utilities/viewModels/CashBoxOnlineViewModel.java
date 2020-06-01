@@ -4,7 +4,7 @@ import android.app.Application;
 
 import androidx.annotation.NonNull;
 
-import com.vibal.utilities.modelsNew.EntryOnline;
+import com.vibal.utilities.models.EntryOnline;
 import com.vibal.utilities.persistence.repositories.CashBoxOnlineRepository;
 import com.vibal.utilities.persistence.repositories.CashBoxRepository;
 import com.vibal.utilities.persistence.retrofit.UtilAppException;
