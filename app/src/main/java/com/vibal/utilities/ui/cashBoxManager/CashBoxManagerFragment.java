@@ -87,29 +87,19 @@ import static com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity.GROUP
 import static com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity.NO_ACTION;
 
 public abstract class CashBoxManagerFragment extends PagerFragment {
-    private static final String TAG = "PruebaManagerFragment";
-
     // Simulate enum
-    private static final int EDIT_MODE = 0;
-    private static final int GROUP_ADD_MODE = 1;
-    private static final int PERIODIC_ADD_MODE = 2;
+    static final int EDIT_MODE = 0;
+    static final int GROUP_ADD_MODE = 1;
+    static final int PERIODIC_ADD_MODE = 2;
+    private static final String TAG = "PruebaManagerFragment";
     protected CompositeDisposable compositeDisposable = new CompositeDisposable();
     @Nullable
     protected ActionMode actionMode;
+    protected CashBoxManagerRecyclerAdapter adapter;
     @BindView(R.id.lyCBM)
     CoordinatorLayout coordinatorLayout;
     @BindView(R.id.fabCBM_main)
     FloatingActionButton fabMain;
-    @BindView(R.id.fabCBM_periodicAdd)
-    FloatingActionButton fabPeriodicAdd;
-    @BindView(R.id.fabCBM_groupAdd)
-    FloatingActionButton fabGroupAdd;
-    @BindView(R.id.fabCBM_singleAdd)
-    FloatingActionButton fabSingleAdd;
-    @BindView(R.id.bgFabMenu_CBM)
-    View viewBgFabMenu;
-    //    private CashBoxViewModel viewModel;
-    private CashBoxManagerRecyclerAdapter adapter;
     private final ActionMode.Callback periodicAddModeCallback = new ActionMode.Callback() {
         @Override
         public boolean onCreateActionMode(ActionMode mode, Menu menu) {
@@ -258,6 +248,14 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
             adapter.notifyItemRangeChanged(0, adapter.getItemCount());
         }
     };
+    @BindView(R.id.fabCBM_periodicAdd)
+    FloatingActionButton fabPeriodicAdd;
+    @BindView(R.id.fabCBM_groupAdd)
+    FloatingActionButton fabGroupAdd;
+    @BindView(R.id.fabCBM_singleAdd)
+    FloatingActionButton fabSingleAdd;
+    @BindView(R.id.bgFabMenu_CBM)
+    View viewBgFabMenu;
     private boolean isFabOpen = false;
     // Contextual toolbars
     private int actionModeType = EDIT_MODE;
@@ -347,9 +345,7 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
     }
 
     @MenuRes
-    protected int getMenuRes() {
-        return R.menu.menu_toolbar_cash_box_manager;
-    }
+    protected abstract int getMenuRes();
 
     @StringRes
     abstract protected int getTitle();
@@ -358,6 +354,9 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (!isOptionsMenuActive())
+            return false;
+
         switch (item.getItemId()) {
             case R.id.action_manager_deleteAll:
                 AlertDialog.Builder builder = getDeleteAllDialog();
@@ -417,7 +416,7 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
 
     abstract protected CashBoxItemFragment getChildInstance();
 
-    private boolean startActionMode(@ActionModeType int type) {
+    boolean startActionMode(@ActionModeType int type) {
         if (adapter.currentList.isEmpty()) { // Check if there are any CashBoxes
             Toast.makeText(getContext(), "No available CashBoxes", Toast.LENGTH_SHORT).show();
             return false;
@@ -740,9 +739,20 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
 
     protected void doOnDelete(CashBox.InfoWithCash infoWithCash) {
         Toast.makeText(getContext(),
-                getString(R.string.snackbarEntriesMoveToRecycle, 1),
+                getString(R.string.snackbarEntriesDeleted, 1),
                 Toast.LENGTH_SHORT)
                 .show();
+    }
+
+    protected void deleteCashBox(int position) {
+        if (actionMode != null)
+            actionMode.finish();
+        LogUtil.debug(TAG, "Delete CashBox");
+        CashBox.InfoWithCash infoWithCash = adapter.currentList.get(position);
+        compositeDisposable.add(getViewModel().deleteCashBoxInfo(infoWithCash)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(() -> doOnDelete(infoWithCash)));
     }
 
     /**
@@ -912,14 +922,7 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
 
         @Override
         public void onItemDelete(int position) {
-            if (actionMode != null)
-                actionMode.finish();
-            LogUtil.debug(TAG, "Delete CashBox");
-            CashBox.InfoWithCash infoWithCash = currentList.get(position);
-            compositeDisposable.add(getViewModel().deleteCashBoxInfo(infoWithCash)
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(() -> doOnDelete(infoWithCash)));
+            deleteCashBox(position);
         }
 
         @Override

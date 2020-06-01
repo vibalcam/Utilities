@@ -2,26 +2,26 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/action_manager_deleteAll"
+        android:id="@+id/action_manager_deleteAll_online"
         android:icon="@drawable/delete"
         app:showAsAction="ifRoom"
         android:title="@string/action_reset" />
     <item
-        android:id="@+id/action_manager_edit"
+        android:id="@+id/action_manager_edit_online"
         android:title="@string/menu_contextualToolbar"
         android:icon="@drawable/ic_edit_white_24dp"
         app:showAsAction="ifRoom" />
     <item
-        android:id="@+id/action_manager_refresh"
+        android:id="@+id/action_manager_refresh_online"
         app:showAsAction="never"
         android:title="@string/menu_refresh" />
     <item
-        android:id="@+id/action_manager_settings"
+        android:id="@+id/action_manager_settings_online"
         android:icon="@drawable/settings_outline"
         app:showAsAction="never"
         android:title="@string/settings" />
     <item
-        android:id="@+id/action_manager_help"
+        android:id="@+id/action_manager_help_online"
         app:showAsAction="never"
         android:title="@string/action_help" />
 </menu>

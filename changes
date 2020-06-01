@@ -1,3 +1,8 @@
-- Removed old CashBox (removed compatibility with v1.0)
-- Used gradle to automate changes in HttpClient for debugging
-- Enable R8 and added rules for Retrofit
+- Fixes:
+    - Update after insertion and then reload info did not show anything since there was nothing to update.
+        Now it checks if an update has occurred, if not it inserts it
+    - RandomChooserActivity new list check if name already exists
+    - Fixed problems with wrong option being run when selected (select local delete all and option
+        online delete all being run)
+
+- Dialog shown when deleting online cashBox

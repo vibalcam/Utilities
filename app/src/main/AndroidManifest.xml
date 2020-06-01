@@ -40,16 +40,6 @@
             android:name=".ui.settings.SettingsActivity"
             android:label="@string/settings" />
 
-        <!--        <activity-->
-        <!--            android:name=".ui.cashBoxManager.CashBoxDeletedFragment"-->
-        <!--            android:label="@string/title_deletedCashBox"-->
-        <!--            android:theme="@style/AppTheme.NoActionBar"/>-->
-
-        <!--        <activity-->
-        <!--            android:name=".ui.cashBoxManager.CashBoxPeriodicFragment"-->
-        <!--            android:label="@string/title_periodicEntry"-->
-        <!--            android:theme="@style/AppTheme.NoActionBar"/>-->
-
         <activity
             android:name=".ui.cashBoxManager.CashBoxManagerActivity"
             android:label="@string/main_cashBoxManager"

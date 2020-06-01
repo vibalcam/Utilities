@@ -459,7 +459,7 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
                     Completable operation;
                     Completable completable = Completable.complete();
                     for (UtilAppResponse.ChangesNotification change : changesResponse.getChanges()) {
-                        LogUtil.debug(TAG, "Processing " + change.getNotificationId() + "...");
+                        LogUtil.debug(TAG, "Processing id " + change.getNotificationId() + "...");
 
                         // Check if its an older version of another notification
                         if (change.getOperationCode() != CASHBOX_INV &&
@@ -489,9 +489,15 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
                                 break;
                             case UPDATE:
                                 operation = cashBoxEntryOnlineDao.setChangeDate(change.getId(), Calendar.getInstance())
-                                        .andThen(cashBoxEntryOnlineDao.copyAsNonViewedOld(change.getId()))
-                                        .andThen(cashBoxEntryOnlineDao.modify(change.getId(), change.getAmount(),
-                                                change.getInfo(), change.getDateAsCalendar()));
+                                        .flatMapCompletable(integer -> {
+                                            if (integer > 0) { // if an item has been updated
+                                                return cashBoxEntryOnlineDao.copyAsNonViewedOld(change.getId())
+                                                        .andThen(cashBoxEntryOnlineDao.modify(change.getId(), change.getAmount(),
+                                                                change.getInfo(), change.getDateAsCalendar()));
+                                            } else { // if no items have been updated
+                                                return cashBoxEntryOnlineDao.insert(changeNotificationToEntry(change));
+                                            }
+                                        });
                                 break;
                             case DELETE:
                                 operation = cashBoxEntryOnlineDao.copyAsNonViewedOld(change.getId(), Calendar.getInstance())

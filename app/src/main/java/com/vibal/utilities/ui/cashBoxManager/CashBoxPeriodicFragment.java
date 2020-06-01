@@ -135,6 +135,9 @@ public class CashBoxPeriodicFragment extends PagerFragment {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (!isOptionsMenuActive())
+            return false;
+
         switch (item.getItemId()) {
 //            case android.R.id.home:
 //                onBackPressed();
@@ -153,7 +156,7 @@ public class CashBoxPeriodicFragment extends PagerFragment {
     private void deleteAll() {
         int count = adapter.getItemCount();
         if (count == 0) {
-            Toast.makeText(getContext(), "No entries to recycle", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "No entries to delete", Toast.LENGTH_SHORT).show();
             return;
         }
 

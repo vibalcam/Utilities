@@ -27,7 +27,7 @@
         android:id="@+id/buttonAddList"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/newList"
+        android:text="@string/saveAs"
         app:layout_constraintStart_toEndOf="@id/spinnerList"
         app:layout_constraintEnd_toStartOf="@+id/buttonDeleteList"
         app:layout_constraintBottom_toBottomOf="@id/spinnerList"

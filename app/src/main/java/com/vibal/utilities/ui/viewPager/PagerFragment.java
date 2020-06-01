@@ -1,7 +1,9 @@
 package com.vibal.utilities.ui.viewPager;
 
 import android.os.Bundle;
+import android.view.MenuItem;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
@@ -32,6 +34,13 @@ public abstract class PagerFragment extends Fragment {
             return ((PagerActivity) getActivity()).getCurrentPagerPosition() == pagerPosition;
         } else // if no pager position, return true
             return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (!isOptionsMenuActive())
+            return false;
+        return super.onOptionsItemSelected(item);
     }
 
     protected void setTabLayoutVisibility(int visibility) {

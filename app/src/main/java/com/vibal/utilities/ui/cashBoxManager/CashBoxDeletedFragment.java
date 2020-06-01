@@ -129,6 +129,9 @@ public class CashBoxDeletedFragment extends PagerFragment {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (!isOptionsMenuActive())
+            return false;
+
         switch (item.getItemId()) {
 //            case android.R.id.home:
 //                onBackPressed();

@@ -59,7 +59,6 @@ public class CashBoxItemOnlineFragment extends CashBoxItemFragment {
 
     private void onRefresh() {
         compositeDisposable.add(viewModel.getChanges()
-//                .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(new DisposableObserver<Object>() {
                     @Override
@@ -101,6 +100,9 @@ public class CashBoxItemOnlineFragment extends CashBoxItemFragment {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (!isOptionsMenuActive())
+            return false;
+
         switch (item.getItemId()) {
             case R.id.action_item_invite:
                 showInviteDialog();

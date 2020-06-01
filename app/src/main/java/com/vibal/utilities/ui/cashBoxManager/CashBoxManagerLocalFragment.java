@@ -1,5 +1,6 @@
 package com.vibal.utilities.ui.cashBoxManager;
 
+import androidx.annotation.MenuRes;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -46,6 +47,12 @@ public class CashBoxManagerLocalFragment extends CashBoxManagerFragment {
     @Override
     protected CashBoxItemLocalFragment getChildInstance() {
         return CashBoxItemLocalFragment.newInstance(getPagerPosition());
+    }
+
+    @Override
+    @MenuRes
+    protected int getMenuRes() {
+        return R.menu.menu_toolbar_cash_box_manager;
     }
 
     @Override

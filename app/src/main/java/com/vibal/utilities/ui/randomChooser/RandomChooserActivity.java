@@ -155,6 +155,9 @@ public class RandomChooserActivity extends AppCompatActivity {
                         if (input.isEmpty()) {
                             layoutName.setError("Name cannot be blank");
                             Util.showKeyboard(this, inputName);
+                        } else if (preferences.contains(input)) {
+                            layoutName.setError("Name already exists");
+                            Util.showKeyboard(this, inputName);
                         } else {
                             addList(input);
                             dialog.dismiss();

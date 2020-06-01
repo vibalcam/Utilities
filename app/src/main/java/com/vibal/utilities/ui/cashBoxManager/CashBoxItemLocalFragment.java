@@ -1,8 +1,10 @@
 package com.vibal.utilities.ui.cashBoxManager;
 
+import androidx.annotation.MenuRes;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.vibal.utilities.R;
 import com.vibal.utilities.viewModels.CashBoxLocalViewModel;
 import com.vibal.utilities.viewModels.CashBoxViewModel;
 
@@ -27,5 +29,11 @@ public class CashBoxItemLocalFragment extends CashBoxItemFragment {
     protected CashBoxViewModel initializeViewModel() {
         viewModel = new ViewModelProvider(requireParentFragment()).get(CashBoxLocalViewModel.class);
         return viewModel;
+    }
+
+    @Override
+    @MenuRes
+    protected int getMenuRes() {
+        return R.menu.menu_toolbar_cash_box_item;
     }
 }

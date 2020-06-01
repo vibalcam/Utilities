@@ -1,5 +1,6 @@
 package com.vibal.utilities.ui.cashBoxManager;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -111,18 +112,38 @@ public class CashBoxManagerOnlineFragment extends CashBoxManagerFragment {
         MyDialogBuilder builder = super.getDeleteAllDialog();
         if (builder != null)
             builder = builder.setTitle(R.string.confirmDeleteAllDialog)
-                    .setMessage("Are you sure you want to delete all entries?\nThis cannot be undone.");
+                    .setMessage("Are you sure you want to delete all cashBoxes?\nThis cannot be undone.");
         return builder;
     }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.action_manager_refresh) {
-            refreshLayout.setRefreshing(true);
-            onRefresh();
-            return true;
-        } else
-            return super.onOptionsItemSelected(item);
+        if (!isOptionsMenuActive())
+            return false;
+
+        switch (item.getItemId()) {
+            case R.id.action_manager_refresh_online:
+                refreshLayout.setRefreshing(true);
+                onRefresh();
+                return true;
+            case R.id.action_manager_deleteAll_online:
+                AlertDialog.Builder builder = getDeleteAllDialog();
+                if (builder != null)
+                    builder.show();
+                return true;
+            case R.id.action_manager_help_online:
+                Util.createHelpDialog(requireContext(), R.string.cashBoxManager_helpTitle,
+                        R.string.cashBoxManager_help).show();
+                return true;
+            case R.id.action_manager_edit:
+                startActionMode(EDIT_MODE);
+                return true;
+            case R.id.action_manager_settings_online:
+                startActivity(new Intent(getContext(), SettingsActivity.class));
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     @NonNull
@@ -173,6 +194,16 @@ public class CashBoxManagerOnlineFragment extends CashBoxManagerFragment {
                 showSelectUsername();
         } else
             super.showAddDialog();
+    }
+
+    @Override
+    protected void deleteCashBox(int position) {
+        new MyDialogBuilder(requireContext())
+                .setTitle(R.string.confirmDeleteDialog)
+                .setMessage("Are you sure you want to delete this cashBox?\nThis cannot be undone.")
+                .setPositiveButton((dialog, which) -> super.deleteCashBox(position))
+                .setNegativeButton((dialog, which) -> adapter.notifyItemChanged(position))
+                .show();
     }
 
     private void showSelectUsername() {

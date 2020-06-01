@@ -36,7 +36,7 @@
     <string name="contentDescriptionLogoMain">App\'s logo</string>
 
     <!--General-->
-    <string name="newList">New List</string>
+    <string name="saveAs">Save As</string>
     <string name="required">*Required</string>
     <string name="outOfRange">Out of range</string>
     <string name="dialog_hint_name">Name</string>
@@ -47,6 +47,7 @@
     <string name="settings">Settings</string>
 
     <!--Dialogs and SnackBars-->
+    <string name="confirmDeleteDialog">Confirm Delete</string>
     <string name="confirmDeleteAllDialog">Confirm Delete All</string>
     <string name="confirmRestoreAllDialog">Confirm Restore All</string>
     <string name="confirmRecycleAllDialog">Confirm Move All to Recycle Bin</string>
@@ -161,6 +162,7 @@
         friends.
         \n-\tAdded lists to Random Chooser. Now you can save your most frequently used lists and
         retrieve them later.
+        \n-\tBug fixes
         \n<b>2.4.3</b>
         \n-\tAdded tabs to easily navigate to recycle bin and periodic entries.
         \n-\tFixed memory bugs.

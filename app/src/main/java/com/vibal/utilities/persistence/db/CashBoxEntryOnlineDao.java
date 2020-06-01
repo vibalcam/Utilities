@@ -98,7 +98,7 @@ public interface CashBoxEntryOnlineDao extends CashBoxEntryBaseDao {
     Completable deleteOldEntries(long cashBoxId);
 
     @Query("UPDATE entriesOnline_table SET changeDate=:changeDate WHERE id=:id")
-    Completable setChangeDate(long id, Calendar changeDate);
+    Single<Integer> setChangeDate(long id, Calendar changeDate);
 
     @Query("UPDATE entriesOnline_table SET changeDate=NULL WHERE cashBoxId=:cashBoxId AND changeDate IS NOT NULL")
     Completable setViewedAll(long cashBoxId);

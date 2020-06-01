@@ -230,9 +230,9 @@ public abstract class CashBoxItemFragment extends PagerFragment {
         super.onCreateOptionsMenu(menu, inflater);
 
         // Set Title
-//        ActionBar actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
-//        if (actionBar != null)
-//            actionBar.setTitle(getViewModel().getCurrentCashBox().getValue().getName());
+        ActionBar actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
+        if (actionBar != null)
+            actionBar.setTitle(getViewModel().getCurrentCashBox().getValue().getName());
 
         // Change options menu if not in landscape mode
         View viewLand = requireView().findViewById(R.id.containerItem);
@@ -253,9 +253,7 @@ public abstract class CashBoxItemFragment extends PagerFragment {
     }
 
     @MenuRes
-    protected int getMenuRes() {
-        return R.menu.menu_toolbar_cash_box_item;
-    }
+    abstract protected int getMenuRes();
 
     private void setIconNotification(boolean enabled) {
         if (enabled == notificationEnabled)
@@ -272,6 +270,9 @@ public abstract class CashBoxItemFragment extends PagerFragment {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (!isOptionsMenuActive())
+            return false;
+
         switch (item.getItemId()) {
 //            case android.R.id.home:
 ////                getActivity().onBackPressed();
