@@ -3,6 +3,8 @@
     package="com.vibal.utilities">
 
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:name=".App"
@@ -36,19 +38,10 @@
 
         <activity
             android:name=".ui.settings.SettingsActivity"
-            android:label="@string/title_activity_settings" />
+            android:label="@string/settings" />
 
         <activity
-            android:name=".ui.cashBoxManager.CashBoxDeletedFragment"
-            android:label="@string/title_deletedCashBox"
-            android:theme="@style/AppTheme.NoActionBar"/>
-
-        <activity
-            android:name=".ui.cashBoxManager.CashBoxPeriodicFragment"
-            android:label="@string/title_periodicEntry"
-            android:theme="@style/AppTheme.NoActionBar"/>
-
-        <activity android:name=".ui.cashBoxManager.CashBoxManagerActivity"
+            android:name=".ui.cashBoxManager.CashBoxManagerActivity"
             android:label="@string/main_cashBoxManager"
             android:launchMode="singleTop"
             android:parentActivityName=".ui.MainActivity"

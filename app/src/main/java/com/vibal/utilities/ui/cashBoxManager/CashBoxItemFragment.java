@@ -19,6 +19,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.MenuRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
@@ -26,9 +27,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.ShareActionProvider;
 import androidx.core.view.MenuItemCompat;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.PreferenceManager;
-import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -40,13 +39,14 @@ import com.google.android.material.textfield.TextInputLayout;
 import com.google.android.material.textview.MaterialTextView;
 import com.vibal.utilities.R;
 import com.vibal.utilities.backgroundTasks.ReminderReceiver;
-import com.vibal.utilities.modelsNew.CashBox;
-import com.vibal.utilities.ui.PagerFragment;
+import com.vibal.utilities.models.Entry;
 import com.vibal.utilities.ui.settings.SettingsActivity;
 import com.vibal.utilities.ui.swipeController.CashBoxAdapterSwipable;
 import com.vibal.utilities.ui.swipeController.CashBoxSwipeController;
+import com.vibal.utilities.ui.viewPager.PagerFragment;
 import com.vibal.utilities.util.DiffCallback;
 import com.vibal.utilities.util.LogUtil;
+import com.vibal.utilities.util.MyDialogBuilder;
 import com.vibal.utilities.util.Util;
 import com.vibal.utilities.viewModels.CashBoxViewModel;
 import com.vibal.utilities.workaround.LinearLayoutManagerWrapper;
@@ -60,6 +60,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -70,78 +71,65 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 
-public class CashBoxItemFragment extends PagerFragment {
+public abstract class CashBoxItemFragment extends PagerFragment {
     public static final int REMINDER_ID = 1;
     private static final double MAX_SHOW_CASH = 99999999;
     private static final String TAG = "PruebaItemFragment";
     @NonNull
     private final NumberFormat formatCurrency = NumberFormat.getCurrencyInstance();
+    protected CompositeDisposable compositeDisposable = new CompositeDisposable();
     @BindView(R.id.itemCash)
     TextView itemCash;
     @BindView(R.id.rvCashBoxItem)
     RecyclerView rvCashBoxItem;
     private CashBoxItemRecyclerAdapter adapter;
-    private CashBoxViewModel viewModel;
     private ShareActionProvider shareActionProvider;
     private SharedPreferences sharedPrefNot;
     private boolean notificationEnabled = false; //By default, the icon is set to alarm off
     private MenuItem menuItemNotification;
-    private CompositeDisposable compositeDisposable = new CompositeDisposable();
-
-    @NonNull
-    static CashBoxItemFragment newInstance(int pagerPosition) {
-        CashBoxItemFragment fragment = new CashBoxItemFragment();
-        fragment.setPositionAsArgument(pagerPosition);
-        return fragment;
-    }
 
     @NonNull
     static AlertDialog getAddEntryDialog(long cashBoxId, @NonNull Context context,
                                          @NonNull CashBoxViewModel viewModel,
                                          CompositeDisposable compositeDisposable) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        AlertDialog dialog = builder.setTitle(R.string.newEntry)
+        return new MyDialogBuilder(context)
+                .setTitle(R.string.newEntry)
                 .setView(R.layout.cash_box_item_entry_input)
-                .setNegativeButton(R.string.cancelDialog, null)
                 .setPositiveButton(R.string.addEntryDialog, null)
-                .create();
-        dialog.setCanceledOnTouchOutside(false);
+                .setActions(dialog -> {
+                    Button positive = ((AlertDialog) dialog).getButton(DialogInterface.BUTTON_POSITIVE);
+                    TextInputEditText inputInfo = ((AlertDialog) dialog).findViewById(R.id.inputTextInfo);
+                    TextInputEditText inputAmount = ((AlertDialog) dialog).findViewById(R.id.inputTextAmount);
+                    TextInputLayout layoutAmount = ((AlertDialog) dialog).findViewById(R.id.inputLayoutAmount);
+                    MaterialTextView inputDate = ((AlertDialog) dialog).findViewById(R.id.inputDate);
 
-        dialog.setOnShowListener((DialogInterface dialog1) -> {
-            Button positive = ((AlertDialog) dialog1).getButton(DialogInterface.BUTTON_POSITIVE);
-            TextInputEditText inputInfo = ((AlertDialog) dialog1).findViewById(R.id.inputTextInfo);
-            TextInputEditText inputAmount = ((AlertDialog) dialog1).findViewById(R.id.inputTextAmount);
-            TextInputLayout layoutAmount = ((AlertDialog) dialog1).findViewById(R.id.inputLayoutAmount);
-            MaterialTextView inputDate = ((AlertDialog) dialog1).findViewById(R.id.inputDate);
+                    // Set up Date Picker
+                    Util.TextViewDatePickerClickListener calendarListener =
+                            new Util.TextViewDatePickerClickListener(context, inputDate, true);
+                    inputDate.setOnClickListener(calendarListener);
 
-            // Set up Date Picker
-            Util.TextViewDatePickerClickListener calendarListener =
-                    new Util.TextViewDatePickerClickListener(context, inputDate, true);
-            inputDate.setOnClickListener(calendarListener);
-
-            Util.showKeyboard(context, inputAmount);
-            positive.setOnClickListener((View v) -> {
-                try {
-                    String input = inputAmount.getText().toString().trim();
-                    if (input.isEmpty()) {
-                        layoutAmount.setError(context.getString(R.string.required));
-                        Util.showKeyboard(context, inputAmount);
-                    } else {
-                        double amount = Util.parseExpression(inputAmount.getText().toString());
-                        compositeDisposable.add(viewModel.addEntry(cashBoxId, new CashBox.Entry(
-                                amount, inputInfo.getText().toString(), calendarListener.getCalendar()))
-                                .subscribeOn(Schedulers.io())
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(dialog1::dismiss));
-                    }
-                } catch (NumberFormatException e) {
-                    layoutAmount.setError(context.getString(R.string.errorMessageAmount));
-                    inputAmount.selectAll();
                     Util.showKeyboard(context, inputAmount);
-                }
-            });
-        });
-        return dialog;
+                    positive.setOnClickListener((View v) -> {
+                        try {
+                            String input = inputAmount.getText().toString().trim();
+                            if (input.isEmpty()) {
+                                layoutAmount.setError(context.getString(R.string.required));
+                                Util.showKeyboard(context, inputAmount);
+                            } else {
+                                double amount = Util.parseExpression(inputAmount.getText().toString());
+                                compositeDisposable.add(viewModel.addEntry(cashBoxId, new Entry(
+                                        amount, inputInfo.getText().toString(), calendarListener.getCalendar()))
+                                        .subscribeOn(Schedulers.io())
+                                        .observeOn(AndroidSchedulers.mainThread())
+                                        .subscribe(dialog::dismiss));
+                            }
+                        } catch (NumberFormatException e) {
+                            layoutAmount.setError(context.getString(R.string.errorMessageAmount));
+                            inputAmount.selectAll();
+                            Util.showKeyboard(context, inputAmount);
+                        }
+                    });
+                }).create();
     }
 
     @Override
@@ -154,10 +142,6 @@ public class CashBoxItemFragment extends PagerFragment {
 //        LogUtil.debug(TAG,"Rest before onCreate: " + (viewLand==null || viewLand.getVisibility()!=View.VISIBLE));
 //        LogUtil.debug(TAG,"Has options menu item: " + (isVisible() && (viewLand==null || viewLand.getVisibility()!=View.VISIBLE)));
 //        if(isVisible() && (viewLand==null || viewLand.getVisibility()!=View.VISIBLE)) {
-        //Set up SharedPreferences for notifications
-//        sharedPrefNot = getContext().getSharedPreferences(ReminderReceiver.REMINDER_PREFERENCE,
-//                Context.MODE_PRIVATE);
-//        }
     }
 
     @Nullable
@@ -179,7 +163,7 @@ public class CashBoxItemFragment extends PagerFragment {
         rvCashBoxItem.setLayoutManager(layoutManager);
         adapter = new CashBoxItemRecyclerAdapter();
         rvCashBoxItem.setAdapter(adapter);
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(Objects.requireNonNull(getContext()));
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(requireContext());
         CashBoxSwipeController swipeController = new CashBoxSwipeController(adapter, preferences);
         (new ItemTouchHelper(swipeController)).attachToRecyclerView(rvCashBoxItem);
         rvCashBoxItem.addItemDecoration(new DividerItemDecoration(getContext(), layoutManager.getOrientation()));
@@ -190,8 +174,7 @@ public class CashBoxItemFragment extends PagerFragment {
         super.onActivityCreated(savedInstanceState);
 
         // Initialize data
-        viewModel = new ViewModelProvider(requireParentFragment()).get(CashBoxViewModel.class);
-        viewModel.getCurrentCashBox().observe(getViewLifecycleOwner(), cashBox -> {
+        initializeViewModel().getCurrentCashBox().observe(getViewLifecycleOwner(), cashBox -> {
             LogUtil.debug("PruebaItemFragment", "Is Visible onSubmitList: " + isVisible());
 
             // Set Title
@@ -214,6 +197,12 @@ public class CashBoxItemFragment extends PagerFragment {
         });
     }
 
+    @NonNull
+    protected abstract CashBoxViewModel getViewModel();
+
+    @NonNull
+    protected abstract CashBoxViewModel initializeViewModel();
+
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -226,10 +215,10 @@ public class CashBoxItemFragment extends PagerFragment {
         else {
             itemCash.setText(formatCurrency.format(cash));
             if (cash < 0)
-                itemCash.setTextColor(Objects.requireNonNull(getActivity())
+                itemCash.setTextColor(requireActivity()
                         .getColor(R.color.colorNegativeNumber));
             else
-                itemCash.setTextColor(Objects.requireNonNull(getActivity())
+                itemCash.setTextColor(requireActivity()
                         .getColor(R.color.colorPositiveNumber));
         }
     }
@@ -243,7 +232,7 @@ public class CashBoxItemFragment extends PagerFragment {
         // Set Title
         ActionBar actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
         if (actionBar != null)
-            actionBar.setTitle(viewModel.getCurrentCashBox().getValue().getName());
+            actionBar.setTitle(getViewModel().getCurrentCashBox().getValue().getName());
 
         // Change options menu if not in landscape mode
         View viewLand = requireView().findViewById(R.id.containerItem);
@@ -252,16 +241,19 @@ public class CashBoxItemFragment extends PagerFragment {
 //        LogUtil.debug(TAG,"Has options onCreateOptionsMenu: " + (isVisible() && (viewLand==null || viewLand.getVisibility()!=View.VISIBLE)));
         if (isVisible() && (viewLand == null || viewLand.getVisibility() != View.VISIBLE)) {
             menu.clear();
-            inflater.inflate(R.menu.menu_toolbar_cash_box_item, menu);
+            inflater.inflate(getMenuRes(), menu);
             // Prepare alarm icon
             menuItemNotification = menu.findItem(R.id.action_item_reminder);
             sharedPrefNot = requireContext().getSharedPreferences(ReminderReceiver.REMINDER_PREFERENCE,
                     Context.MODE_PRIVATE);
-            setIconNotification(sharedPrefNot.contains(Long.toString(viewModel.getCurrentCashBoxId())));
+            setIconNotification(sharedPrefNot.contains(Long.toString(getViewModel().getCurrentCashBoxId())));
             // Set up ShareActionProvider
             shareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menu.findItem(R.id.action_item_share));
         }
     }
+
+    @MenuRes
+    abstract protected int getMenuRes();
 
     private void setIconNotification(boolean enabled) {
         if (enabled == notificationEnabled)
@@ -278,6 +270,9 @@ public class CashBoxItemFragment extends PagerFragment {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (!isOptionsMenuActive())
+            return false;
+
         switch (item.getItemId()) {
 //            case android.R.id.home:
 ////                getActivity().onBackPressed();
@@ -332,13 +327,15 @@ public class CashBoxItemFragment extends PagerFragment {
                 return o1.getSymbol().equals(o1.getCurrencyCode()) ? 1 : -1;
         });
 
-        new AlertDialog.Builder(requireContext())
-                .setTitle(getString(R.string.currency_dialog_title))
+//        new AlertDialog.Builder(requireContext())
+        new MyDialogBuilder(requireContext())
+                .setTitle(R.string.currency_dialog_title)
+                .setPositiveButton(null, null)
                 .setSingleChoiceItems(arrayAdapter, -1, (dialog, which) -> {
                     dialog.dismiss();
                     LogUtil.debug(TAG, arrayAdapter.getItem(which).getCurrencyCode());
                     compositeDisposable.add(
-                            viewModel.setCurrentCashBoxCurrency(arrayAdapter.getItem(which))
+                            getViewModel().setCurrentCashBoxCurrency(arrayAdapter.getItem(which))
                                     .subscribeOn(Schedulers.io())
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .subscribe());
@@ -347,7 +344,7 @@ public class CashBoxItemFragment extends PagerFragment {
 
     private void showReminderDialog() {
         //Check if alarm has been already set
-        long timeInMillis = sharedPrefNot.getLong(Long.toString(viewModel.getCurrentCashBoxId()), 0);
+        long timeInMillis = sharedPrefNot.getLong(Long.toString(getViewModel().getCurrentCashBoxId()), 0);
         if (timeInMillis == 0) { //Set reminder dialog
             //Choose the date and time for the reminder
             Calendar calendar = Calendar.getInstance();
@@ -379,18 +376,17 @@ public class CashBoxItemFragment extends PagerFragment {
                     calendar.get(Calendar.DAY_OF_MONTH))
                     .show();
         } else //Cancel reminder dialog
-            new AlertDialog.Builder(requireContext())
+            new MyDialogBuilder(requireContext())
                     .setTitle(R.string.reminder_dialog_cancel_title)
                     .setMessage(getString(R.string.reminder_dialog_cancel_message,
                             DateFormat.getDateTimeInstance().format(new Date(timeInMillis))))
                     .setNegativeButton(R.string.reminder_dialog_cancel_keep, null)
-                    .setPositiveButton(R.string.reminder_dialog_cancel_cancel,
-                            (dialogInterface, i) -> cancelReminder())
+                    .setPositiveButton(R.string.reminder_dialog_cancel_cancel, (dialogInterface, i) -> cancelReminder())
                     .show();
     }
 
     private void scheduleReminder(@NonNull Calendar calendar) {
-        long cashBoxId = viewModel.getCurrentCashBoxId();
+        long cashBoxId = getViewModel().getCurrentCashBoxId();
         long timeInMillis = calendar.getTimeInMillis();
         //Enable boot receiver
         ReminderReceiver.setBootReceiverEnabled(requireContext(), true);
@@ -406,7 +402,7 @@ public class CashBoxItemFragment extends PagerFragment {
 
     private void cancelReminder() {
         //Delete reminder from Notifications SharedPreference
-        long cashBoxId = viewModel.getCurrentCashBoxId();
+        long cashBoxId = getViewModel().getCurrentCashBoxId();
         sharedPrefNot.edit().remove(Long.toString(cashBoxId)).apply();
         setIconNotification(false);
 
@@ -422,7 +418,7 @@ public class CashBoxItemFragment extends PagerFragment {
 
     @OnClick(R.id.fabCBItem)
     void onFabClicked() {
-        getAddEntryDialog(viewModel.getCurrentCashBoxId(), requireContext(), viewModel, compositeDisposable)
+        getAddEntryDialog(getViewModel().getCurrentCashBoxId(), requireContext(), getViewModel(), compositeDisposable)
                 .show();
     }
 
@@ -432,8 +428,8 @@ public class CashBoxItemFragment extends PagerFragment {
             return;
         }
 
-        List<CashBox.Entry> deletedEntries = new ArrayList<>(adapter.currentList);
-        compositeDisposable.add(viewModel.deleteAllEntriesFromCurrentCashBox()
+        List<Entry> deletedEntries = new ArrayList<>(adapter.currentList);
+        compositeDisposable.add(getViewModel().deleteAllEntriesFromCurrentCashBox()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(integer ->
@@ -441,7 +437,7 @@ public class CashBoxItemFragment extends PagerFragment {
                                 getString(R.string.snackbarEntriesDeleted, integer),
                                 Snackbar.LENGTH_LONG)
                                 .setAction(R.string.undo, v ->
-                                        compositeDisposable.add(viewModel.addAllEntriesToCurrentCashBox(deletedEntries)
+                                        compositeDisposable.add(getViewModel().addAllEntriesToCurrentCashBox(deletedEntries)
                                                 .subscribeOn(Schedulers.io())
                                                 .observeOn(AndroidSchedulers.mainThread())
                                                 .subscribe()))
@@ -451,23 +447,60 @@ public class CashBoxItemFragment extends PagerFragment {
     public class CashBoxItemRecyclerAdapter extends RecyclerView.Adapter<CashBoxItemRecyclerAdapter.ViewHolder> implements CashBoxAdapterSwipable {
         private static final boolean DRAG_ENABLED = false;
         private static final boolean SWIPE_ENABLED = true;
-
+        @NonNull
+        private final ConcurrentLinkedQueue<Single<DiffCallback.DiffResultWithList<Entry>>> pendingSubmitted = new ConcurrentLinkedQueue<>();
         @NonNull
         private DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
         @NonNull
-        private List<CashBox.Entry> currentList = new ArrayList<>();
+        private List<Entry> currentList = new ArrayList<>();
 
-        void submitList(@NonNull List<CashBox.Entry> newList) {
-            compositeDisposable.add(Single.just(DiffUtil.calculateDiff(
-                    new DiffCallback<>(currentList, newList), false))
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(diffResult -> {
-                        LogUtil.debug(TAG, "DiffResult calculated");
-                        currentList.clear();
-                        currentList.addAll(newList);
-                        diffResult.dispatchUpdatesTo(CashBoxItemRecyclerAdapter.this);
-                    }));
+        /**
+         * Submit a new list of elements for the adapter to show.
+         * All changes in adapter list must go through submitList.
+         *
+         * @param newList New list to be submitted
+         */
+        void submitList(@NonNull List<Entry> newList) {
+            pendingSubmitted.add(Single.create(emitter ->
+                    emitter.onSuccess(DiffCallback.DiffResultWithList.calculateDiff(
+                            currentList, newList, false))));
+            // If pending is empty, add and start this work
+            // if there is already another work in progress, just add to pending
+            if (pendingSubmitted.size() == 1)
+                runPendingSubmitted();
+
+//            compositeDisposable.add(Single.just(DiffUtil.calculateDiff(
+//                    new DiffCallback<>(currentList, newList), false))
+//                    .subscribeOn(Schedulers.io())
+//                    .observeOn(AndroidSchedulers.mainThread())
+//                    .subscribe(diffResult -> {
+//                        LogUtil.debug(TAG, "DiffResult calculated");
+//                        currentList.clear();
+//                        currentList.addAll(newList);
+//                        diffResult.dispatchUpdatesTo(CashBoxItemRecyclerAdapter.this);
+//                    }));
+        }
+
+        private void runPendingSubmitted() {
+            Single<DiffCallback.DiffResultWithList<Entry>> single = pendingSubmitted.peek();
+            if (single != null) {
+                compositeDisposable.add(single
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(diffResultWithList -> {
+                            LogUtil.debug(TAG, "DiffResult calculated");
+                            // Show diff changes
+                            currentList.clear();
+                            currentList.addAll(diffResultWithList.getNewList());
+                            diffResultWithList.getDiffResult()
+                                    .dispatchUpdatesTo(CashBoxItemRecyclerAdapter.this);
+
+                            // Delete this work from pending
+                            pendingSubmitted.poll();
+                            // Run next pending
+                            runPendingSubmitted();
+                        }));
+            }
         }
 
         @NonNull
@@ -479,7 +512,7 @@ public class CashBoxItemFragment extends PagerFragment {
 
         @Override
         public void onBindViewHolder(@NonNull ViewHolder viewHolder, int index) {
-            CashBox.Entry entry = currentList.get(index);
+            Entry entry = currentList.get(index);
 
             // Amount
             viewHolder.rvItemAmount.setText(formatCurrency.format(entry.getAmount()));
@@ -510,22 +543,22 @@ public class CashBoxItemFragment extends PagerFragment {
 
         @Override
         public void onItemDelete(int position) {
-            CashBox.Entry entry = currentList.get(position);
+            Entry entry = currentList.get(position);
 
-            if (entry.getGroupId() == CashBox.Entry.NO_GROUP) {
+            if (entry.getGroupId() == Entry.NO_GROUP) {
                 deleteEntry(entry);
                 return;
             }
 
-            AlertDialog dialog = new AlertDialog.Builder(requireContext())
+            new MyDialogBuilder(requireContext())
                     .setTitle(R.string.titleGroupEntryDelete)
                     .setMessage(R.string.messageGroupDelete)
                     .setOnCancelListener(dialogInterface -> notifyItemChanged(position))   // since the item is deleted from swipping we have to show it back again)
                     .setNegativeButton(R.string.groupEntryIndividual,
                             (dialogInterface, i) -> deleteEntry(entry))
                     .setPositiveButton(R.string.groupEntryAll, (dialogInterface, i) ->
-                            compositeDisposable.add(viewModel.getGroupEntries(entry)
-                                    .flatMap(entries -> viewModel.deleteGroupEntries(entry)
+                            compositeDisposable.add(getViewModel().getGroupEntries(entry)
+                                    .flatMap(entries -> getViewModel().deleteGroupEntries(entry)
                                             .map(integer -> entries))
                                     .subscribeOn(Schedulers.io())
                                     .observeOn(AndroidSchedulers.mainThread())
@@ -533,25 +566,23 @@ public class CashBoxItemFragment extends PagerFragment {
                                             getString(R.string.snackbarEntriesDeleted, 1),
                                             Snackbar.LENGTH_LONG)
                                             .setAction(R.string.undo, (View v) ->
-                                                    compositeDisposable.add(viewModel.addAllEntries(entryList)
+                                                    compositeDisposable.add(getViewModel().addAllEntries(entryList)
                                                             .subscribeOn(Schedulers.io())
                                                             .observeOn(AndroidSchedulers.mainThread())
                                                             .subscribe()))
                                             .show())))
-                    .create();
-            dialog.setCanceledOnTouchOutside(false);
-            dialog.show();
+                    .show();
         }
 
-        private void deleteEntry(CashBox.Entry entry) {
-            compositeDisposable.add(viewModel.deleteEntry(entry)
+        private void deleteEntry(Entry entry) {
+            compositeDisposable.add(getViewModel().deleteEntry(entry)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(() -> Snackbar.make(rvCashBoxItem,
                             getString(R.string.snackbarEntriesDeleted, 1),
                             Snackbar.LENGTH_LONG)
                             .setAction(R.string.undo, (View v) ->
-                                    compositeDisposable.add(viewModel.addEntryToCurrentCashBox(entry)
+                                    compositeDisposable.add(getViewModel().addEntryToCurrentCashBox(entry)
                                             .subscribeOn(Schedulers.io())
                                             .observeOn(AndroidSchedulers.mainThread())
                                             .subscribe()))
@@ -564,104 +595,97 @@ public class CashBoxItemFragment extends PagerFragment {
                     + "\nID del cashBox: " + currentList.get(position).getCashBoxId() + "\nID group: " +
                     currentList.get(position).getGroupId());
 
-            AlertDialog dialog = new AlertDialog.Builder(requireContext())
+            new MyDialogBuilder(requireContext())
                     .setTitle(R.string.modifyEntry)
                     .setView(R.layout.cash_box_item_entry_input)
-                    .setNegativeButton(R.string.cancelDialog, null)
                     .setPositiveButton(R.string.confirm, null)
-                    .create();
-            dialog.setCanceledOnTouchOutside(false);
+                    .setActions((DialogInterface dialogInterface) -> {
+                        Button positive = ((AlertDialog) dialogInterface).getButton(DialogInterface.BUTTON_POSITIVE);
+                        TextInputEditText inputInfo = ((AlertDialog) dialogInterface).findViewById(R.id.inputTextInfo);
+                        TextInputEditText inputAmount = ((AlertDialog) dialogInterface).findViewById(R.id.inputTextAmount);
+                        TextInputLayout layoutAmount = ((AlertDialog) dialogInterface).findViewById(R.id.inputLayoutAmount);
+                        MaterialTextView inputDate = ((AlertDialog) dialogInterface).findViewById(R.id.inputDate);
+                        Entry modifiedEntry = currentList.get(position);
 
-            dialog.setOnShowListener((DialogInterface dialogInterface) -> {
-                Button positive = ((AlertDialog) dialogInterface).getButton(DialogInterface.BUTTON_POSITIVE);
-                TextInputEditText inputInfo = ((AlertDialog) dialogInterface).findViewById(R.id.inputTextInfo);
-                TextInputEditText inputAmount = ((AlertDialog) dialogInterface).findViewById(R.id.inputTextAmount);
-                TextInputLayout layoutAmount = ((AlertDialog) dialogInterface).findViewById(R.id.inputLayoutAmount);
-                MaterialTextView inputDate = ((AlertDialog) dialogInterface).findViewById(R.id.inputDate);
-                CashBox.Entry modifiedEntry = currentList.get(position);
+                        // Set up Date Picker
+                        Util.TextViewDatePickerClickListener calendarListener =
+                                new Util.TextViewDatePickerClickListener(requireContext(), inputDate,
+                                        modifiedEntry.getDate(), true);
+                        inputDate.setOnClickListener(calendarListener);
 
-                // Set up Date Picker
-                Util.TextViewDatePickerClickListener calendarListener =
-                        new Util.TextViewDatePickerClickListener(requireContext(), inputDate,
-                                modifiedEntry.getDate(), true);
-                inputDate.setOnClickListener(calendarListener);
-
-                inputInfo.setText(modifiedEntry.getInfo());
-                inputAmount.setText(String.format(Locale.US, "%.2f", modifiedEntry.getAmount()));
-                // Show keyboard and select the whole text
-                inputAmount.selectAll();
-                Util.showKeyboard(requireContext(), inputAmount);
-
-                positive.setOnClickListener((View v) -> {
-                    try {
-                        String input = inputAmount.getText().toString().trim();
-
-                        if (input.isEmpty()) {
-                            layoutAmount.setError(getString(R.string.required));
-                            inputAmount.setText("");
-                            Util.showKeyboard(requireContext(), inputAmount);
-                        } else {
-                            String info = inputInfo.getText().toString().trim();
-                            double amount = Util.parseExpression(input);
-
-                            // Not a group entry
-                            if (modifiedEntry.getGroupId() == CashBox.Entry.NO_GROUP)
-                                modifyEntry(modifiedEntry, dialogInterface, amount, info,
-                                        calendarListener.getCalendar());
-                            else { // Group entry
-                                AlertDialog dialogGroup = new AlertDialog.Builder(requireContext())
-                                        .setTitle(R.string.titleGroupEntryModify)
-                                        .setMessage(R.string.messageGroupModify)
-                                        // Modify only this entry
-                                        .setNegativeButton(R.string.groupEntryIndividual,
-                                                (dialogInterfaceGroup, i) -> modifyEntry(modifiedEntry,
-                                                        dialogInterface, amount, info,
-                                                        calendarListener.getCalendar()))
-                                        // Modify all entries of the group
-                                        .setPositiveButton(R.string.groupEntryAll, (dialogInterfaceGroup, i) ->
-                                                compositeDisposable.add(viewModel.getGroupEntries(modifiedEntry)
-                                                        .flatMap(entries -> viewModel.modifyGroupEntry(
-                                                                modifiedEntry, amount, info,
-                                                                calendarListener.getCalendar())
-                                                                .toSingleDefault(entries))
-                                                        .subscribeOn(Schedulers.io())
-                                                        .observeOn(AndroidSchedulers.mainThread())
-                                                        .subscribe(entryList -> {
-                                                            dialogInterface.dismiss();
-                                                            Snackbar.make(rvCashBoxItem,
-                                                                    getString(R.string.snackbarEntriesDeleted, 1),
-                                                                    Snackbar.LENGTH_LONG)
-                                                                    .setAction(R.string.undo, (View v2) -> {
-                                                                        Completable completable = Completable.complete();
-                                                                        for (CashBox.Entry k : entryList)
-                                                                            completable = completable.andThen(
-                                                                                    viewModel.updateEntry(k));
-                                                                        compositeDisposable.add(completable
-                                                                                .subscribeOn(Schedulers.io())
-                                                                                .observeOn(AndroidSchedulers.mainThread())
-                                                                                .subscribe());
-                                                                    }).show();
-                                                        })))
-                                        .create();
-                                dialogGroup.setCanceledOnTouchOutside(false);
-                                dialogGroup.show();
-                            }
-                        }
-                    } catch (NumberFormatException e) {
-                        layoutAmount.setError(getString(R.string.errorMessageAmount));
+                        inputInfo.setText(modifiedEntry.getInfo());
+                        inputAmount.setText(String.format(Locale.US, "%.2f", modifiedEntry.getAmount()));
+                        // Show keyboard and select the whole text
                         inputAmount.selectAll();
                         Util.showKeyboard(requireContext(), inputAmount);
-                    }
-                });
-            });
-            dialog.show();
+
+                        positive.setOnClickListener((View v) -> {
+                            try {
+                                String input = inputAmount.getText().toString().trim();
+
+                                if (input.isEmpty()) {
+                                    layoutAmount.setError(getString(R.string.required));
+                                    inputAmount.setText("");
+                                    Util.showKeyboard(requireContext(), inputAmount);
+                                } else {
+                                    String info = inputInfo.getText().toString().trim();
+                                    double amount = Util.parseExpression(input);
+
+                                    // Not a group entry
+                                    if (modifiedEntry.getGroupId() == Entry.NO_GROUP)
+                                        modifyEntry(modifiedEntry, dialogInterface, amount, info,
+                                                calendarListener.getCalendar());
+                                    else { // Group entry
+                                        new MyDialogBuilder(requireContext())
+                                                .setTitle(R.string.titleGroupEntryModify)
+                                                .setMessage(R.string.messageGroupModify)
+                                                // Modify only this entry
+                                                .setNegativeButton(R.string.groupEntryIndividual,
+                                                        (dialogInterfaceGroup, i) -> modifyEntry(modifiedEntry,
+                                                                dialogInterface, amount, info,
+                                                                calendarListener.getCalendar()))
+                                                // Modify all entries of the group
+                                                .setPositiveButton(R.string.groupEntryAll, (dialogInterfaceGroup, i) ->
+                                                        compositeDisposable.add(getViewModel().getGroupEntries(modifiedEntry)
+                                                                .flatMap(entries -> getViewModel().modifyGroupEntry(
+                                                                        modifiedEntry, amount, info,
+                                                                        calendarListener.getCalendar())
+                                                                        .toSingleDefault(entries))
+                                                                .subscribeOn(Schedulers.io())
+                                                                .observeOn(AndroidSchedulers.mainThread())
+                                                                .subscribe(entryList -> {
+                                                                    dialogInterface.dismiss();
+                                                                    Snackbar.make(rvCashBoxItem,
+                                                                            getString(R.string.snackbarEntriesDeleted, 1),
+                                                                            Snackbar.LENGTH_LONG)
+                                                                            .setAction(R.string.undo, (View v2) -> {
+                                                                                Completable completable = Completable.complete();
+                                                                                for (Entry k : entryList)
+                                                                                    completable = completable.andThen(
+                                                                                            getViewModel().updateEntry(k));
+                                                                                compositeDisposable.add(completable
+                                                                                        .subscribeOn(Schedulers.io())
+                                                                                        .observeOn(AndroidSchedulers.mainThread())
+                                                                                        .subscribe());
+                                                                            }).show();
+                                                                })))
+                                                .show();
+                                    }
+                                }
+                            } catch (NumberFormatException e) {
+                                layoutAmount.setError(getString(R.string.errorMessageAmount));
+                                inputAmount.selectAll();
+                                Util.showKeyboard(requireContext(), inputAmount);
+                            }
+                        });
+                    }).show();
 
             notifyItemChanged(position);   // since the item is deleted from swipping we have to show it back again
         }
 
-        private void modifyEntry(CashBox.Entry modifiedEntry, DialogInterface dialogInterface,
+        private void modifyEntry(Entry modifiedEntry, DialogInterface dialogInterface,
                                  double amount, String info, Calendar date) {
-            compositeDisposable.add(viewModel.modifyEntry(modifiedEntry, amount, info, date)
+            compositeDisposable.add(getViewModel().modifyEntry(modifiedEntry, amount, info, date)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(() -> {
@@ -669,7 +693,7 @@ public class CashBoxItemFragment extends PagerFragment {
                         Snackbar.make(rvCashBoxItem,
                                 R.string.snackbarEntryModified, Snackbar.LENGTH_LONG)
                                 .setAction(R.string.undo, (View v1) ->
-                                        compositeDisposable.add(viewModel.updateEntry(modifiedEntry)
+                                        compositeDisposable.add(getViewModel().updateEntry(modifiedEntry)
                                                 .subscribeOn(Schedulers.io())
                                                 .observeOn(AndroidSchedulers.mainThread())
                                                 .subscribe()))

@@ -6,8 +6,8 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 
-import com.vibal.utilities.db.CashBoxRepository;
-import com.vibal.utilities.modelsNew.PeriodicEntryPojo;
+import com.vibal.utilities.models.PeriodicEntryPojo;
+import com.vibal.utilities.persistence.repositories.PeriodicEntryWorkRepository;
 
 import java.util.List;
 import java.util.UUID;
@@ -18,7 +18,7 @@ import io.reactivex.Single;
 public class PeriodicEntryWorkViewModel extends AndroidViewModel {
     private static final String TAG = "PruebaPeriodicViewModel";
 
-    private CashBoxRepository repository;
+    private PeriodicEntryWorkRepository repository;
     private LiveData<List<PeriodicEntryPojo>> periodicEntries;
 //    @NonNull
 //    private CompositeDisposable compositeDisposable = new CompositeDisposable();
@@ -26,7 +26,8 @@ public class PeriodicEntryWorkViewModel extends AndroidViewModel {
 
     public PeriodicEntryWorkViewModel(@NonNull Application application) {
         super(application);
-        repository = new CashBoxRepository(application);
+//        repository = new PeriodicEntryWorkRepository(application);
+        repository = PeriodicEntryWorkRepository.getInstance(application);
         periodicEntries = repository.getPeriodicEntries();
     }
 

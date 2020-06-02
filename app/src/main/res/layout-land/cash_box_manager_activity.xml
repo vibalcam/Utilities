@@ -77,7 +77,7 @@
 <!--        </FrameLayout>-->
 <!--    </LinearLayout>-->
 
-    <com.vibal.utilities.util.CashBoxViewPager
+    <com.vibal.utilities.ui.viewPager.CashBoxViewPager
         android:id="@+id/CB_viewPager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

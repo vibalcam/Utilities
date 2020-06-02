@@ -16,8 +16,8 @@ import androidx.core.app.NotificationManagerCompat;
 
 import com.vibal.utilities.App;
 import com.vibal.utilities.R;
-import com.vibal.utilities.db.UtilitiesDatabase;
-import com.vibal.utilities.modelsNew.CashBoxInfo;
+import com.vibal.utilities.models.CashBoxInfo;
+import com.vibal.utilities.persistence.db.UtilitiesDatabase;
 import com.vibal.utilities.ui.cashBoxManager.CashBoxItemFragment;
 import com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity;
 import com.vibal.utilities.util.LogUtil;
@@ -82,7 +82,7 @@ public class ReminderReceiver extends BroadcastReceiver {
             setBootReceiverEnabled(context, false);
 
         //Get info of the CashBox
-        Disposable disposable = UtilitiesDatabase.getInstance(context).cashBoxDao()
+        Disposable disposable = UtilitiesDatabase.getInstance(context).cashBoxLocalDao()
                 .getCashBoxById(cashBoxId)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -136,7 +136,7 @@ public class ReminderReceiver extends BroadcastReceiver {
         } else { //Show notification reminder
             LogUtil.debug(TAG, "Show notification");
             showReminderNotification(context,
-                    intent.getLongExtra(EXTRA_CASHBOX_ID, CashBoxInfo.NO_CASHBOX));
+                    intent.getLongExtra(EXTRA_CASHBOX_ID, CashBoxInfo.NO_ID));
         }
     }
 }

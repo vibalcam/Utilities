@@ -15,9 +15,9 @@ import androidx.work.WorkerParameters;
 
 import com.vibal.utilities.App;
 import com.vibal.utilities.R;
-import com.vibal.utilities.db.UtilitiesDatabase;
-import com.vibal.utilities.modelsNew.CashBox;
-import com.vibal.utilities.modelsNew.PeriodicEntryPojo;
+import com.vibal.utilities.models.Entry;
+import com.vibal.utilities.models.PeriodicEntryPojo;
+import com.vibal.utilities.persistence.db.UtilitiesDatabase;
 import com.vibal.utilities.ui.cashBoxManager.CashBoxItemFragment;
 import com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity;
 import com.vibal.utilities.util.LogUtil;
@@ -46,10 +46,10 @@ public class RxPeriodicEntryWorker extends RxWorker {
                 .flatMap(periodicEntryPojo -> {
                     //Create entry
                     PeriodicEntryPojo.PeriodicEntryWorkInfo workInfo = periodicEntryPojo.getWorkInfo();
-                    CashBox.Entry entry = new CashBox.Entry(workInfo.getCashBoxId(),
+                    Entry entry = new Entry(workInfo.getCashBoxId(),
                             workInfo.getAmount(), workInfo.getInfo(), Calendar.getInstance());
                     entry.setInfo("Periodic: " + entry.getInfo());
-                    Single<Result> result = database.cashBoxEntryDao().insert(entry)
+                    Single<Result> result = database.cashBoxEntryLocalDao().insert(entry)
                             .toSingle(() -> {
                                 LogUtil.debug(TAG, "Success");
                                 showNotification(periodicEntryPojo);
@@ -76,28 +76,9 @@ public class RxPeriodicEntryWorker extends RxWorker {
                         return database.periodicEntryWorkDao().delete(workInfo)
                                 .flatMap(integer -> result);
                 }).onErrorReturn(throwable -> {
-                    LogUtil.debug(TAG, "No found the corresponding work info");
+                    LogUtil.debug(TAG, "Didn't found the corresponding work info");
                     return Result.success();
                 });
-
-
-//        LogUtil.debug(TAG,"Do job");
-//        UtilitiesDatabase database = UtilitiesDatabase.getInstance(getApplicationContext());
-//        return database.periodicEntryWorkDao().getWorkPojoByUUID(getId())
-//                .flatMap(periodicEntryPojo -> {
-//                    PeriodicEntryPojo.PeriodicEntryWorkInfo workInfo = periodicEntryPojo.getWorkInfo();
-//                    CashBox.Entry entry = new CashBox.Entry(workInfo.getCashBoxId(),workInfo.getAmount(),
-//                            "Periodic: " + workInfo.getInfo(), Calendar.getInstance());
-//                    return database.cashBoxEntryDao().insert(entry)
-//                            .toSingle(() -> {
-//                                LogUtil.debug(TAG,"Success");
-//                                showNotification(periodicEntryPojo);
-//                                return Result.success();
-//                            }).onErrorReturn(throwable -> {
-//                                LogUtil.error(TAG,"Error en periodic", throwable);
-//                                return Result.failure();
-//                            });
-//                });
     }
 
     private void showNotification(@NonNull PeriodicEntryPojo periodicEntryPojo) {

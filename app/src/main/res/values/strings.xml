@@ -5,13 +5,14 @@
     <string name="main_randomChooser">Random Chooser</string>
     <string name="main_cashBoxManager">CashBox Manager</string>
     <string name="titleCBM">CashBoxes</string>
+    <string name="titleCBM_online">Cloud</string>
     <string name="title_periodicEntry">Periodic Entries</string>
     <string name="title_deletedCashBox">Recycle Bin</string>
-    <string name="title_activity_settings">Settings</string>
+    <!--    <string name="title_activity_settings">Settings</string>-->
 
-    <string name="settings">Settings</string>
+
     <string name="action_about">About this app</string>
-    <string name="add">Add</string>
+
     <string name="roll">Roll The Dice</string>
     <string name="shuffle">Shuffle List</string>
     <string name="randomChooser_title">Contestants</string>
@@ -28,19 +29,25 @@
     <string name="modifyEntry">Modify Entry</string>
     <string name="addEntryDialog">Add Entry</string>
     <string name="item_totalCash">Total Cash</string>
-    <string name="outOfRange">Out of range</string>
-    <string name="required">*Required</string>
     <string name="errorMessageAmount">" "</string>
     <string name="noEntriesDelete">"No entries to delete"</string>
     <string name="menu_contextualToolbar">Edit Mode</string>
     <string name="helperEnterNameDialog">Max. 15 characters</string>
     <string name="contentDescriptionLogoMain">App\'s logo</string>
 
+    <!--General-->
+    <string name="saveAs">Save As</string>
+    <string name="required">*Required</string>
+    <string name="outOfRange">Out of range</string>
+    <string name="dialog_hint_name">Name</string>
+
     <!--Menu Actions-->
     <string name="action_help">Help</string>
     <string name="action_versions">What\'s New?</string>
+    <string name="settings">Settings</string>
 
     <!--Dialogs and SnackBars-->
+    <string name="confirmDeleteDialog">Confirm Delete</string>
     <string name="confirmDeleteAllDialog">Confirm Delete All</string>
     <string name="confirmRestoreAllDialog">Confirm Restore All</string>
     <string name="confirmRecycleAllDialog">Confirm Move All to Recycle Bin</string>
@@ -50,6 +57,11 @@
     <string name="snackbarEntriesDeleted">%d deleted</string>
     <string name="snackbarEntriesMoveToRecycle">%d moved to recycle bin</string>
     <string name="snackbarEntriesRestored">%d restored</string>
+    <string name="accept">Accept</string>
+    <string name="reject">Reject</string>
+    <string name="invite">Invite</string>
+    <string name="duplicate">Duplicate</string>
+    <string name="add">Add</string>
 
     <!--CashBox Manager Fragment-->
     <string name="no_cashbox_selected">No CashBox Selected</string>
@@ -59,10 +71,11 @@
     <string name="menuCBM_showPeriodic">Periodic Tasks</string>
     <string name="menuCBM_recycleBin">Recycle Bin</string>
     <string name="menuCBM_manager">Manager</string>
+    <string name="menuCBM_managerOnline">Online</string>
     <string name="menuCBM_notifications">Notifications</string>
 
     <!--CashBox Manager Contextual Menu-->
-    <string name="contextualMenu_CBMDuplicate">Duplicate</string>
+
 
     <!--CashBox Item Fragment-->
     <string name="titleGroupEntryDelete">Delete Group Entry</string>
@@ -75,12 +88,26 @@
     <string name="enterInfoDialog">Info</string>
     <string name="enterAmountDialog">Amount</string>
 
+    <!--CashBox Online Fragments-->
+    <string name="dialog_inviteTitle">Invite user</string>
+    <string name="dialog_selectUsername">Choose Username</string>
+    <string name="dialog_text_username">
+        Input the username which others will use to find you
+        \n(Do not use your real name)
+    </string>
+    <string name="dialog_hint_username">Username</string>
+    <string name="dialog_acceptInvitation_title">New CashBox Invitation</string>
+    <string name="dialog_acceptInvitation_message">%s has invited yo to a shared online cashBox</string>
+    <string name="dialog_view_changes">Non viewed changes</string>
+
     <!--CashBox Item Menu-->
     <string name="action_reset">Delete All</string>
     <string name="menu_item_reminderOn">Cancel Reminder</string>
     <string name="menu_item_reminderOff">Set Reminder</string>
     <string name="menu_item_share">Share</string>
     <string name="menu_item_currency">Currency</string>
+    <string name="menu_item_invite">Invite</string>
+    <string name="menu_refresh">Refresh</string>
 
     <!--CashBox Deleted Menu-->
     <string name="action_restoreAll">Restore All</string>
@@ -130,7 +157,13 @@
         \nTo delete all entries, click the trashcan symbol at the top of the app.
     </string>
     <string name="changesVersions">
-        <b>2.4.3</b>
+        <b>3.0</b>
+        \n-\tAdded online cashBoxes. Now you will be able to have a shared cashBoxes with your
+        friends.
+        \n-\tAdded lists to Random Chooser. Now you can save your most frequently used lists and
+        retrieve them later.
+        \n-\tBug fixes
+        \n<b>2.4.3</b>
         \n-\tAdded tabs to easily navigate to recycle bin and periodic entries.
         \n-\tFixed memory bugs.
         \n<b>2.4.2</b>
@@ -151,6 +184,7 @@
     <!--Preference Titles-->
     <string name="pref_general_header">General</string>
     <string name="pref_CBM_header">CashBox Manager</string>
+    <string name="pref_CBMOnline_header">CashBox Manager Online</string>
 
     <!--General Preferences-->
     <string name="pref_defaultStart">Default start screen</string>
@@ -165,6 +199,25 @@
     <string name="pref_notifyPeriodic">Notification Periodic</string>
     <string name="pref_summaryOn_notifyPeriodic">Notify when a periodic entry has been added</string>
     <string name="pref_summaryOff_notifyPeriodic">Do not notify when a periodic entry has been added</string>
+
+    <!--CashBox Online Preferences-->
+    <string name="pref_online">Allow online mode</string>
+    <string name="pref_online_cancel">Cancel online mode</string>
+    <string name="allowOnline_acceptMessage">
+        By accepting you give consent to Utilities to save your Online CashBox data.
+         This data will be saved anonymously with the username of your choice. Take into account
+        that the data introduced may be lost, deleted or modified due to unexpected incidents.
+        \nYou can withdraw you consent at any time disabling the \"Allow online mode\" option in Settings.
+         By doing so, your user and all your saved data will be deleted from the server.
+         The data shared with other users will remain being available to them, but will stop being
+         linked to your user.
+    </string>
+    <string name="allowOnline_cancelMessage">
+        By doing so you will withdraw your consent and your user and data will be deleted from the
+        server. The data cannot be restored. What do you want to do with your online cashboxes?
+    </string>
+    <string name="delete">Delete</string>
+    <string name="moveLocal">Make local</string>
 
     <!--CashBox Manager Widget-->
     <string name="emptyCashBoxManager">No CashBoxes added</string>

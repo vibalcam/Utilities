@@ -5,6 +5,9 @@
     <color name="ic_launcher_background">#FFFFFF</color>
     <color name="colorAccent">#D81B60</color>
     <color name="colorDivider">#7D7D7D</color>
+    <color name="colorIncorrect">@android:color/holo_red_dark</color>
+    <color name="colorNew">#0277BD</color>
+    <color name="colorText">@android:color/black</color>
 
     <!--CashBox Background Color-->
     <color name="colorRVSelectedCashBox">#DCDCDC</color>

@@ -31,15 +31,23 @@
             <com.google.android.material.tabs.TabItem
                 android:layout_height="0dp"
                 android:layout_width="0dp"
-                android:text="@string/menuCBM_manager" />
+                android:text="@string/menuCBM_manager"
+                android:icon="@drawable/ic_wallet_white_24dp"/>
             <com.google.android.material.tabs.TabItem
                 android:layout_height="0dp"
                 android:layout_width="0dp"
-                android:text="@string/menuCBM_recycleBin" />
+                android:text="@string/menuCBM_managerOnline"
+                android:icon="@drawable/ic_cloud_white_24dp"/>
             <com.google.android.material.tabs.TabItem
                 android:layout_height="0dp"
                 android:layout_width="0dp"
-                android:text="@string/menuCBM_showPeriodic" />
+                android:text="@string/menuCBM_recycleBin"
+                android:icon="@drawable/recycle"/>
+            <com.google.android.material.tabs.TabItem
+                android:layout_height="0dp"
+                android:layout_width="0dp"
+                android:text="@string/menuCBM_showPeriodic"
+                android:icon="@drawable/calendar_clock"/>
 <!--            <com.google.android.material.tabs.TabItem-->
 <!--                android:layout_height="0dp"-->
 <!--                android:layout_width="0dp"-->
@@ -47,7 +55,7 @@
         </com.google.android.material.tabs.TabLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <com.vibal.utilities.util.CashBoxViewPager
+    <com.vibal.utilities.ui.viewPager.CashBoxViewPager
         android:id="@+id/CB_viewPager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

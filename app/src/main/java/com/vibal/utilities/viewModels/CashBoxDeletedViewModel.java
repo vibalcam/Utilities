@@ -6,9 +6,8 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 
-import com.vibal.utilities.db.CashBoxRepository;
-import com.vibal.utilities.modelsNew.CashBox;
-import com.vibal.utilities.modelsNew.CashBoxInfo;
+import com.vibal.utilities.models.CashBox;
+import com.vibal.utilities.persistence.repositories.CashBoxLocalRepository;
 
 import java.util.List;
 
@@ -18,13 +17,14 @@ import io.reactivex.Single;
 public class CashBoxDeletedViewModel extends AndroidViewModel {
     private static final String TAG = "PruebaCashBoxDeletedViewModel";
 
-    private CashBoxRepository repository;
+    private CashBoxLocalRepository repository;
     private LiveData<List<CashBox.InfoWithCash>> cashBoxesInfo;
 //    private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     public CashBoxDeletedViewModel(@NonNull Application application) {
         super(application);
-        repository = new CashBoxRepository(application);
+//        repository = new CashBoxLocalRepository(application);
+        repository = CashBoxLocalRepository.getInstance(application);
         cashBoxesInfo = repository.getAllDeletedCashBoxesInfo();
     }
 
@@ -33,17 +33,15 @@ public class CashBoxDeletedViewModel extends AndroidViewModel {
     }
 
     public Completable restore(CashBox.InfoWithCash infoWithCash) {
-        CashBoxInfo cashBoxInfo = infoWithCash.getCashBoxInfo();
-        cashBoxInfo.setDeleted(false);
-        return repository.updateCashBoxInfo(cashBoxInfo);
+        return repository.restore(infoWithCash.getCashBoxInfo());
     }
 
     public Completable delete(CashBox.InfoWithCash infoWithCash) {
-        return repository.deleteCashBox(infoWithCash.getCashBoxInfo());
+        return repository.permanentDeleteCashBox(infoWithCash.getCashBoxInfo());
     }
 
     public Single<Integer> restoreAll() {
-        return repository.setDeletedAll(false);
+        return repository.restoreAll();
     }
 
     public Single<Integer> clearRecycleBin() {

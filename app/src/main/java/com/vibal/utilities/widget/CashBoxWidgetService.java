@@ -9,8 +9,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.vibal.utilities.R;
-import com.vibal.utilities.db.UtilitiesDatabase;
-import com.vibal.utilities.modelsNew.CashBox;
+import com.vibal.utilities.models.CashBox;
+import com.vibal.utilities.persistence.db.UtilitiesDatabase;
 import com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity;
 
 import java.text.NumberFormat;
@@ -25,7 +25,6 @@ public class CashBoxWidgetService extends RemoteViewsService {
 
     class CashBoxWidgetItemFactory implements RemoteViewsFactory {
         private Context context;
-        @Nullable
         private UtilitiesDatabase database;
         private List<CashBox.InfoWithCash> cashBoxInfos;
         private NumberFormat currencyFormat;
@@ -37,12 +36,14 @@ public class CashBoxWidgetService extends RemoteViewsService {
 
         @Override
         public void onCreate() {
+            // on create widget
             database = UtilitiesDatabase.getInstance(getApplicationContext());
         }
 
         @Override
         public void onDataSetChanged() {
-            cashBoxInfos = database.cashBoxDao().getAllCashBoxInfoForWidget();
+            // refresh data
+            cashBoxInfos = database.cashBoxLocalDao().getAllCashBoxInfoForWidget();
             currencyFormat = NumberFormat.getCurrencyInstance();
         }
 

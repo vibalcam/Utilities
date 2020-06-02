@@ -28,14 +28,12 @@
             android:layout_width="0dp"
             android:layout_height="1dp"
             android:background="@color/colorDivider"
-            android:layout_marginStart="@dimen/main_marginHorizontal"
-            android:layout_marginEnd="@dimen/main_marginHorizontal"
+            android:layout_marginHorizontal="@dimen/divider_marginParent"
+            android:layout_marginVertical="@dimen/divider_marginItems"
             app:layout_constraintTop_toBottomOf="parent"
             app:layout_constraintBottom_toTopOf="@id/itemCash"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="5dp" />
+            app:layout_constraintEnd_toEndOf="parent" />
 
         <TextView
             android:id="@+id/titleItemCash"

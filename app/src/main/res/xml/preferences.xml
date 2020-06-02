@@ -28,4 +28,11 @@
             app:summaryOff="@string/pref_summaryOff_notifyPeriodic"
             app:defaultValue="true" />
     </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/pref_CBMOnline_header">
+        <SwitchPreference
+            app:key="allowOnline"
+            app:title="@string/pref_online"
+            app:defaultValue="false" />
+    </PreferenceCategory>
 </androidx.preference.PreferenceScreen>

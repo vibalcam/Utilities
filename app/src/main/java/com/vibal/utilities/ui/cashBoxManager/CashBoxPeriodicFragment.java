@@ -32,13 +32,14 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.android.material.textview.MaterialTextView;
 import com.vibal.utilities.R;
-import com.vibal.utilities.modelsNew.PeriodicEntryPojo;
-import com.vibal.utilities.ui.PagerFragment;
+import com.vibal.utilities.models.PeriodicEntryPojo;
 import com.vibal.utilities.ui.settings.SettingsActivity;
 import com.vibal.utilities.ui.swipeController.CashBoxAdapterSwipable;
 import com.vibal.utilities.ui.swipeController.CashBoxSwipeController;
+import com.vibal.utilities.ui.viewPager.PagerFragment;
 import com.vibal.utilities.util.DiffCallback;
 import com.vibal.utilities.util.LogUtil;
+import com.vibal.utilities.util.MyDialogBuilder;
 import com.vibal.utilities.util.Util;
 import com.vibal.utilities.viewModels.PeriodicEntryWorkViewModel;
 
@@ -134,6 +135,9 @@ public class CashBoxPeriodicFragment extends PagerFragment {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (!isOptionsMenuActive())
+            return false;
+
         switch (item.getItemId()) {
 //            case android.R.id.home:
 //                onBackPressed();
@@ -152,21 +156,24 @@ public class CashBoxPeriodicFragment extends PagerFragment {
     private void deleteAll() {
         int count = adapter.getItemCount();
         if (count == 0) {
-            Toast.makeText(getContext(), "No entries to recycle", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "No entries to delete", Toast.LENGTH_SHORT).show();
             return;
         }
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setTitle(R.string.confirmDeleteAllDialog)
+
+        new MyDialogBuilder(requireContext())
+                .setTitle(R.string.confirmDeleteAllDialog)
                 .setMessage("Are you sure you want to send all entries to the recycle bin?")
-                .setNegativeButton(R.string.cancelDialog, null)
-                .setPositiveButton(R.string.confirmDeleteDialogConfirm, (DialogInterface dialog, int which) ->
+                .setPositiveButton(R.string.confirmDeleteDialogConfirm, (dialog, which) ->
                         compositeDisposable.add(viewModel.deleteAllPeriodicEntryWorks()
                                 .subscribeOn(Schedulers.io())
                                 .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(integer -> Toast.makeText(getContext(),
-                                        getString(R.string.snackbarEntriesDeleted, count),
-                                        Toast.LENGTH_SHORT)
-                                        .show())))
+                                .subscribe(integer -> {
+                                    dialog.dismiss();
+                                    Toast.makeText(getContext(),
+                                            getString(R.string.snackbarEntriesDeleted, count),
+                                            Toast.LENGTH_SHORT)
+                                            .show();
+                                })))
                 .show();
     }
 
@@ -193,17 +200,7 @@ public class CashBoxPeriodicFragment extends PagerFragment {
                     .subscribe(diffResult -> {
                         currentList.clear();
                         currentList.addAll(newList);
-//                        notifyDataSetChanged();
                         diffResult.dispatchUpdatesTo(CashBoxPeriodicRecyclerAdapter.this);
-
-//                        int pos;
-//                        for(int k = 0; k< toDelete.size(); k++) {
-//                            pos = diffResult.convertOldPositionToNew(toDelete.remove(k));
-//                            if(pos!= DiffUtil.DiffResult.NO_POSITION) {
-//                                currentList.remove(pos);
-//                                notifyItemRemoved(pos);
-//                            }
-//                        }
                     }));
         }
 
@@ -249,12 +246,9 @@ public class CashBoxPeriodicFragment extends PagerFragment {
             List<PeriodicEntryPojo> list = new ArrayList<>(currentList);
             toDelete.add(removed);
             submitList(new ArrayList<>(currentList));
-//            PeriodicEntryPojo deletedEntry = currentList.remove(position);
-//            notifyItemRemoved(position);
             Snackbar.make(coordinatorLayout,
                     getString(R.string.snackbarEntriesDeleted, 1), Snackbar.LENGTH_LONG)
                     .setAction(R.string.undo, view -> {
-//                        currentList.add(position, deletedEntry);
                         toDelete.removeFirst();
                         submitList(list);
                     }).addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
@@ -265,7 +259,6 @@ public class CashBoxPeriodicFragment extends PagerFragment {
                     LogUtil.debug("Prueba", "Deleted entry");
                     if (event != DISMISS_EVENT_ACTION)
                         compositeDisposable.add(
-//                                viewModel.deletePeriodicEntryWorkInfo(deletedEntry.getWorkInfo())
                                 viewModel.deletePeriodicEntryWorkInfo(toDelete.removeFirst().getWorkInfo())
                                         .subscribeOn(Schedulers.io())
                                         .observeOn(AndroidSchedulers.mainThread())
@@ -278,69 +271,65 @@ public class CashBoxPeriodicFragment extends PagerFragment {
         public void onItemSecondaryAction(int position) {
             PeriodicEntryPojo.PeriodicEntryWorkInfo workInfo = currentList.get(position).getWorkInfo();
 
-            AlertDialog dialog = new AlertDialog.Builder(getContext())
+            new MyDialogBuilder(requireContext())
                     .setTitle(R.string.periodic_dialog_newPeriodic)
                     .setView(R.layout.periodic_new_entry)
-                    .setNegativeButton(R.string.cancelDialog, null)
                     .setPositiveButton(R.string.periodic_dialog_create, null)
-                    .create();
-            dialog.setCanceledOnTouchOutside(false);
-            dialog.setOnShowListener(dialogInterface -> {
-                Button positive = ((AlertDialog) dialogInterface).getButton(DialogInterface.BUTTON_POSITIVE);
-                TextInputEditText inputInfo = ((AlertDialog) dialogInterface).findViewById(R.id.inputTextInfo);
-                TextInputEditText inputAmount = ((AlertDialog) dialogInterface).findViewById(R.id.inputTextAmount);
-                TextInputLayout layoutAmount = ((AlertDialog) dialogInterface).findViewById(R.id.inputLayoutAmount);
-                TextInputEditText inputPeriod = ((AlertDialog) dialogInterface).findViewById(R.id.reminder_inputTextPeriod);
-                TextInputEditText inputRepetitions = ((AlertDialog) dialogInterface).findViewById(R.id.reminder_inputTextRepetitions);
-                TextInputLayout layoutRepetitions = ((AlertDialog) dialogInterface).findViewById(R.id.reminder_inputLayoutRepetitions);
+                    .setActions(dialog -> {
+                        Button positive = ((AlertDialog) dialog).getButton(DialogInterface.BUTTON_POSITIVE);
+                        TextInputEditText inputInfo = ((AlertDialog) dialog).findViewById(R.id.inputTextInfo);
+                        TextInputEditText inputAmount = ((AlertDialog) dialog).findViewById(R.id.inputTextAmount);
+                        TextInputLayout layoutAmount = ((AlertDialog) dialog).findViewById(R.id.inputLayoutAmount);
+                        TextInputEditText inputPeriod = ((AlertDialog) dialog).findViewById(R.id.reminder_inputTextPeriod);
+                        TextInputEditText inputRepetitions = ((AlertDialog) dialog).findViewById(R.id.reminder_inputTextRepetitions);
+                        TextInputLayout layoutRepetitions = ((AlertDialog) dialog).findViewById(R.id.reminder_inputLayoutRepetitions);
 
-                // Not show Date Picker
-                MaterialTextView inputDate = ((AlertDialog) dialogInterface).findViewById(R.id.inputDate);
-                inputDate.setVisibility(View.GONE);
+                        // Not show Date Picker
+                        MaterialTextView inputDate = ((AlertDialog) dialog).findViewById(R.id.inputDate);
+                        inputDate.setVisibility(View.GONE);
 
-                //Set to the current values
-                inputInfo.setText(workInfo.getInfo());
-                inputAmount.setText(String.format(Locale.US, "%.2f", workInfo.getAmount()));
-                inputPeriod.setText(String.format(Locale.US, "%d", workInfo.getRepeatInterval()));
-                inputRepetitions.setText(String.format(Locale.US, "%d", workInfo.getRepetitions()));
+                        //Set to the current values
+                        inputInfo.setText(workInfo.getInfo());
+                        inputAmount.setText(String.format(Locale.US, "%.2f", workInfo.getAmount()));
+                        inputPeriod.setText(String.format(Locale.US, "%d", workInfo.getRepeatInterval()));
+                        inputRepetitions.setText(String.format(Locale.US, "%d", workInfo.getRepetitions()));
 
-                Util.showKeyboard(getContext(), inputAmount);
-                positive.setOnClickListener((View v) -> {
-                    try {
-                        String input = inputAmount.getText().toString().trim();
-                        int repetitions = Integer.parseInt(inputRepetitions.getText().toString());
-                        if (input.isEmpty()) {
-                            layoutAmount.setError(getString(R.string.required));
-                            Util.showKeyboard(getContext(), inputAmount);
-                        } else if (repetitions < 1) {
-                            layoutRepetitions.setError("Min. 1");
-                            Util.showKeyboard(getContext(), inputRepetitions);
-                        } else { //Change values and do the DB change
+                        Util.showKeyboard(getContext(), inputAmount);
+                        positive.setOnClickListener((View v) -> {
                             try {
-                                workInfo.setAmount(Util.parseExpression(inputAmount.getText().toString()));
-                                workInfo.setInfo(inputInfo.getText().toString());
-                                workInfo.setRepeatInterval(Long.parseLong(inputPeriod.getText().toString()));
-                                workInfo.setRepetitions(repetitions);
+                                String input = inputAmount.getText().toString().trim();
+                                int repetitions = Integer.parseInt(inputRepetitions.getText().toString());
+                                if (input.isEmpty()) {
+                                    layoutAmount.setError(getString(R.string.required));
+                                    Util.showKeyboard(getContext(), inputAmount);
+                                } else if (repetitions < 1) {
+                                    layoutRepetitions.setError("Min. 1");
+                                    Util.showKeyboard(getContext(), inputRepetitions);
+                                } else { //Change values and do the DB change
+                                    try {
+                                        workInfo.setAmount(Util.parseExpression(inputAmount.getText().toString()));
+                                        workInfo.setInfo(inputInfo.getText().toString());
+                                        workInfo.setRepeatInterval(Long.parseLong(inputPeriod.getText().toString()));
+                                        workInfo.setRepetitions(repetitions);
 
-                                compositeDisposable.add(viewModel.updatePeriodicEntryWorkInfo(workInfo)
-                                        .subscribeOn(Schedulers.io())
-                                        .observeOn(AndroidSchedulers.mainThread())
-                                        .subscribe());
-                                dialogInterface.dismiss();
+                                        compositeDisposable.add(viewModel.updatePeriodicEntryWorkInfo(workInfo)
+                                                .subscribeOn(Schedulers.io())
+                                                .observeOn(AndroidSchedulers.mainThread())
+                                                .subscribe());
+                                        dialog.dismiss();
+                                    } catch (NumberFormatException e) {
+                                        layoutAmount.setError(getString(R.string.errorMessageAmount));
+                                        inputAmount.selectAll();
+                                        Util.showKeyboard(getContext(), inputAmount);
+                                    }
+                                }
                             } catch (NumberFormatException e) {
-                                layoutAmount.setError(getString(R.string.errorMessageAmount));
-                                inputAmount.selectAll();
-                                Util.showKeyboard(getContext(), inputAmount);
+                                layoutRepetitions.setError(getString(R.string.errorMessageAmount));
+                                inputRepetitions.selectAll();
+                                Util.showKeyboard(getContext(), inputRepetitions);
                             }
-                        }
-                    } catch (NumberFormatException e) {
-                        layoutRepetitions.setError(getString(R.string.errorMessageAmount));
-                        inputRepetitions.selectAll();
-                        Util.showKeyboard(getContext(), inputRepetitions);
-                    }
-                });
-            });
-            dialog.show();
+                        });
+                    }).show();
 
             notifyItemChanged(position);   // since the item is deleted from swipping we have to show it back again
         }

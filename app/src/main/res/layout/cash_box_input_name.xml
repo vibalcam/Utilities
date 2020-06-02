@@ -4,10 +4,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingTop="@dimen/inputTextMargin"
-    android:paddingBottom="@dimen/inputTextMargin"
-    android:paddingStart="@dimen/paddingDialog"
-    android:paddingEnd="@dimen/paddingDialog">
+    android:paddingVertical="@dimen/inputTextMargin"
+    android:paddingHorizontal="@dimen/paddingDialog">
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/inputLayoutChangeName"
         android:layout_width="match_parent"

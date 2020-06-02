@@ -10,20 +10,58 @@
     android:layout_marginBottom="@dimen/main_marginVertical"
     tools:context=".ui.randomChooser.RandomChooserActivity">
 
-    <TextView
-        android:id="@+id/titleText"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
+    <Spinner
+        android:id="@+id/spinnerList"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:minHeight="50dp"
         android:gravity="center"
-        android:text="@string/randomChooser_title"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textSize="@dimen/titleText"
-        android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/rvRandomChooser"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/buttonAddList"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_chainStyle="spread_inside" />
+        app:layout_constraintHorizontal_weight="2"
+        tools:listitem="@layout/spinner_contestants_list_item" />
+
+    <Button
+        android:id="@+id/buttonAddList"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/saveAs"
+        app:layout_constraintStart_toEndOf="@id/spinnerList"
+        app:layout_constraintEnd_toStartOf="@+id/buttonDeleteList"
+        app:layout_constraintBottom_toBottomOf="@id/spinnerList"
+        app:layout_constraintTop_toTopOf="@id/spinnerList"
+        android:layout_marginHorizontal="2dp"
+        app:layout_constraintHorizontal_weight="1" />
+
+    <Button
+        android:id="@+id/buttonDeleteList"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/delete"
+        android:layout_marginStart="2dp"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        app:layout_constraintStart_toEndOf="@id/buttonAddList"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/spinnerList"
+        app:layout_constraintTop_toTopOf="@id/spinnerList"
+        app:layout_constraintHorizontal_weight="1" />
+
+    <!--    <TextView-->
+    <!--        android:id="@+id/titleText"-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="50dp"-->
+    <!--        android:gravity="center"-->
+    <!--        android:text="@string/randomChooser_title"-->
+    <!--        android:textAppearance="?android:attr/textAppearanceLarge"-->
+    <!--        android:textSize="@dimen/titleText"-->
+    <!--        android:textStyle="bold"-->
+    <!--        app:layout_constraintBottom_toTopOf="@+id/rvRandomChooser"-->
+    <!--        app:layout_constraintEnd_toEndOf="parent"-->
+    <!--        app:layout_constraintStart_toStartOf="parent"-->
+    <!--        app:layout_constraintTop_toTopOf="parent"-->
+    <!--        app:layout_constraintVertical_chainStyle="spread_inside" />-->
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvRandomChooser"
@@ -34,7 +72,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/titleText"
+        app:layout_constraintTop_toBottomOf="@+id/spinnerList"
         app:layout_constraintBottom_toTopOf="@id/inputText"/>
 
     <Button

@@ -9,6 +9,8 @@
     <dimen name="paddingDialog">8dp</dimen>
     <dimen name="marginRV_name_cash">5dp</dimen>
     <dimen name="marginRV_date_amount">5dp</dimen>
+    <dimen name="divider_marginItems">5dp</dimen>
+    <dimen name="divider_marginParent">10dp</dimen>
 
     <!--CB Item-->
     <dimen name="marginItemRecyclerView">50dp</dimen>
@@ -25,5 +27,5 @@
     <dimen name="marginAddButton_cbmWidget">16dp</dimen>
     <dimen name="paddingList_cbmWidget">10dp</dimen>
     <dimen name="paddingListItem_cbmWidget">10dp</dimen>
-    <dimen name="marginRV_periodic_info">2dp</dimen>
+    <dimen name="marginRV_info">2dp</dimen>
 </resources>

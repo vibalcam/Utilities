@@ -16,8 +16,8 @@ import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.material.tabs.TabLayout;
 import com.vibal.utilities.R;
-import com.vibal.utilities.ui.PagerActivity;
-import com.vibal.utilities.ui.PagerFragment;
+import com.vibal.utilities.ui.viewPager.PagerActivity;
+import com.vibal.utilities.ui.viewPager.PagerFragment;
 import com.vibal.utilities.util.LogUtil;
 import com.vibal.utilities.widget.CashBoxWidgetProvider;
 
@@ -27,7 +27,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class CashBoxManagerActivity extends AppCompatActivity implements TabLayout.OnTabSelectedListener, PagerActivity {
-    //public class CashBoxManagerActivity extends AppCompatActivity {
     // Extras for intents
     public static final String EXTRA_CASHBOX_ID = "com.vibal.utilities.cashBoxId";
     public static final String EXTRA_ACTION = "com.vibal.utilities.ui.cashBoxManager.action";
@@ -48,10 +47,11 @@ public class CashBoxManagerActivity extends AppCompatActivity implements TabLayo
      * Next free group id for use (returned id is not in use, +1 when save new one)
      */
     public static final String GROUP_ID_COUNT_KEY = "com.vibal.utilities.cashBoxManager.GROUP_ID_COUNT";
-    /**
-     * Next free group id for use (returned id is not in use, +1 when save new one)
-     */
     public static final String GROUP_ADD_MODE_KEY = "com.vibal.utilities.cashBoxManager.GROUP_ADD_MODE";
+
+    // For online
+    public static final String CLIENT_ID_KEY = "com.vibal.utilities.cashBoxManager.CLIENT_ID";
+    public static final String USERNAME_KEY = "com.vibal.utilities.cashBoxManager.USERNAME";
 
     @BindView(R.id.CB_viewPager)
     ViewPager pager;
@@ -97,14 +97,17 @@ public class CashBoxManagerActivity extends AppCompatActivity implements TabLayo
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
+    protected void onPause() {
+        super.onPause();
+        LogUtil.debug("PruebaCBActivity", "On pause");
+
         // Update app widget
-        //todo update app widget
         Intent intent = new Intent(this, CashBoxWidgetProvider.class);
-        intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
-        int[] ids = AppWidgetManager.getInstance(getApplicationContext())
-                .getAppWidgetIds(new ComponentName(getApplicationContext(), CashBoxWidgetProvider.class));
+        intent.setAction(CashBoxWidgetProvider.ACTION_REFRESH);
+        // Use an array and EXTRA_APPWIDGET_IDS instead of AppWidgetManager.EXTRA_APPWIDGET_ID,
+        // since it seems the onUpdate() is only fired on that:
+        int[] ids = AppWidgetManager.getInstance(getApplication())
+                .getAppWidgetIds(new ComponentName(getApplication(), CashBoxWidgetProvider.class));
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
         sendBroadcast(intent);
     }
@@ -147,6 +150,7 @@ public class CashBoxManagerActivity extends AppCompatActivity implements TabLayo
     @Override
     public void onTabSelected(@NonNull TabLayout.Tab tab) {
         LogUtil.debug("PruebaViewPager", "Position: " + tab.getPosition());
+        supportInvalidateOptionsMenu();
         pager.setCurrentItem(tab.getPosition(), true);
     }
 
@@ -170,10 +174,12 @@ public class CashBoxManagerActivity extends AppCompatActivity implements TabLayo
             LogUtil.debug("PruebaViewPager", "Position get Item: " + position);
             switch (position) {
                 case 0:
-                    return CashBoxViewFragment.newInstance(position);
+                    return CashBoxViewFragment.newInstance(position, false);
                 case 1:
-                    return CashBoxDeletedFragment.newInstance(position);
+                    return CashBoxViewFragment.newInstance(position, true);
                 case 2:
+                    return CashBoxDeletedFragment.newInstance(position);
+                case 3:
                     return CashBoxPeriodicFragment.newInstance(position);
                 default: // should never happen
                     throw new IllegalArgumentException("No fragment associated to position");
@@ -182,7 +188,7 @@ public class CashBoxManagerActivity extends AppCompatActivity implements TabLayo
 
         @Override
         public int getCount() {
-            return 3;
+            return 4;
         }
     }
 }
