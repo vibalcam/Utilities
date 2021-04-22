@@ -39,6 +39,7 @@ import com.google.android.material.textfield.TextInputLayout;
 import com.google.android.material.textview.MaterialTextView;
 import com.vibal.utilities.R;
 import com.vibal.utilities.backgroundTasks.ReminderReceiver;
+import com.vibal.utilities.exceptions.UtilAppException;
 import com.vibal.utilities.models.Entry;
 import com.vibal.utilities.ui.settings.SettingsActivity;
 import com.vibal.utilities.ui.swipeController.CashBoxAdapterSwipable;
@@ -121,7 +122,14 @@ public abstract class CashBoxItemFragment extends PagerFragment {
                                         amount, inputInfo.getText().toString(), calendarListener.getCalendar()))
                                         .subscribeOn(Schedulers.io())
                                         .observeOn(AndroidSchedulers.mainThread())
-                                        .subscribe(dialog::dismiss));
+                                        .subscribe(dialog::dismiss, throwable -> {
+                                            dialog.dismiss();
+                                            String message = throwable instanceof UtilAppException ?
+                                                    throwable.getLocalizedMessage() : UtilAppException.ERROR_MSG;
+                                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+
+                                            LogUtil.error(TAG, "RxJava error: ", throwable);
+                                        }));
                             }
                         } catch (NumberFormatException e) {
                             layoutAmount.setError(context.getString(R.string.errorMessageAmount));
@@ -441,7 +449,19 @@ public abstract class CashBoxItemFragment extends PagerFragment {
                                                 .subscribeOn(Schedulers.io())
                                                 .observeOn(AndroidSchedulers.mainThread())
                                                 .subscribe()))
-                                .show()));
+                                .show(), this::doOnRxError));
+    }
+
+    protected void doOnRxError(Throwable throwable) {
+        String message = throwable instanceof UtilAppException ?
+                throwable.getLocalizedMessage() : UtilAppException.ERROR_MSG;
+        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+
+        LogUtil.error(TAG, "RxJava error: ", throwable);
+    }
+
+    protected void doOnModifyEntryError(Throwable throwable, Entry entry) {
+        doOnRxError(throwable);
     }
 
     public class CashBoxItemRecyclerAdapter extends RecyclerView.Adapter<CashBoxItemRecyclerAdapter.ViewHolder> implements CashBoxAdapterSwipable {
@@ -499,7 +519,7 @@ public abstract class CashBoxItemFragment extends PagerFragment {
                             pendingSubmitted.poll();
                             // Run next pending
                             runPendingSubmitted();
-                        }));
+                        }, CashBoxItemFragment.this::doOnRxError));
             }
         }
 
@@ -546,7 +566,7 @@ public abstract class CashBoxItemFragment extends PagerFragment {
             Entry entry = currentList.get(position);
 
             if (entry.getGroupId() == Entry.NO_GROUP) {
-                deleteEntry(entry);
+                deleteEntry(entry, position);
                 return;
             }
 
@@ -555,7 +575,7 @@ public abstract class CashBoxItemFragment extends PagerFragment {
                     .setMessage(R.string.messageGroupDelete)
                     .setOnCancelListener(dialogInterface -> notifyItemChanged(position))   // since the item is deleted from swipping we have to show it back again)
                     .setNegativeButton(R.string.groupEntryIndividual,
-                            (dialogInterface, i) -> deleteEntry(entry))
+                            (dialogInterface, i) -> deleteEntry(entry, position))
                     .setPositiveButton(R.string.groupEntryAll, (dialogInterface, i) ->
                             compositeDisposable.add(getViewModel().getGroupEntries(entry)
                                     .flatMap(entries -> getViewModel().deleteGroupEntries(entry)
@@ -570,11 +590,14 @@ public abstract class CashBoxItemFragment extends PagerFragment {
                                                             .subscribeOn(Schedulers.io())
                                                             .observeOn(AndroidSchedulers.mainThread())
                                                             .subscribe()))
-                                            .show())))
+                                            .show(), throwable -> {
+                                        doOnRxError(throwable);
+                                        notifyItemChanged(position);
+                                    })))
                     .show();
         }
 
-        private void deleteEntry(Entry entry) {
+        private void deleteEntry(Entry entry, int position) {
             compositeDisposable.add(getViewModel().deleteEntry(entry)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
@@ -586,7 +609,10 @@ public abstract class CashBoxItemFragment extends PagerFragment {
                                             .subscribeOn(Schedulers.io())
                                             .observeOn(AndroidSchedulers.mainThread())
                                             .subscribe()))
-                            .show()));
+                            .show(), throwable -> {
+                        doOnRxError(throwable);
+                        notifyItemChanged(position);
+                    }));
         }
 
         @Override
@@ -668,6 +694,9 @@ public abstract class CashBoxItemFragment extends PagerFragment {
                                                                                         .observeOn(AndroidSchedulers.mainThread())
                                                                                         .subscribe());
                                                                             }).show();
+                                                                }, throwable -> {
+                                                                    dialogInterface.dismiss();
+                                                                    doOnRxError(throwable);
                                                                 })))
                                                 .show();
                                     }
@@ -683,9 +712,9 @@ public abstract class CashBoxItemFragment extends PagerFragment {
             notifyItemChanged(position);   // since the item is deleted from swipping we have to show it back again
         }
 
-        private void modifyEntry(Entry modifiedEntry, DialogInterface dialogInterface,
+        private void modifyEntry(Entry entry, DialogInterface dialogInterface,
                                  double amount, String info, Calendar date) {
-            compositeDisposable.add(getViewModel().modifyEntry(modifiedEntry, amount, info, date)
+            compositeDisposable.add(getViewModel().modifyEntry(entry, amount, info, date)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(() -> {
@@ -693,11 +722,14 @@ public abstract class CashBoxItemFragment extends PagerFragment {
                         Snackbar.make(rvCashBoxItem,
                                 R.string.snackbarEntryModified, Snackbar.LENGTH_LONG)
                                 .setAction(R.string.undo, (View v1) ->
-                                        compositeDisposable.add(getViewModel().updateEntry(modifiedEntry)
+                                        compositeDisposable.add(getViewModel().updateEntry(entry)
                                                 .subscribeOn(Schedulers.io())
                                                 .observeOn(AndroidSchedulers.mainThread())
                                                 .subscribe()))
                                 .show();
+                    }, throwable -> {
+                        dialogInterface.dismiss();
+                        doOnModifyEntryError(throwable, new Entry(entry.getCashBoxId(), amount, info, date));
                     }));
         }
 

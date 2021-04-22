@@ -42,6 +42,7 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.android.material.textview.MaterialTextView;
 import com.vibal.utilities.R;
+import com.vibal.utilities.exceptions.UtilAppException;
 import com.vibal.utilities.models.CashBox;
 import com.vibal.utilities.models.CashBoxInfo;
 import com.vibal.utilities.models.Entry;
@@ -466,7 +467,7 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
                                             getString(R.string.snackbarEntriesMoveToRecycle, count),
                                             Toast.LENGTH_SHORT)
                                             .show();
-                                })));
+                                }, this::defaultDoOnRxError)));
     }
 
     @OnClick(R.id.fabCBM_main)
@@ -669,6 +670,9 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
                                             .putLong(GROUP_ID_COUNT_KEY, groupId + 1)
                                             .putInt(GROUP_ADD_MODE_KEY, mode)
                                             .apply();
+                                }, throwable -> {
+                                    dialog.dismiss();
+                                    defaultDoOnRxError(throwable);
                                 }));
                     }
                 } catch (NumberFormatException e) {
@@ -721,7 +725,10 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
                                                     calendarListener.getDaysFromCurrent()))
                                             .subscribeOn(Schedulers.io())
                                             .observeOn(AndroidSchedulers.mainThread())
-                                            .subscribe(dialog::dismiss));
+                                            .subscribe(dialog::dismiss, throwable -> {
+                                                dialog.dismiss();
+                                                defaultDoOnRxError(throwable);
+                                            }));
                                 } catch (NumberFormatException e) {
                                     layoutAmount.setError(getString(R.string.errorMessageAmount));
                                     inputAmount.selectAll();
@@ -752,7 +759,15 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
         compositeDisposable.add(getViewModel().deleteCashBoxInfo(infoWithCash)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(() -> doOnDelete(infoWithCash)));
+                .subscribe(() -> doOnDelete(infoWithCash), this::defaultDoOnRxError));
+    }
+
+    protected void defaultDoOnRxError(Throwable throwable) {
+        String message = throwable instanceof UtilAppException ?
+                throwable.getLocalizedMessage() : UtilAppException.ERROR_MSG;
+        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+
+        LogUtil.error(TAG, "RxJava error: ", throwable);
     }
 
     /**
@@ -838,7 +853,7 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
                             pendingSubmitted.poll();
                             // Run next pending
                             runPendingSubmitted();
-                        }));
+                        }, CashBoxManagerFragment.this::defaultDoOnRxError));
             }
         }
 
@@ -923,6 +938,7 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
         @Override
         public void onItemDelete(int position) {
             deleteCashBox(position);
+            notifyItemChanged(position); // since the item is deleted from swipping we have to show it back again
         }
 
         @Override
@@ -954,7 +970,10 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
                                                 .subscribeOn(Schedulers.io())
                                                 .observeOn(AndroidSchedulers.mainThread())
                                                 .subscribe(dialog::dismiss, throwable -> {
-                                                    layoutName.setError(getString(R.string.nameInUse));
+                                                    String message = throwable instanceof UtilAppException ?
+                                                            throwable.getLocalizedMessage() :
+                                                            getString(R.string.nameInUse);
+                                                    layoutName.setError(message);
                                                     inputName.selectAll();
                                                     Util.showKeyboard(requireContext(), inputName);
                                                 }));

@@ -17,8 +17,10 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.vibal.utilities.R;
+import com.vibal.utilities.exceptions.NonExistentException;
+import com.vibal.utilities.exceptions.UtilAppException;
+import com.vibal.utilities.models.Entry;
 import com.vibal.utilities.persistence.retrofit.UtilAppAPI;
-import com.vibal.utilities.persistence.retrofit.UtilAppException;
 import com.vibal.utilities.util.LogUtil;
 import com.vibal.utilities.util.MyDialogBuilder;
 import com.vibal.utilities.util.Util;
@@ -161,5 +163,24 @@ public class CashBoxItemOnlineFragment extends CashBoxItemFragment {
     @Override
     protected int getMenuRes() {
         return R.menu.menu_toolbar_cash_box_item_online;
+    }
+
+    @Override
+    protected void doOnModifyEntryError(Throwable throwable, Entry entry) {
+        if (!(throwable instanceof NonExistentException))
+            super.doOnModifyEntryError(throwable, entry);
+
+        new MyDialogBuilder(requireContext())
+                .setTitle(R.string.dialog_nonExistentModify)
+                .setMessage(R.string.dialog_nonExistentModify_message)
+                .setNegativeButton(R.string.cancelDialog, null)
+                .setPositiveButton(R.string.add, (dialog, which) ->
+                        compositeDisposable.add(viewModel.addEntry(entry.getCashBoxId(), entry)
+                                .subscribeOn(Schedulers.io())
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(dialog::dismiss, throwable2 -> {
+                                    dialog.dismiss();
+                                    doOnRxError(throwable2);
+                                }))).show();
     }
 }

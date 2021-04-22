@@ -40,6 +40,11 @@ public interface UtilAppAPI {
     // Authentication
     String CLIENT_ID = "ClientId";
     String PASSWORD_HEADER = "pwd";
+    String VERSION_HEADER = "clientV";
+    String VERSION = "1";
+
+    // Response codes
+    int NON_EXISTENT_WARNING = -2;
 
     // Other constants
     int MAX_LENGTH_USERNAME = 15;

@@ -4,10 +4,10 @@ import android.app.Application;
 
 import androidx.annotation.NonNull;
 
+import com.vibal.utilities.exceptions.UtilAppException;
 import com.vibal.utilities.models.EntryOnline;
 import com.vibal.utilities.persistence.repositories.CashBoxOnlineRepository;
 import com.vibal.utilities.persistence.repositories.CashBoxRepository;
-import com.vibal.utilities.persistence.retrofit.UtilAppException;
 
 import java.io.IOException;
 import java.security.KeyManagementException;

@@ -53,8 +53,12 @@ public class UtilAppResponse {
             return value == null ? -1 : value;
         }
 
-        public boolean operationSuccessful(long key) {
+        public boolean isOperationSuccessful(long key) {
             return getValue(key) >= 0;
+        }
+
+        public boolean isWarningNonExistent(long key) {
+            return getValue(key) == UtilAppAPI.NON_EXISTENT_WARNING;
         }
     }
 

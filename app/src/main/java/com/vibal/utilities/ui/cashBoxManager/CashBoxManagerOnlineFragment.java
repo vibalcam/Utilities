@@ -20,10 +20,10 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.vibal.utilities.R;
+import com.vibal.utilities.exceptions.UtilAppException;
 import com.vibal.utilities.models.CashBox;
 import com.vibal.utilities.models.CashBoxInfo;
 import com.vibal.utilities.persistence.repositories.CashBoxOnlineRepository;
-import com.vibal.utilities.persistence.retrofit.UtilAppException;
 import com.vibal.utilities.ui.settings.SettingsActivity;
 import com.vibal.utilities.util.LogUtil;
 import com.vibal.utilities.util.MyDialogBuilder;
@@ -42,6 +42,8 @@ public class CashBoxManagerOnlineFragment extends CashBoxManagerFragment {
     @BindView(R.id.refreshCBM)
     SwipeRefreshLayout refreshLayout;
     private CashBoxOnlineViewModel viewModel;
+
+    private boolean firstTime = true;
 
     @NonNull
     static CashBoxManagerOnlineFragment newInstance(int pagerPosition) {
@@ -62,6 +64,11 @@ public class CashBoxManagerOnlineFragment extends CashBoxManagerFragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         refreshLayout.setOnRefreshListener(this::onRefresh);
+        // Refresh app first time gets in
+        if (firstTime) {
+            firstTime = false;
+            onRefresh();
+        }
     }
 
     @Override

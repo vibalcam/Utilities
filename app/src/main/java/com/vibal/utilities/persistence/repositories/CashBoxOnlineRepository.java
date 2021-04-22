@@ -7,6 +7,9 @@ import android.database.sqlite.SQLiteConstraintException;
 import androidx.annotation.NonNull;
 
 import com.vibal.utilities.BuildConfig;
+import com.vibal.utilities.exceptions.NoConnectivityException;
+import com.vibal.utilities.exceptions.NonExistentException;
+import com.vibal.utilities.exceptions.UtilAppException;
 import com.vibal.utilities.models.CashBoxInfo;
 import com.vibal.utilities.models.Entry;
 import com.vibal.utilities.models.EntryOnline;
@@ -14,7 +17,6 @@ import com.vibal.utilities.persistence.db.CashBoxEntryOnlineDao;
 import com.vibal.utilities.persistence.db.CashBoxOnlineDao;
 import com.vibal.utilities.persistence.db.UtilitiesDatabase;
 import com.vibal.utilities.persistence.retrofit.UtilAppAPI;
-import com.vibal.utilities.persistence.retrofit.UtilAppException;
 import com.vibal.utilities.persistence.retrofit.UtilAppRequest;
 import com.vibal.utilities.persistence.retrofit.UtilAppResponse;
 import com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity;
@@ -165,7 +167,7 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
 //    }
 
     @NonNull
-    private OkHttpClient getOkHttpClient(Context context) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException, IOException {
+    private OkHttpClient getOkHttpClient(Context context) {
         // Create an SSLContext that uses our TrustManager
 //        TrustManagerFactory tmf = getTrustManagerFactory(context);
 //        SSLContext sslContext = SSLContext.getInstance("TLS");
@@ -175,13 +177,14 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
 //                .sslSocketFactory(sslContext.getSocketFactory(), (X509TrustManager) (tmf.getTrustManagers()[0]))
                 .addInterceptor(chain -> {
                     if (!isOnline())
-                        throw new UtilAppException.NoConnectivityException();
+                        throw new NoConnectivityException();
 
                     // Include client id and pwd in headers
                     Request originalRequest = chain.request();
                     Request newRequest = originalRequest.newBuilder()
                             .header(UtilAppAPI.CLIENT_ID, String.valueOf(ONLINE_ID))
                             .header(UtilAppAPI.PASSWORD_HEADER, BuildConfig.ONLINE_PWD)
+                            .header(UtilAppAPI.VERSION_HEADER, UtilAppAPI.VERSION)
                             .build();
                     return chain.proceed(newRequest);
                 });
@@ -249,7 +252,7 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
                     return UTILAPP_API.operationCashbox(new UtilAppRequest(INSERT, 1))
                             .flatMap(new CheckResponseErrorFunction<>())
                             .flatMap(modificationResponse -> {
-                                if (modificationResponse.operationSuccessful(1)) {
+                                if (modificationResponse.isOperationSuccessful(1)) {
                                     long cashBoxId = modificationResponse.getValue(1);
                                     CashBoxInfo cashBoxCopy = cashBoxInfo.cloneContents(cashBoxId);
                                     return super.insertCashBoxInfo(cashBoxCopy)
@@ -271,7 +274,7 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
             return UTILAPP_API.operationCashbox(new UtilAppRequest(DELETE, id))
                     .flatMap(new CheckResponseErrorFunction<>())
                     .flatMapCompletable(modificationResponse -> {
-                        if (modificationResponse.operationSuccessful(id))
+                        if (modificationResponse.isOperationSuccessful(id))
                             return super.deleteCashBox(cashBoxInfo);
                         else
                             return Completable.error(new UtilAppException());
@@ -283,7 +286,7 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
         return UTILAPP_API.operationCashbox(new UtilAppRequest(DELETE, ID_ALL))
                 .flatMap(new CheckResponseErrorFunction<>())
                 .flatMap(modificationResponse -> {
-                    if (modificationResponse.operationSuccessful(ID_ALL))
+                    if (modificationResponse.isOperationSuccessful(ID_ALL))
                         return super.deleteAllCashBoxes();
                     else
                         return Single.error(new UtilAppException());
@@ -298,7 +301,7 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
                     cashBoxId, username.trim()))
                     .flatMap(new CheckResponseErrorFunction<>())
                     .flatMapCompletable(modificationResponse -> {
-                        if (modificationResponse.operationSuccessful(cashBoxId))
+                        if (modificationResponse.isOperationSuccessful(cashBoxId))
                             return Completable.complete();
                         else
                             return Completable.error(new UtilAppException("Username not found"));
@@ -323,7 +326,7 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
         return UTILAPP_API.operationEntry(new UtilAppRequest.EntryRequest(INSERT, 1, entry))
                 .flatMap(new CheckResponseErrorFunction<>())
                 .flatMapCompletable(modificationResponse -> {
-                    if (modificationResponse.operationSuccessful(1)) {
+                    if (modificationResponse.isOperationSuccessful(1)) {
                         long id = modificationResponse.getValue(1);
                         return super.insertEntry(entry.cloneContents(id, entry.getCashBoxId()));
                     } else
@@ -344,8 +347,10 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
         return UTILAPP_API.operationEntry(new UtilAppRequest.EntryRequest(UPDATE, id, entry))
                 .flatMap(new CheckResponseErrorFunction<>())
                 .flatMapCompletable(modificationResponse -> {
-                    if (modificationResponse.operationSuccessful(id))
+                    if (modificationResponse.isOperationSuccessful(id))
                         return localUpdate;
+                    else if (modificationResponse.isWarningNonExistent(id))
+                        return Completable.error(new NonExistentException());
                     else
                         return Completable.error(new UtilAppException());
                 });
@@ -374,7 +379,7 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
         return UTILAPP_API.deleteEntry(new UtilAppRequest(DELETE, id))
                 .flatMap(new CheckResponseErrorFunction<>())
                 .flatMapCompletable(modificationResponse -> {
-                    if (modificationResponse.operationSuccessful(id))
+                    if (modificationResponse.isOperationSuccessful(id))
                         return localUpdate;
                     else
                         return Completable.error(new UtilAppException());
@@ -564,7 +569,7 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
                             editor.apply();
                         })).timeout(TIMEOUT_CHANGES, TimeUnit.SECONDS)
                         .retry(NUM_RETRIES_CHANGES, throwable ->
-                                !(throwable instanceof UtilAppException.NoConnectivityException))
+                                !(throwable instanceof NoConnectivityException))
         );
     }
 
