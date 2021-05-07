@@ -2,6 +2,7 @@ package com.vibal.utilities.util;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -14,7 +15,7 @@ public class MyDialogBuilder extends AlertDialog.Builder {
     public static final int NEGATIVE_RES = R.string.cancelDialog;
     private static final boolean CANCELABLE = true;
     private boolean cancelOnTouchOutside = false;
-    private DialogInterface.OnShowListener actions;
+    private DialogInterface.OnShowListener actions = null;
 
     public MyDialogBuilder(@NonNull Context context) {
         super(context);
@@ -65,6 +66,11 @@ public class MyDialogBuilder extends AlertDialog.Builder {
     @Override
     public MyDialogBuilder setView(int layoutResId) {
         return (MyDialogBuilder) super.setView(layoutResId);
+    }
+
+    @Override
+    public MyDialogBuilder setView(View view) {
+        return (MyDialogBuilder) super.setView(view);
     }
 
     @Override

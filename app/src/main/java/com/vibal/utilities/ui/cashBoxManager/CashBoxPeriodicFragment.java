@@ -10,14 +10,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DiffUtil;
@@ -32,6 +30,8 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.android.material.textview.MaterialTextView;
 import com.vibal.utilities.R;
+import com.vibal.utilities.databinding.CashBoxPeriodicActivityBinding;
+import com.vibal.utilities.databinding.CashBoxPeriodicItemBinding;
 import com.vibal.utilities.models.PeriodicEntryPojo;
 import com.vibal.utilities.ui.settings.SettingsActivity;
 import com.vibal.utilities.ui.swipeController.CashBoxAdapterSwipable;
@@ -49,8 +49,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
 import io.reactivex.Single;
 import io.reactivex.SingleOnSubscribe;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -58,12 +56,10 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 
 public class CashBoxPeriodicFragment extends PagerFragment {
-    @BindView(R.id.lyCBPeriodic)
-    CoordinatorLayout coordinatorLayout;
-
     private PeriodicEntryWorkViewModel viewModel;
     private CashBoxPeriodicRecyclerAdapter adapter;
-    private CompositeDisposable compositeDisposable = new CompositeDisposable();
+    private CashBoxPeriodicActivityBinding binding;
+    private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     @NonNull
     static CashBoxPeriodicFragment newInstance(int pagerPosition) {
@@ -82,13 +78,13 @@ public class CashBoxPeriodicFragment extends PagerFragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.cash_box_periodic_activity, container, false);
+        binding = CashBoxPeriodicActivityBinding.inflate(inflater, container, false);
+        return binding.getRoot();
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        ButterKnife.bind(this, view);
 
         //Set up the RecyclerView
         RecyclerView rvPeriodicEntry = view.findViewById(R.id.rvCashBoxPeriodic);
@@ -185,8 +181,8 @@ public class CashBoxPeriodicFragment extends PagerFragment {
 
         private final NumberFormat currencyFormat = NumberFormat.getCurrencyInstance();
         @NonNull
-        private List<PeriodicEntryPojo> currentList = new ArrayList<>();
-        private LinkedList<PeriodicEntryPojo> toDelete = new LinkedList<>();
+        private final List<PeriodicEntryPojo> currentList = new ArrayList<>();
+        private final LinkedList<PeriodicEntryPojo> toDelete = new LinkedList<>();
 
         void submitList(@NonNull List<PeriodicEntryPojo> newList) {
             compositeDisposable.add(Single.create((SingleOnSubscribe<List<PeriodicEntryPojo>>) emitter -> {
@@ -216,13 +212,13 @@ public class CashBoxPeriodicFragment extends PagerFragment {
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
             PeriodicEntryPojo pojo = currentList.get(position);
             PeriodicEntryPojo.PeriodicEntryWorkInfo workInfo = pojo.getWorkInfo();
-            holder.rvName.setText(pojo.getCashBoxName());
-            holder.rvInfo.setText(workInfo.getInfo());
-            holder.rvAmountPeriod.setText(getString(R.string.periodic_amountPeriod,
+            holder.binding.periodicRvName.setText(pojo.getCashBoxName());
+            holder.binding.periodicRvInfo.setText(workInfo.getInfo());
+            holder.binding.periodicRvRepetitions.setText(getString(R.string.periodic_repetitionsLeft, workInfo.getRepetitions()));
+            holder.binding.periodicRvAmountPeriod.setText(getString(R.string.periodic_amountPeriod,
                     currencyFormat.format(workInfo.getAmount()), workInfo.getRepeatInterval()));
-            holder.rvRepetitions.setText(getString(R.string.periodic_repetitionsLeft, workInfo.getRepetitions()));
             int colorRes = workInfo.getAmount() < 0 ? R.color.colorNegativeNumber : R.color.colorPositiveNumber;
-            holder.rvAmountPeriod.setTextColor(getContext().getColor(colorRes));
+            holder.binding.periodicRvAmountPeriod.setTextColor(getContext().getColor(colorRes));
         }
 
         @Override
@@ -246,7 +242,7 @@ public class CashBoxPeriodicFragment extends PagerFragment {
             List<PeriodicEntryPojo> list = new ArrayList<>(currentList);
             toDelete.add(removed);
             submitList(new ArrayList<>(currentList));
-            Snackbar.make(coordinatorLayout,
+            Snackbar.make(binding.getRoot(),
                     getString(R.string.snackbarEntriesDeleted, 1), Snackbar.LENGTH_LONG)
                     .setAction(R.string.undo, view -> {
                         toDelete.removeFirst();
@@ -335,18 +331,11 @@ public class CashBoxPeriodicFragment extends PagerFragment {
         }
 
         public class ViewHolder extends RecyclerView.ViewHolder {
-            @BindView(R.id.periodic_rvName)
-            TextView rvName;
-            @BindView(R.id.periodic_rvAmountPeriod)
-            TextView rvAmountPeriod;
-            @BindView(R.id.periodic_rvInfo)
-            TextView rvInfo;
-            @BindView(R.id.periodic_rvRepetitions)
-            TextView rvRepetitions;
+            private final CashBoxPeriodicItemBinding binding;
 
             public ViewHolder(@NonNull View itemView) {
                 super(itemView);
-                ButterKnife.bind(this, itemView);
+                binding = CashBoxPeriodicItemBinding.bind(itemView);
             }
         }
     }

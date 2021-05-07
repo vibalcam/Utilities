@@ -1,6 +1,13 @@
 package com.vibal.utilities.persistence.retrofit;
 
+import androidx.annotation.NonNull;
+
 import com.google.gson.annotations.SerializedName;
+import com.vibal.utilities.exceptions.UtilAppException;
+import com.vibal.utilities.models.EntryBase;
+import com.vibal.utilities.models.EntryInfo;
+import com.vibal.utilities.models.EntryOnline;
+import com.vibal.utilities.models.EntryOnlineInfo;
 import com.vibal.utilities.util.Converters;
 
 import java.util.Calendar;
@@ -12,11 +19,13 @@ public class UtilAppResponse {
     private static final String SUCCESS = "success";
     private static final String MESSAGE = "message";
     private static final String VALUES = "val";
+    private static final String ENTRIES = "entries";
+    private static final String PARTICIPANTS = "part";
 
     @SerializedName(SUCCESS)
-    private int success;
+    private final int success;
     @SerializedName(MESSAGE)
-    private String message;
+    private final String message;
 
     public UtilAppResponse(int success, String message) {
         this.success = success;
@@ -35,9 +44,20 @@ public class UtilAppResponse {
         return message;
     }
 
+    // test do in server
+    public static class ListResponse<T> extends UtilAppResponse {
+        @SerializedName(VALUES)
+        public final List<T> list;
+
+        public ListResponse(int success, String message, List<T> list) {
+            super(success, message);
+            this.list = list;
+        }
+    }
+
     public static class ModificationResponse extends UtilAppResponse {
         @SerializedName(VALUES)
-        private Map<Long, Long> values;
+        private final Map<Long, Long> values;
 
         public ModificationResponse(int success, String message, Map<Long, Long> values) {
             super(success, message);
@@ -57,31 +77,44 @@ public class UtilAppResponse {
             return getValue(key) >= 0;
         }
 
-        public boolean isWarningNonExistent(long key) {
-            return getValue(key) == UtilAppAPI.NON_EXISTENT_WARNING;
-        }
+//        public boolean isWarningNonExistent(long key) {
+//            return getValue(key) == UtilAppAPI.NON_EXISTENT_WARNING;
+//        }
     }
 
     public static class EntriesResponse extends UtilAppResponse {
         @SerializedName(VALUES)
-        private Map<Long, List<EntryJSON>> entries;
+        private final Map<Long, Map<String, List<EntryJSON>>> response;
 
-        public EntriesResponse(int success, String message, Map<Long, List<EntryJSON>> entries) {
+        public EntriesResponse(int success, String message, Map<Long, Map<String, List<EntryJSON>>> response) {
             super(success, message);
-            this.entries = entries;
+            this.response = response;
         }
 
-        public List<EntryJSON> getEntries(long key) {
-            List<EntryJSON> list = entries.get(key);
-            if (list == null)
+        public List<EntryJSON> getEntries(long key) throws UtilAppException {
+            Map<String, List<EntryJSON>> map = response.get(key);
+            if (map == null)
                 throw new IllegalArgumentException("Key does not exist");
+            List<EntryJSON> list = map.get(ENTRIES);
+            if (list == null)
+                throw new UtilAppException("Unknown error: Entries not available");
+            return list;
+        }
+
+        public List<EntryJSON> getParticipants(long key) throws UtilAppException {
+            Map<String, List<EntryJSON>> map = response.get(key);
+            if (map == null)
+                throw new IllegalArgumentException("Key does not exist");
+            List<EntryJSON> list = map.get(PARTICIPANTS);
+            if (list == null)
+                throw new UtilAppException("Unknown error: Participants not available");
             return list;
         }
     }
 
     public static class ChangesResponse extends UtilAppResponse {
         @SerializedName(VALUES)
-        private TreeSet<ChangesNotification> changes;
+        private final TreeSet<ChangesNotification> changes;
 
         public ChangesResponse(int success, String message, TreeSet<ChangesNotification> changes) {
             super(success, message);
@@ -95,11 +128,12 @@ public class UtilAppResponse {
 
     public static class ChangesNotification extends EntryJSON implements Comparable<ChangesNotification> {
         @SerializedName(UtilAppAPI.NOTIFICATION_ID)
-        private long notificationId;
+        private final long notificationId;
         @SerializedName(UtilAppAPI.OP_CODE)
-        private int operationCode;
+        private final int operationCode;
 
-        public ChangesNotification(long notificationId, int operationCode, long id, long cashBoxId, double amount, long date, String info) {
+        public ChangesNotification(long notificationId, int operationCode, long id, long cashBoxId,
+                                   double amount, long date, String info) {
             super(id, cashBoxId, amount, date, info);
             this.notificationId = notificationId;
             this.operationCode = operationCode;
@@ -115,22 +149,24 @@ public class UtilAppResponse {
 
         // Reverse order so the biggest returns first
         @Override
-        public int compareTo(ChangesNotification o) {
+        public int compareTo(@NonNull ChangesNotification o) {
             return Long.compare(o.notificationId, notificationId);
         }
     }
 
     public static class EntryJSON {
         @SerializedName(UtilAppAPI.ID)
-        private long id;
+        private final long id;
         @SerializedName(UtilAppAPI.CASHBOX_ID)
-        private long cashBoxId;
+        private final long cashBoxId;
         @SerializedName(UtilAppAPI.AMOUNT)
-        private double amount;
+        private final double amount;
         @SerializedName(UtilAppAPI.DATE)
-        private long date;
+        private final long date;
         @SerializedName(UtilAppAPI.INFO)
-        private String info;
+        private final String info;
+
+        // test change namings in php so they are the same for entry and participant
 
         public EntryJSON(long id, long cashBoxId, double amount, long date, String info) {
             this.id = id;
@@ -138,6 +174,19 @@ public class UtilAppResponse {
             this.amount = amount;
             this.date = date;
             this.info = info;
+        }
+
+        @NonNull
+        public EntryOnline<EntryOnlineInfo> changeNotificationToEntry() {
+            return new EntryOnline<>(new EntryOnlineInfo(getId(), getCashBoxId(),
+                    getAmount(), getInfo(), getDateAsCalendar(),
+                    EntryInfo.NO_GROUP, Calendar.getInstance()));
+        }
+
+        @NonNull
+        public EntryBase.Participant changeNotificationToParticipant() {
+            return new EntryBase.Participant(getParticipantName(), getParticipantEntryId(),
+                    getParticipantIsFrom(), getAmount(), getParticipantOnlineId());
         }
 
         public long getId() {
@@ -162,6 +211,28 @@ public class UtilAppResponse {
 
         public String getInfo() {
             return info;
+        }
+
+        // Methods for cashBox
+        public String getCashBoxUsername() {
+            return getInfo();
+        }
+
+        // Methods for participant
+        public long getParticipantEntryId() {
+            return getCashBoxId();
+        }
+
+        public String getParticipantName() {
+            return getInfo();
+        }
+
+        public boolean getParticipantIsFrom() {
+            return getDate() != 0;
+        }
+
+        public long getParticipantOnlineId() {
+            return getId();
         }
     }
 }

@@ -9,7 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.vibal.utilities.R;
-import com.vibal.utilities.models.CashBox;
+import com.vibal.utilities.models.InfoWithCash;
 import com.vibal.utilities.persistence.db.UtilitiesDatabase;
 import com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity;
 
@@ -24,9 +24,9 @@ public class CashBoxWidgetService extends RemoteViewsService {
     }
 
     class CashBoxWidgetItemFactory implements RemoteViewsFactory {
-        private Context context;
+        private final Context context;
         private UtilitiesDatabase database;
-        private List<CashBox.InfoWithCash> cashBoxInfos;
+        private List<InfoWithCash> cashBoxInfos;
         private NumberFormat currencyFormat;
 
         CashBoxWidgetItemFactory(Context context) {
@@ -63,7 +63,7 @@ public class CashBoxWidgetService extends RemoteViewsService {
                 return null;
 
             // Set up layout
-            CashBox.InfoWithCash cashBoxInfo = cashBoxInfos.get(position);
+            InfoWithCash cashBoxInfo = cashBoxInfos.get(position);
             RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.cash_box_manager_widget_item);
             views.setTextViewText(R.id.nameCBMWidgetItem, cashBoxInfo.getCashBoxInfo().getName());
             views.setTextViewText(R.id.amountCBMWidgetItem, currencyFormat.format(cashBoxInfo.getCash()));

@@ -9,7 +9,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -24,7 +23,8 @@ import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.vibal.utilities.R;
-import com.vibal.utilities.models.CashBox;
+import com.vibal.utilities.databinding.CashBoxDeletedItemBinding;
+import com.vibal.utilities.models.InfoWithCash;
 import com.vibal.utilities.ui.settings.SettingsActivity;
 import com.vibal.utilities.ui.swipeController.CashBoxAdapterSwipable;
 import com.vibal.utilities.ui.swipeController.CashBoxSwipeController;
@@ -33,24 +33,22 @@ import com.vibal.utilities.util.LogUtil;
 import com.vibal.utilities.util.MyDialogBuilder;
 import com.vibal.utilities.viewModels.CashBoxDeletedViewModel;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 
 public class CashBoxDeletedFragment extends PagerFragment {
-    private final DiffUtil.ItemCallback<CashBox.InfoWithCash> DIFF_CALLBACK =
-            new DiffUtil.ItemCallback<CashBox.InfoWithCash>() {
+    private final DiffUtil.ItemCallback<InfoWithCash> DIFF_CALLBACK =
+            new DiffUtil.ItemCallback<InfoWithCash>() {
                 @Override
-                public boolean areItemsTheSame(@NonNull CashBox.InfoWithCash oldItem,
-                                               @NonNull CashBox.InfoWithCash newItem) {
+                public boolean areItemsTheSame(@NonNull InfoWithCash oldItem,
+                                               @NonNull InfoWithCash newItem) {
                     return oldItem.getId() == newItem.getId();
                 }
 
                 @Override
-                public boolean areContentsTheSame(@NonNull CashBox.InfoWithCash oldItem,
-                                                  @NonNull CashBox.InfoWithCash newItem) {
+                public boolean areContentsTheSame(@NonNull InfoWithCash oldItem,
+                                                  @NonNull InfoWithCash newItem) {
                     return oldItem.getCash() == newItem.getCash() &&
                             oldItem.getCashBoxInfo().getName().
                                     equals(newItem.getCashBoxInfo().getName());
@@ -59,7 +57,7 @@ public class CashBoxDeletedFragment extends PagerFragment {
 
     private CashBoxDeletedRecyclerAdapter adapter;
     private CashBoxDeletedViewModel viewModel;
-    private CompositeDisposable compositeDisposable = new CompositeDisposable();
+    private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     static CashBoxDeletedFragment newInstance(int pagerPosition) {
         CashBoxDeletedFragment fragment = new CashBoxDeletedFragment();
@@ -77,13 +75,12 @@ public class CashBoxDeletedFragment extends PagerFragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.cash_box_deleted_activity, container, false);
+        return inflater.inflate(R.layout.cash_box_deleted_fragment, container, false);
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        ButterKnife.bind(this, view);
 
         // Set up RecyclerView
         RecyclerView rvDeleted = view.findViewById(R.id.rvCashBoxDeleted);
@@ -191,7 +188,7 @@ public class CashBoxDeletedFragment extends PagerFragment {
     }
 
     public class CashBoxDeletedRecyclerAdapter
-            extends ListAdapter<CashBox.InfoWithCash, CashBoxDeletedRecyclerAdapter.ViewHolder>
+            extends ListAdapter<InfoWithCash, CashBoxDeletedRecyclerAdapter.ViewHolder>
             implements CashBoxAdapterSwipable {
         private static final boolean SWIPE_ENABLED = true;
         private static final boolean DRAG_ENABLED = false;
@@ -210,10 +207,10 @@ public class CashBoxDeletedFragment extends PagerFragment {
 
         @Override
         public void onBindViewHolder(@NonNull CashBoxDeletedRecyclerAdapter.ViewHolder viewHolder, int position) {
-            CashBox.InfoWithCash infoWithCash = getItem(position);
-            viewHolder.rvName.setText(infoWithCash.getCashBoxInfo().getName());
+            InfoWithCash infoWithCash = getItem(position);
+            viewHolder.binding.rvName.setText(infoWithCash.getCashBoxInfo().getName());
             int colorRes = infoWithCash.getCash() < 0 ? R.color.colorNegativeNumber : R.color.colorPositiveNumber;
-            viewHolder.rvAmount.setTextColor(getContext().getColor(colorRes));
+            viewHolder.binding.rvAmount.setTextColor(getContext().getColor(colorRes));
         }
 
         @Override
@@ -247,14 +244,11 @@ public class CashBoxDeletedFragment extends PagerFragment {
         }
 
         public class ViewHolder extends RecyclerView.ViewHolder {
-            @BindView(R.id.rvName)
-            TextView rvName;
-            @BindView(R.id.rvAmount)
-            TextView rvAmount;
+            private final CashBoxDeletedItemBinding binding;
 
             public ViewHolder(@NonNull View itemView) {
                 super(itemView);
-                ButterKnife.bind(this, itemView);
+                binding = CashBoxDeletedItemBinding.bind(itemView);
             }
         }
     }

@@ -40,7 +40,7 @@
         android:layout_height="match_parent"
         android:layout_gravity="center_vertical|end"
         android:scaleType="center"
-        android:tint="#A5A5A5"
+        app:tint="#A5A5A5"
         app:srcCompat="@drawable/ic_add"
         tools:ignore="ContentDescription" />
 </LinearLayout>

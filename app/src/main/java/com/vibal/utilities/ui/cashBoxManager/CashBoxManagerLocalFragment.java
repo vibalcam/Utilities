@@ -6,13 +6,13 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.snackbar.Snackbar;
 import com.vibal.utilities.R;
-import com.vibal.utilities.models.CashBox;
+import com.vibal.utilities.models.InfoWithCash;
 import com.vibal.utilities.viewModels.CashBoxLocalViewModel;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
-public class CashBoxManagerLocalFragment extends CashBoxManagerFragment {
+public class CashBoxManagerLocalFragment extends CashBoxManagerFragment implements CashBoxType.LOCAL {
     private CashBoxLocalViewModel viewModel;
 
     static CashBoxManagerLocalFragment newInstance(int pagerPosition) {
@@ -56,8 +56,8 @@ public class CashBoxManagerLocalFragment extends CashBoxManagerFragment {
     }
 
     @Override
-    protected void doOnDelete(CashBox.InfoWithCash infoWithCash) {
-        Snackbar.make(coordinatorLayout,
+    protected void doOnDelete(InfoWithCash infoWithCash) {
+        Snackbar.make(binding.getRoot(),
                 getString(R.string.snackbarEntriesMoveToRecycle, 1),
                 Snackbar.LENGTH_LONG)
                 .setAction(R.string.undo, v ->
@@ -67,4 +67,9 @@ public class CashBoxManagerLocalFragment extends CashBoxManagerFragment {
                                 .subscribe()))
                 .show();
     }
+
+//    @Override
+//    protected int getCashBoxType() {
+//        return CashBoxManagerActivity.LOCAL;
+//    }
 }

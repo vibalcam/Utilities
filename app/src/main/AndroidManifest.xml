@@ -52,6 +52,28 @@
         </activity>
 
         <activity
+            android:name=".ui.cashBoxManager.CashBoxItemDetailsActivity"
+            android:label="@string/title_details"
+            android:launchMode="singleTop"
+            android:parentActivityName=".ui.cashBoxManager.CashBoxManagerActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity" />
+        </activity>
+
+        <activity
+            android:name=".ui.cashBoxManager.CashBoxBalancesActivity"
+            android:label="@string/title_balance"
+            android:launchMode="singleTop"
+            android:parentActivityName=".ui.cashBoxManager.CashBoxManagerActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity" />
+        </activity>
+
+        <activity
             android:name=".ui.randomChooser.RandomChooserActivity"
             android:label="@string/main_randomChooser"
             android:parentActivityName=".ui.MainActivity">

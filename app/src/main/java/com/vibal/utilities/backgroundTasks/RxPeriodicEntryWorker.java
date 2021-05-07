@@ -15,7 +15,7 @@ import androidx.work.WorkerParameters;
 
 import com.vibal.utilities.App;
 import com.vibal.utilities.R;
-import com.vibal.utilities.models.Entry;
+import com.vibal.utilities.models.EntryInfo;
 import com.vibal.utilities.models.PeriodicEntryPojo;
 import com.vibal.utilities.persistence.db.UtilitiesDatabase;
 import com.vibal.utilities.ui.cashBoxManager.CashBoxItemFragment;
@@ -46,11 +46,11 @@ public class RxPeriodicEntryWorker extends RxWorker {
                 .flatMap(periodicEntryPojo -> {
                     //Create entry
                     PeriodicEntryPojo.PeriodicEntryWorkInfo workInfo = periodicEntryPojo.getWorkInfo();
-                    Entry entry = new Entry(workInfo.getCashBoxId(),
+                    EntryInfo entry = new EntryInfo(workInfo.getCashBoxId(),
                             workInfo.getAmount(), workInfo.getInfo(), Calendar.getInstance());
                     entry.setInfo("Periodic: " + entry.getInfo());
-                    Single<Result> result = database.cashBoxEntryLocalDao().insert(entry)
-                            .toSingle(() -> {
+                    Single<Result> result = database.cashBoxEntryLocalDao().insertEntry(entry)
+                            .map(aLong -> {
                                 LogUtil.debug(TAG, "Success");
                                 showNotification(periodicEntryPojo);
                                 return Result.success();

@@ -14,8 +14,6 @@ import com.vibal.utilities.R;
 import com.vibal.utilities.ui.viewPager.PagerFragment;
 import com.vibal.utilities.util.LogUtil;
 
-import butterknife.ButterKnife;
-
 public class CashBoxViewFragment extends PagerFragment {
     public static final String ONLINE_MODE_ARG = "online_arg";
     private static final String TAG = "PruebaView";
@@ -44,12 +42,6 @@ public class CashBoxViewFragment extends PagerFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.cash_box_view_fragment, container, false);
-    }
-
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        ButterKnife.bind(this, view);
     }
 
     @Override

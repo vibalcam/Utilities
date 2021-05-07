@@ -5,12 +5,10 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.widget.ContentLoadingProgressBar;
 import androidx.fragment.app.DialogFragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DividerItemDecoration;
@@ -18,8 +16,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.vibal.utilities.R;
+import com.vibal.utilities.databinding.DialogViewChangesBinding;
+import com.vibal.utilities.databinding.DialogViewChangesItemBinding;
 import com.vibal.utilities.models.CashBoxInfo;
 import com.vibal.utilities.models.EntryOnline;
+import com.vibal.utilities.models.EntryOnlineInfo;
 import com.vibal.utilities.util.LogUtil;
 import com.vibal.utilities.viewModels.CashBoxOnlineViewModel;
 
@@ -29,8 +30,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
@@ -39,13 +38,9 @@ public class CashBoxChangesDialogFragment extends DialogFragment {
     private static final String TAG = "PruebaChangesDialog";
     private static final String ARGS_CASHBOX_ID = "cashBoxId";
 
-    @BindView(R.id.progressChanges)
-    ContentLoadingProgressBar progressBar;
-    @BindView(R.id.rvChanges)
-    RecyclerView rvPeriodicEntry;
-
     private CashBoxChangesRecyclerAdapter adapter;
     private CashBoxOnlineViewModel viewModel;
+    private DialogViewChangesBinding binding;
     private Disposable disposable;
 
     static CashBoxChangesDialogFragment newInstance(long cashBoxId) {
@@ -59,21 +54,27 @@ public class CashBoxChangesDialogFragment extends DialogFragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.dialog_view_changes, container, false);
+        binding = DialogViewChangesBinding.inflate(inflater, container, false);
+        return binding.getRoot();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        ButterKnife.bind(this, view);
 
         //Set up the RecyclerView
-        rvPeriodicEntry.setHasFixedSize(true);
+        binding.rvChanges.setHasFixedSize(true);
         LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
-        rvPeriodicEntry.setLayoutManager(layoutManager);
-        rvPeriodicEntry.addItemDecoration(new DividerItemDecoration(requireContext(), layoutManager.getOrientation()));
+        binding.rvChanges.setLayoutManager(layoutManager);
+        binding.rvChanges.addItemDecoration(new DividerItemDecoration(requireContext(), layoutManager.getOrientation()));
         adapter = new CashBoxChangesRecyclerAdapter();
-        rvPeriodicEntry.setAdapter(adapter);
+        binding.rvChanges.setAdapter(adapter);
     }
 
     @Override
@@ -126,82 +127,82 @@ public class CashBoxChangesDialogFragment extends DialogFragment {
             notifyDataSetChanged();
 
             //Stop showing progress bar
-            progressBar.hide();
-            rvPeriodicEntry.setVisibility(View.VISIBLE);
+            binding.progressChanges.hide();
+            binding.rvChanges.setVisibility(View.VISIBLE);
         }
 
         @Override
         public void onBindViewHolder(@NonNull ViewHolder viewHolder, int position) {
             EntryOnline.EntryChanges changes = changesList.get(position);
-            EntryOnline newEntry = changes.getNewEntry();
-            EntryOnline oldEntry = changes.getOldEntry();
+            EntryOnlineInfo newEntry = changes.getNewEntry().getEntryInfo();
+            EntryOnlineInfo oldEntry = changes.getOldEntry().getEntryInfo();
 
             if (newEntry != null && oldEntry != null) { // Updated
                 // Amount
-                viewHolder.amount.setText(formatCurrency.format(newEntry.getAmount()));
-                viewHolder.amount.setVisibility(View.VISIBLE);
+                viewHolder.binding.changesNewAmount.setText(formatCurrency.format(newEntry.getAmount()));
+                viewHolder.binding.changesNewAmount.setVisibility(View.VISIBLE);
                 Double amount = changes.getDiffAmount();
                 if (amount != null) {
-                    viewHolder.oldAmount.setText(formatCurrency.format(amount));
-                    viewHolder.oldAmount.setVisibility(View.VISIBLE);
-                    viewHolder.oldAmount.setPaintFlags(Paint.STRIKE_THRU_TEXT_FLAG);
+                    viewHolder.binding.changesOldAmount.setText(formatCurrency.format(amount));
+                    viewHolder.binding.changesOldAmount.setVisibility(View.VISIBLE);
+                    viewHolder.binding.changesOldAmount.setPaintFlags(Paint.STRIKE_THRU_TEXT_FLAG);
                 } else
-                    viewHolder.oldAmount.setVisibility(View.GONE);
+                    viewHolder.binding.changesOldAmount.setVisibility(View.GONE);
 
                 // Info
-                viewHolder.info.setText(newEntry.printInfo());
-                viewHolder.info.setVisibility(View.VISIBLE);
+                viewHolder.binding.changesNewInfo.setText(newEntry.printInfo());
+                viewHolder.binding.changesNewInfo.setVisibility(View.VISIBLE);
                 String info = changes.getDiffInfo();
                 if (info != null) {
-                    viewHolder.oldInfo.setText(info);
-                    viewHolder.oldInfo.setVisibility(View.VISIBLE);
-                    viewHolder.oldInfo.setPaintFlags(Paint.STRIKE_THRU_TEXT_FLAG);
+                    viewHolder.binding.changesOldInfo.setText(info);
+                    viewHolder.binding.changesOldInfo.setVisibility(View.VISIBLE);
+                    viewHolder.binding.changesOldInfo.setPaintFlags(Paint.STRIKE_THRU_TEXT_FLAG);
                 } else
-                    viewHolder.oldInfo.setVisibility(View.GONE);
+                    viewHolder.binding.changesOldInfo.setVisibility(View.GONE);
 
                 // Date
-                viewHolder.date.setText(dateFormat.format(newEntry.getDate().getTime()));
-                viewHolder.date.setVisibility(View.VISIBLE);
+                viewHolder.binding.changesNewDate.setText(dateFormat.format(newEntry.getDate().getTime()));
+                viewHolder.binding.changesNewDate.setVisibility(View.VISIBLE);
                 Calendar calendar = changes.getDiffDate();
                 if (calendar != null) {
-                    viewHolder.oldDate.setText(dateFormat.format(calendar.getTime()));
-                    viewHolder.oldDate.setVisibility(View.VISIBLE);
-                    viewHolder.oldDate.setPaintFlags(Paint.STRIKE_THRU_TEXT_FLAG);
+                    viewHolder.binding.changesOldDate.setText(dateFormat.format(calendar.getTime()));
+                    viewHolder.binding.changesOldDate.setVisibility(View.VISIBLE);
+                    viewHolder.binding.changesOldDate.setPaintFlags(Paint.STRIKE_THRU_TEXT_FLAG);
                 } else
-                    viewHolder.oldDate.setVisibility(View.GONE);
+                    viewHolder.binding.changesOldDate.setVisibility(View.GONE);
             } else if (oldEntry != null) { // Delete
                 // Amount
-                viewHolder.amount.setVisibility(View.GONE);
-                viewHolder.oldAmount.setText(formatCurrency.format(oldEntry.getAmount()));
-                viewHolder.oldAmount.setVisibility(View.VISIBLE);
-                viewHolder.oldAmount.setPaintFlags(Paint.STRIKE_THRU_TEXT_FLAG);
+                viewHolder.binding.changesNewAmount.setVisibility(View.GONE);
+                viewHolder.binding.changesOldAmount.setText(formatCurrency.format(oldEntry.getAmount()));
+                viewHolder.binding.changesOldAmount.setVisibility(View.VISIBLE);
+                viewHolder.binding.changesOldAmount.setPaintFlags(Paint.STRIKE_THRU_TEXT_FLAG);
 
                 // Info
-                viewHolder.info.setVisibility(View.GONE);
-                viewHolder.oldInfo.setText(oldEntry.getInfo());
-                viewHolder.oldInfo.setVisibility(View.VISIBLE);
-                viewHolder.oldInfo.setPaintFlags(Paint.STRIKE_THRU_TEXT_FLAG);
+                viewHolder.binding.changesNewInfo.setVisibility(View.GONE);
+                viewHolder.binding.changesOldInfo.setText(oldEntry.getInfo());
+                viewHolder.binding.changesOldInfo.setVisibility(View.VISIBLE);
+                viewHolder.binding.changesOldInfo.setPaintFlags(Paint.STRIKE_THRU_TEXT_FLAG);
 
                 // Date
-                viewHolder.date.setVisibility(View.GONE);
-                viewHolder.oldDate.setText(dateFormat.format(oldEntry.getDate().getTime()));
-                viewHolder.oldDate.setVisibility(View.VISIBLE);
-                viewHolder.oldDate.setPaintFlags(Paint.STRIKE_THRU_TEXT_FLAG);
+                viewHolder.binding.changesNewDate.setVisibility(View.GONE);
+                viewHolder.binding.changesOldDate.setText(dateFormat.format(oldEntry.getDate().getTime()));
+                viewHolder.binding.changesOldDate.setVisibility(View.VISIBLE);
+                viewHolder.binding.changesOldDate.setPaintFlags(Paint.STRIKE_THRU_TEXT_FLAG);
             } else if (newEntry != null) { // Insert
                 // Amount
-                viewHolder.amount.setText(formatCurrency.format(newEntry.getAmount()));
-                viewHolder.amount.setVisibility(View.VISIBLE);
-                viewHolder.oldAmount.setVisibility(View.GONE);
+                viewHolder.binding.changesNewAmount.setText(formatCurrency.format(newEntry.getAmount()));
+                viewHolder.binding.changesNewAmount.setVisibility(View.VISIBLE);
+                viewHolder.binding.changesOldAmount.setVisibility(View.GONE);
 
                 // Info
-                viewHolder.info.setText(newEntry.printInfo());
-                viewHolder.info.setVisibility(View.VISIBLE);
-                viewHolder.oldInfo.setVisibility(View.GONE);
+                viewHolder.binding.changesNewInfo.setText(newEntry.printInfo());
+                viewHolder.binding.changesNewInfo.setVisibility(View.VISIBLE);
+                viewHolder.binding.changesOldInfo.setVisibility(View.GONE);
 
                 // Date
-                viewHolder.date.setText(dateFormat.format(newEntry.getDate().getTime()));
-                viewHolder.date.setVisibility(View.VISIBLE);
-                viewHolder.oldDate.setVisibility(View.GONE);
+                viewHolder.binding.changesNewDate.setText(dateFormat.format(newEntry.getDate().getTime()));
+                viewHolder.binding.changesNewDate.setVisibility(View.VISIBLE);
+                viewHolder.binding.changesOldDate.setVisibility(View.GONE);
             }
 
 //            EntryOnline.EntryChanges changes = changesList.get(position);
@@ -285,22 +286,11 @@ public class CashBoxChangesDialogFragment extends DialogFragment {
         }
 
         class ViewHolder extends RecyclerView.ViewHolder {
-            @BindView(R.id.changesOldDate)
-            TextView oldDate;
-            @BindView(R.id.changesNewDate)
-            TextView date;
-            @BindView(R.id.changesOldAmount)
-            TextView oldAmount;
-            @BindView(R.id.changesNewAmount)
-            TextView amount;
-            @BindView(R.id.changesOldInfo)
-            TextView oldInfo;
-            @BindView(R.id.changesNewInfo)
-            TextView info;
+            private final DialogViewChangesItemBinding binding;
 
             public ViewHolder(@NonNull View itemView) {
                 super(itemView);
-                ButterKnife.bind(this, itemView);
+                binding = DialogViewChangesItemBinding.bind(itemView);
             }
         }
     }

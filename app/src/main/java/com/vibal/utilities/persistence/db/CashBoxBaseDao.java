@@ -5,6 +5,8 @@ import androidx.room.Dao;
 
 import com.vibal.utilities.models.CashBox;
 import com.vibal.utilities.models.CashBoxInfo;
+import com.vibal.utilities.models.EntryBase;
+import com.vibal.utilities.models.InfoWithCash;
 
 import java.util.Collection;
 import java.util.Currency;
@@ -21,15 +23,15 @@ public abstract class CashBoxBaseDao {
 //        else {
 //            return insert(cashBox.getInfoWithCash().getCashBoxInfo()).flatMapCompletable(id -> {
 //                LogUtil.debug("Prueba", "Id: " + id);
-//                ArrayList<Entry> entryArrayList = new ArrayList<>();
-//                for (Entry entry : cashBox.getEntries())
+//                ArrayList<EntryBase> entryArrayList = new ArrayList<>();
+//                for (EntryBase entry : cashBox.getEntries())
 //                    entryArrayList.add(entry.getEntryWithCashBoxId(id));
 //                return cashBoxEntryDao.insertAll(entryArrayList);
 //            });
 //        }
 //    }
 
-    public abstract LiveData<List<CashBox.InfoWithCash>> getAllCashBoxesInfo();
+    public abstract LiveData<List<InfoWithCash>> getAllCashBoxesInfo();
 
     public Single<Long> insert(CashBoxInfo cashBoxInfo) {
         return insertWithoutOrderId(cashBoxInfo)
@@ -39,26 +41,37 @@ public abstract class CashBoxBaseDao {
 
     abstract Completable configureOrderId(long cashBoxId);
 
-    //    @Insert
     abstract Single<Long> insertWithoutOrderId(CashBoxInfo cashBoxInfo);
 
-    //    @Update
     public abstract Completable update(CashBoxInfo cashBoxInfo);
 
-    //    @Update
     abstract Completable updateAll(Collection<CashBoxInfo> cashBoxInfoCollection);
 
-    //    @Delete
     public abstract Completable delete(CashBoxInfo cashBoxInfo);
 
-    //    @Delete
     public abstract Single<Integer> deleteAll();
 
-    public abstract LiveData<CashBox.InfoWithCash> getCashBoxInfoWithCashById(long id);
+    public abstract LiveData<InfoWithCash> getCashBoxInfoWithCashById(long id);
 
-    public abstract Single<CashBox> getCashBoxById(long id);
+    abstract Single<InfoWithCash> getSingleCashBoxInfoWithCashById(long id);
+
+    public abstract LiveData<List<String>> getNamesByCashBox(long cashBoxId);
+
+    abstract Single<List<String>> getSingleNamesByCashBox(long cashBoxId);
+
+    public Single<CashBox> getCashBoxById(long id, CashBoxEntryBaseDao entryDao) {
+        return getSingleCashBoxInfoWithCashById(id)
+                .flatMap(infoWithCash -> entryDao.getSingleEntriesByCashBox(id).flatMap(
+                        entries -> getSingleNamesByCashBox(id).map(
+                                names -> {
+                                    names.add(EntryBase.getSelfName());
+                                    return new CashBox(infoWithCash, names, entries);
+                                })));
+    }
 
     public abstract Completable setCashBoxCurrency(long cashBoxId, Currency currency);
+
+    public abstract Single<Currency> getCashBoxCurrency(long cashBoxId);
 
     public abstract Completable moveCashBoxToOrderPos(long id, long orderId, long toOrderPos);
 }

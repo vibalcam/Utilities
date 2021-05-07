@@ -14,6 +14,7 @@ import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.SwitchPreference;
 
 import com.vibal.utilities.R;
+import com.vibal.utilities.models.EntryBase;
 import com.vibal.utilities.persistence.repositories.CashBoxOnlineRepository;
 import com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity;
 import com.vibal.utilities.util.LogUtil;
@@ -30,10 +31,16 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 
 public class SettingsActivity extends AppCompatActivity {
+    // General
     public static final String KEY_DEFAULT_START = "defaultStart";
     public static final String KEY_PLAY_ABOUT_SONG = "playAboutSong";
+
+    // CashBox Manager
     public static final String KEY_SWIPE_LEFT_DELETE = "swipeLeftDelete";
     public static final String KEY_NOTIFY_PERIODIC = "notifyPeriodic";
+    public static final String KEY_SELF_PARTICIPANT = "selfParticipant";
+
+    // Online
     public static final String KEY_ONLINE = "allowOnline";
 
     public static void acceptOnlineMode(Context context, DialogInterface.OnClickListener onClickListener) {
@@ -69,12 +76,17 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat implements Preference.OnPreferenceClickListener {
-        private CompositeDisposable compositeDisposable = new CompositeDisposable();
+        private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setPreferencesFromResource(R.xml.preferences, rootKey);
             findPreference(KEY_ONLINE).setOnPreferenceClickListener(this);
+            findPreference(KEY_SELF_PARTICIPANT).setOnPreferenceChangeListener(
+                    (preference, newValue) -> {
+                        EntryBase.setSelfName(requireContext());
+                        return true;
+                    });
         }
 
         @Override

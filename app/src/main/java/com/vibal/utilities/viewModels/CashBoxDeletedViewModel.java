@@ -6,7 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 
-import com.vibal.utilities.models.CashBox;
+import com.vibal.utilities.models.InfoWithCash;
 import com.vibal.utilities.persistence.repositories.CashBoxLocalRepository;
 
 import java.util.List;
@@ -17,8 +17,8 @@ import io.reactivex.Single;
 public class CashBoxDeletedViewModel extends AndroidViewModel {
     private static final String TAG = "PruebaCashBoxDeletedViewModel";
 
-    private CashBoxLocalRepository repository;
-    private LiveData<List<CashBox.InfoWithCash>> cashBoxesInfo;
+    private final CashBoxLocalRepository repository;
+    private final LiveData<List<InfoWithCash>> cashBoxesInfo;
 //    private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     public CashBoxDeletedViewModel(@NonNull Application application) {
@@ -28,15 +28,15 @@ public class CashBoxDeletedViewModel extends AndroidViewModel {
         cashBoxesInfo = repository.getAllDeletedCashBoxesInfo();
     }
 
-    public LiveData<List<CashBox.InfoWithCash>> getCashBoxesInfo() {
+    public LiveData<List<InfoWithCash>> getCashBoxesInfo() {
         return cashBoxesInfo;
     }
 
-    public Completable restore(CashBox.InfoWithCash infoWithCash) {
+    public Completable restore(InfoWithCash infoWithCash) {
         return repository.restore(infoWithCash.getCashBoxInfo());
     }
 
-    public Completable delete(CashBox.InfoWithCash infoWithCash) {
+    public Completable delete(InfoWithCash infoWithCash) {
         return repository.permanentDeleteCashBox(infoWithCash.getCashBoxInfo());
     }
 

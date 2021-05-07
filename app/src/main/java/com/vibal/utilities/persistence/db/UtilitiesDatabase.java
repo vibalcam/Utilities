@@ -12,14 +12,22 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import com.vibal.utilities.models.CashBoxInfoLocal;
 import com.vibal.utilities.models.CashBoxInfoOnline;
-import com.vibal.utilities.models.Entry;
-import com.vibal.utilities.models.EntryOnline;
+import com.vibal.utilities.models.EntryBase;
+import com.vibal.utilities.models.EntryInfo;
+import com.vibal.utilities.models.EntryOnlineInfo;
 import com.vibal.utilities.models.PeriodicEntryPojo;
 import com.vibal.utilities.util.Converters;
 
-@Database(entities = {CashBoxInfoLocal.class, Entry.class, CashBoxInfoOnline.class,
-        EntryOnline.class, PeriodicEntryPojo.PeriodicEntryWorkInfo.class}, version = 4,
-        exportSchema = false)
+@Database(entities = {
+        CashBoxInfoLocal.class, CashBoxInfoOnline.class,
+        EntryInfo.class, EntryOnlineInfo.class,
+        EntryBase.Participant.class, EntryOnlineInfo.Participant.class,
+        PeriodicEntryPojo.PeriodicEntryWorkInfo.class
+}, views = {
+        EntryInfo.class,
+        EntryInfo.ParticipantToView.class, EntryOnlineInfo.ParticipantToView.class,
+        EntryInfo.ParticipantFromView.class, EntryOnlineInfo.ParticipantFromView.class
+}, version = 5, exportSchema = false)
 @TypeConverters(Converters.class)
 public abstract class UtilitiesDatabase extends RoomDatabase {
     private static final Migration MIGRATION_1_2 = new Migration(1, 2) {
@@ -63,6 +71,9 @@ public abstract class UtilitiesDatabase extends RoomDatabase {
         }
     };
 
+    /**
+     * Added currency
+     */
     private static final Migration MIGRATION_2_3 = new Migration(2, 3) {
         @Override
         public void migrate(@NonNull SupportSQLiteDatabase database) {
@@ -70,10 +81,13 @@ public abstract class UtilitiesDatabase extends RoomDatabase {
         }
     };
 
+    /**
+     * Added online
+     */
     private static final Migration MIGRATION_3_4 = new Migration(3, 4) {
         @Override
         public void migrate(@NonNull SupportSQLiteDatabase database) {
-            // Online CashBoxInfo
+            // Complete CashBoxInfo online
             database.execSQL("CREATE TABLE IF NOT EXISTS `cashBoxesOnline_table` (" +
                     "`accepted` INTEGER NOT NULL DEFAULT 0, " +
                     "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
@@ -83,7 +97,7 @@ public abstract class UtilitiesDatabase extends RoomDatabase {
             database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_cashBoxesOnline_table_name`" +
                     " ON `cashBoxesOnline_table` (`name`)");
 
-            // Online Entry
+            // Complete EntryBase online
             database.execSQL("CREATE TABLE IF NOT EXISTS `entriesOnline_table` (" +
                     "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
                     "`changeDate` INTEGER DEFAULT NULL, " +
@@ -99,6 +113,79 @@ public abstract class UtilitiesDatabase extends RoomDatabase {
         }
     };
 
+    /**
+     * Added participants in entries
+     */
+    private static final Migration MIGRATION_4_5 = new Migration(4, 5) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            // Add local Participants for entries
+            database.execSQL("CREATE TABLE IF NOT EXISTS `entriesParticipants_table` (" +
+                    "`name` TEXT NOT NULL COLLATE NOCASE, " +
+                    "`entryId` INTEGER NOT NULL, " +
+                    "`isFrom` INTEGER NOT NULL, " +
+                    "`amount` REAL NOT NULL DEFAULT 1, " +
+                    "`onlineId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "FOREIGN KEY(`entryId`) REFERENCES `entries_table`(`id`) " +
+                    "ON UPDATE CASCADE ON DELETE CASCADE )");
+//            database.execSQL("CREATE TABLE IF NOT EXISTS `entriesParticipants_table` (" +
+//                    "`name` TEXT NOT NULL COLLATE NOCASE, " +
+//                    "`entryId` INTEGER NOT NULL, " +
+//                    "`isFrom` INTEGER NOT NULL, " +
+//                    "`amount` REAL NOT NULL DEFAULT 1, " +
+//                    "`onlineId` INTEGER NOT NULL DEFAULT 0, " +
+//                    "PRIMARY KEY(`name`, `entryId`, `isFrom`), " +
+//                    "FOREIGN KEY(`entryId`) REFERENCES `entries_table`(`id`) " +
+//                    "ON UPDATE CASCADE ON DELETE CASCADE )");
+            database.execSQL("CREATE INDEX IF NOT EXISTS `index_entriesParticipants_table_entryId` " +
+                    "ON `entriesParticipants_table` (`entryId`)");
+            database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS " +
+                    "`index_entriesParticipants_table_name_entryId_isFrom` " +
+                    "ON `entriesParticipants_table` (`name`, `entryId`, `isFrom`)");
+//            database.execSQL("CREATE INDEX IF NOT EXISTS `index_entriesParticipants_table_entryId` " +
+//                    "ON `entriesParticipants_table` (`entryId`)");
+
+            // Add online Participants for entries
+            database.execSQL("CREATE TABLE IF NOT EXISTS `entriesOnlineParticipants_table` (" +
+                    "`name` TEXT NOT NULL COLLATE NOCASE, " +
+                    "`entryId` INTEGER NOT NULL, " +
+                    "`isFrom` INTEGER NOT NULL, " +
+                    "`amount` REAL NOT NULL DEFAULT 1, " +
+                    "`onlineId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "FOREIGN KEY(`entryId`) REFERENCES `entriesOnline_table`(`id`) " +
+                    "ON UPDATE CASCADE ON DELETE CASCADE )");
+//            database.execSQL("CREATE TABLE IF NOT EXISTS `entriesOnlineParticipants_table` (" +
+//                    "`name` TEXT NOT NULL COLLATE NOCASE, " +
+//                    "`entryId` INTEGER NOT NULL, " +
+//                    "`isFrom` INTEGER NOT NULL, " +
+//                    "`amount` REAL NOT NULL DEFAULT 1, " +
+//                    "`onlineId` INTEGER NOT NULL DEFAULT 0, " +
+//                    "PRIMARY KEY(`name`, `entryId`, `isFrom`), " +
+//                    "FOREIGN KEY(`entryId`) REFERENCES `entriesOnline_table`(`id`) " +
+//                    "ON UPDATE CASCADE ON DELETE CASCADE )");
+            database.execSQL("CREATE INDEX IF NOT EXISTS " +
+                    "`index_entriesOnlineParticipants_table_entryId` " +
+                    "ON `entriesOnlineParticipants_table` (`entryId`)");
+            database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS " +
+                    "`index_entriesOnlineParticipants_table_name_entryId_isFrom` " +
+                    "ON `entriesOnlineParticipants_table` (`name`, `entryId`, `isFrom`)");
+//            database.execSQL("CREATE INDEX IF NOT EXISTS `index_entriesOnlineParticipants_table_entryId` " +
+//                    "ON `entriesOnlineParticipants_table` (`entryId`)");
+
+            // Create views
+            database.execSQL("CREATE VIEW `entriesOnlineAsEntries_view` AS " +
+                    "SELECT id,cashBoxId,amount,date,info,groupId FROM entriesOnline_table");
+            database.execSQL("CREATE VIEW `toEntriesParticipants_view` AS " +
+                    "SELECT * FROM entriesParticipants_table WHERE isFrom==0");
+            database.execSQL("CREATE VIEW `toEntriesOnlineParticipants_view` AS " +
+                    "SELECT * FROM entriesOnlineParticipants_table WHERE isFrom==0");
+            database.execSQL("CREATE VIEW `fromEntriesParticipants_view` AS " +
+                    "SELECT * FROM entriesParticipants_table WHERE isFrom==1");
+            database.execSQL("CREATE VIEW `fromEntriesOnlineParticipants_view` AS " +
+                    "SELECT * FROM entriesOnlineParticipants_table WHERE isFrom==1");
+        }
+    };
+
     private static UtilitiesDatabase INSTANCE = null;
 
     @NonNull
@@ -106,7 +193,7 @@ public abstract class UtilitiesDatabase extends RoomDatabase {
         if (INSTANCE == null) {
             INSTANCE = Room.databaseBuilder(context.getApplicationContext(), UtilitiesDatabase.class,
                     "utilities_database")
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
 //                    .fallbackToDestructiveMigration()
 //                    .addCallback(roomCallback)
                     .build();

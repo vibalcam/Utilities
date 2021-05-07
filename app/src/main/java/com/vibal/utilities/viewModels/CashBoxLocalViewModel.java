@@ -4,7 +4,7 @@ import android.app.Application;
 
 import androidx.annotation.NonNull;
 
-import com.vibal.utilities.models.CashBox;
+import com.vibal.utilities.models.InfoWithCash;
 import com.vibal.utilities.persistence.repositories.CashBoxLocalRepository;
 import com.vibal.utilities.persistence.repositories.CashBoxRepository;
 
@@ -20,10 +20,7 @@ public class CashBoxLocalViewModel extends CashBoxViewModel {
     private CashBoxLocalRepository repository;
 
     public CashBoxLocalViewModel(@NonNull Application application) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException, KeyManagementException {
-//        super(application, new CashBoxLocalRepository(application));
-//        super(application, CashBoxLocalRepository.getInstance(application));
         super(application);
-//        repository = CashBoxLocalRepository.getInstance(application);
     }
 
     @Override
@@ -37,7 +34,7 @@ public class CashBoxLocalViewModel extends CashBoxViewModel {
         return repository;
     }
 
-    public Completable restore(CashBox.InfoWithCash infoWithCash) {
+    public Completable restore(InfoWithCash infoWithCash) {
         return repository.restore(infoWithCash.getCashBoxInfo());
     }
 }

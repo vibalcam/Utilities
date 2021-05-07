@@ -8,10 +8,10 @@ import androidx.recyclerview.widget.DiffUtil;
 import java.util.List;
 
 public class DiffCallback<T extends DiffDbUsable<T>> extends DiffUtil.Callback {
-    private List<T> oldList;
-    private List<T> newList;
+    private final List<? extends T> oldList;
+    private final List<? extends T> newList;
 
-    public DiffCallback(List<T> oldList, List<T> newList) {
+    public DiffCallback(List<? extends T> oldList, List<? extends T> newList) {
         this.oldList = oldList;
         this.newList = newList;
     }
@@ -43,16 +43,16 @@ public class DiffCallback<T extends DiffDbUsable<T>> extends DiffUtil.Callback {
     }
 
     public static class DiffResultWithList<T extends DiffDbUsable<T>> {
-        private DiffUtil.DiffResult diffResult;
-        private List<T> newList;
+        private final DiffUtil.DiffResult diffResult;
+        private final List<? extends T> newList;
 
-        public DiffResultWithList(DiffUtil.DiffResult diffResult, List<T> newList) {
+        public DiffResultWithList(DiffUtil.DiffResult diffResult, List<? extends T> newList) {
             this.diffResult = diffResult;
             this.newList = newList;
         }
 
         public static <T extends DiffDbUsable<T>> DiffResultWithList<T> calculateDiff(
-                List<T> oldList, List<T> newList, boolean detectMoves) {
+                List<? extends T> oldList, List<? extends T> newList, boolean detectMoves) {
             return new DiffResultWithList<>(
                     DiffUtil.calculateDiff(new DiffCallback<>(oldList, newList), detectMoves), newList);
         }
@@ -61,7 +61,7 @@ public class DiffCallback<T extends DiffDbUsable<T>> extends DiffUtil.Callback {
             return diffResult;
         }
 
-        public List<T> getNewList() {
+        public List<? extends T> getNewList() {
             return newList;
         }
     }

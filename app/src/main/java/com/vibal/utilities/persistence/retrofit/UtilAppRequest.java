@@ -3,25 +3,29 @@ package com.vibal.utilities.persistence.retrofit;
 import androidx.annotation.NonNull;
 
 import com.google.gson.annotations.SerializedName;
-import com.vibal.utilities.models.Entry;
+import com.vibal.utilities.models.EntryBase.Participant;
+import com.vibal.utilities.models.EntryInfo;
+import com.vibal.utilities.persistence.retrofit.UtilAppAPI.OperationCode;
 import com.vibal.utilities.util.Converters;
 
 public class UtilAppRequest {
     @SerializedName(UtilAppAPI.OP_CODE)
-    private int opCode;
+    private @OperationCode
+    int opCode;
     @SerializedName(UtilAppAPI.ID)
     private long id;
 
-    public UtilAppRequest(int opCode, long id) throws IllegalArgumentException {
+    public UtilAppRequest(@OperationCode int opCode, long id) throws IllegalArgumentException {
         this.opCode = opCode;
         setId(id);
     }
 
-    public int getOpCode() {
+    public @OperationCode
+    int getOpCode() {
         return opCode;
     }
 
-    public void setOpCode(int opCode) {
+    public void setOpCode(@OperationCode int opCode) {
         this.opCode = opCode;
     }
 
@@ -53,7 +57,7 @@ public class UtilAppRequest {
         }
     }
 
-    public static class EntryRequest extends UtilAppRequest {
+    public static class EntryInfoRequest extends UtilAppRequest {
         @SerializedName(UtilAppAPI.CASHBOX_ID)
         private long cashBoxId;
         @SerializedName(UtilAppAPI.AMOUNT)
@@ -63,7 +67,8 @@ public class UtilAppRequest {
         @SerializedName(UtilAppAPI.INFO)
         private String info;
 
-        public EntryRequest(int opCode, long id, long cashBoxId, double amount, long date, String info) throws IllegalArgumentException {
+        public EntryInfoRequest(@OperationCode int opCode, long id, long cashBoxId, double amount,
+                                long date, String info) throws IllegalArgumentException {
             super(opCode, id);
             this.cashBoxId = cashBoxId;
             this.amount = amount;
@@ -71,7 +76,8 @@ public class UtilAppRequest {
             this.info = info;
         }
 
-        public EntryRequest(int opCode, long id, @NonNull Entry entry) throws IllegalArgumentException {
+        public EntryInfoRequest(@OperationCode int opCode, long id, @NonNull EntryInfo entry)
+                throws IllegalArgumentException {
             super(opCode, id);
             cashBoxId = entry.getCashBoxId();
             amount = entry.getAmount();
@@ -109,6 +115,58 @@ public class UtilAppRequest {
 
         public void setInfo(String info) {
             this.info = info;
+        }
+    }
+
+    public static class ParticipantRequest extends UtilAppRequest {
+        @SerializedName(UtilAppAPI.NAME)
+        private String name;
+        @SerializedName(UtilAppAPI.ENTRY_ID)
+        private long entryId;
+        @SerializedName(UtilAppAPI.IS_FROM)
+        private boolean isFrom;
+        @SerializedName(UtilAppAPI.AMOUNT)
+        private double amount;
+
+        public ParticipantRequest(@OperationCode int opCode, long id, @NonNull Participant participant)
+                throws IllegalArgumentException {
+            super(opCode, id);
+            name = participant.getName();
+            entryId = participant.getEntryId();
+            isFrom = participant.isFrom();
+            amount = participant.getAmount();
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public long getEntryId() {
+            return entryId;
+        }
+
+        public void setEntryId(long entryId) {
+            this.entryId = entryId;
+        }
+
+        public boolean isFrom() {
+            return isFrom;
+        }
+
+        public void setFrom(boolean from) {
+            isFrom = from;
+        }
+
+        public double getAmount() {
+            return amount;
+        }
+
+        public void setAmount(double amount) {
+            this.amount = amount;
         }
     }
 }

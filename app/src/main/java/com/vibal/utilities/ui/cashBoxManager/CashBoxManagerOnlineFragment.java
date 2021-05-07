@@ -15,35 +15,33 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.PreferenceManager;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.vibal.utilities.R;
+import com.vibal.utilities.databinding.CashBoxOnlineManagerFragmentBinding;
 import com.vibal.utilities.exceptions.UtilAppException;
-import com.vibal.utilities.models.CashBox;
 import com.vibal.utilities.models.CashBoxInfo;
+import com.vibal.utilities.models.InfoWithCash;
 import com.vibal.utilities.persistence.repositories.CashBoxOnlineRepository;
+import com.vibal.utilities.ui.bindingHolder.CashBoxManagerFragmentBindingHolder;
 import com.vibal.utilities.ui.settings.SettingsActivity;
 import com.vibal.utilities.util.LogUtil;
 import com.vibal.utilities.util.MyDialogBuilder;
 import com.vibal.utilities.util.Util;
 import com.vibal.utilities.viewModels.CashBoxOnlineViewModel;
 
-import butterknife.BindView;
 import io.reactivex.Completable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.observers.DisposableObserver;
 import io.reactivex.schedulers.Schedulers;
 
-public class CashBoxManagerOnlineFragment extends CashBoxManagerFragment {
+public class CashBoxManagerOnlineFragment extends CashBoxManagerFragment implements CashBoxType.ONLINE {
     private static final String TAG = "PruebaOnlineManFrag";
-    @BindView(R.id.refreshCBM)
-    SwipeRefreshLayout refreshLayout;
-    private CashBoxOnlineViewModel viewModel;
 
-    private boolean firstTime = true;
+    private static boolean startUp = true;
+    private CashBoxOnlineViewModel viewModel;
 
     @NonNull
     static CashBoxManagerOnlineFragment newInstance(int pagerPosition) {
@@ -57,18 +55,21 @@ public class CashBoxManagerOnlineFragment extends CashBoxManagerFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         LogUtil.debug(TAG, "onCreate: ");
-        return inflater.inflate(R.layout.cash_box_online_manager_fragment, container, false);
+        binding = new CashBoxManagerFragmentBindingHolder(
+                CashBoxOnlineManagerFragmentBinding.inflate(inflater, container, false));
+        return binding.getRoot();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        refreshLayout.setOnRefreshListener(this::onRefresh);
-        // Refresh app first time gets in
-        if (firstTime) {
-            firstTime = false;
-            onRefresh();
-        }
+        binding.refreshCBM.setOnRefreshListener(this::onRefresh);
     }
 
     @Override
@@ -77,6 +78,11 @@ public class CashBoxManagerOnlineFragment extends CashBoxManagerFragment {
         // Show to add dialog when first go in
         if (!CashBoxOnlineRepository.isOnlineIdSet())
             showAddDialog();
+        else if (startUp) {
+            binding.refreshCBM.setRefreshing(true);
+            onRefresh();
+            startUp = false;
+        }
     }
 
     private void onRefresh() {
@@ -91,7 +97,7 @@ public class CashBoxManagerOnlineFragment extends CashBoxManagerFragment {
                     @Override
                     public void onError(Throwable throwable) {
                         LogUtil.error(TAG, "Error on refresh: ", throwable);
-                        refreshLayout.setRefreshing(false);
+                        binding.refreshCBM.setRefreshing(false);
                         Toast.makeText(requireContext(),
                                 throwable instanceof UtilAppException ?
                                         throwable.getLocalizedMessage() :
@@ -103,7 +109,7 @@ public class CashBoxManagerOnlineFragment extends CashBoxManagerFragment {
                     @Override
                     public void onComplete() {
                         Toast.makeText(requireContext(), "Up to date!", Toast.LENGTH_SHORT).show();
-                        refreshLayout.setRefreshing(false);
+                        binding.refreshCBM.setRefreshing(false);
                     }
                 }));
     }
@@ -112,6 +118,11 @@ public class CashBoxManagerOnlineFragment extends CashBoxManagerFragment {
     protected int getMenuRes() {
         return R.menu.menu_toolbar_cash_box_manager_online;
     }
+
+//    @Override
+//    protected int getCashBoxType() {
+//        return CashBoxManagerActivity.ONLINE;
+//    }
 
     @Nullable
     @Override
@@ -130,7 +141,7 @@ public class CashBoxManagerOnlineFragment extends CashBoxManagerFragment {
 
         switch (item.getItemId()) {
             case R.id.action_manager_refresh_online:
-                refreshLayout.setRefreshing(true);
+                binding.refreshCBM.setRefreshing(true);
                 onRefresh();
                 return true;
             case R.id.action_manager_deleteAll_online:
@@ -182,7 +193,7 @@ public class CashBoxManagerOnlineFragment extends CashBoxManagerFragment {
     }
 
     @Override
-    void showAddDialog() {
+    protected void showAddDialog() {
         closeFabMenu();
         if (actionMode != null)
             actionMode.finish();
@@ -261,7 +272,7 @@ public class CashBoxManagerOnlineFragment extends CashBoxManagerFragment {
     }
 
     @Override
-    protected void showInvitationDialog(CashBox.InfoWithCash infoWithCash) {
+    protected void showInvitationDialog(InfoWithCash infoWithCash) {
         // Get the username without the added fix character
         String name = infoWithCash.getCashBoxInfo().getName();
         int index = name.indexOf(CashBoxInfo.FIX_NAME_CHARACTER);
@@ -284,7 +295,7 @@ public class CashBoxManagerOnlineFragment extends CashBoxManagerFragment {
     }
 
     @Override
-    protected void showChangesDialog(CashBox.InfoWithCash infoWithCash) {
+    protected void showChangesDialog(InfoWithCash infoWithCash) {
         CashBoxChangesDialogFragment.newInstance(infoWithCash.getId())
                 .show(getChildFragmentManager().beginTransaction(), "dialog");
     }

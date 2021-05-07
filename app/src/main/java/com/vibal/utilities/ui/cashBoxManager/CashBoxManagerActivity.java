@@ -12,10 +12,10 @@ import androidx.core.app.NotificationManagerCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
-import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.material.tabs.TabLayout;
 import com.vibal.utilities.R;
+import com.vibal.utilities.databinding.CashBoxManagerActivityBinding;
 import com.vibal.utilities.ui.viewPager.PagerActivity;
 import com.vibal.utilities.ui.viewPager.PagerFragment;
 import com.vibal.utilities.util.LogUtil;
@@ -23,12 +23,18 @@ import com.vibal.utilities.widget.CashBoxWidgetProvider;
 
 import java.util.Objects;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-
 public class CashBoxManagerActivity extends AppCompatActivity implements TabLayout.OnTabSelectedListener, PagerActivity {
     // Extras for intents
     public static final String EXTRA_CASHBOX_ID = "com.vibal.utilities.cashBoxId";
+    public static final String EXTRA_CASHBOX_TYPE = "com.vibal.utilities.cashBoxId";
+
+    //    @IntDef({ONLINE, LOCAL})
+//    @Retention(RetentionPolicy.SOURCE)
+//    public @interface CashBoxType {
+//    }
+//
+//    public static final int LOCAL = 0;
+//    public static final int ONLINE = 1;
     public static final String EXTRA_ACTION = "com.vibal.utilities.ui.cashBoxManager.action";
     public static final int NO_ACTION = 0;
     public static final int ACTION_ADD_CASHBOX = 1;
@@ -53,17 +59,13 @@ public class CashBoxManagerActivity extends AppCompatActivity implements TabLayo
     public static final String CLIENT_ID_KEY = "com.vibal.utilities.cashBoxManager.CLIENT_ID";
     public static final String USERNAME_KEY = "com.vibal.utilities.cashBoxManager.USERNAME";
 
-    @BindView(R.id.CB_viewPager)
-    ViewPager pager;
-    @Nullable
-    @BindView(R.id.CB_tabs)
-    TabLayout tabs;
+    private CashBoxManagerActivityBinding binding;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.cash_box_manager_activity);
-        ButterKnife.bind(this);
+        binding = CashBoxManagerActivityBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         //Cancel reminder notifications if any
         NotificationManagerCompat.from(this).cancelAll();
@@ -91,9 +93,16 @@ public class CashBoxManagerActivity extends AppCompatActivity implements TabLayo
 //        }
 
         // Set up TabLayout
-        pager.setAdapter(new MenusPagerAdapter(getSupportFragmentManager()));
-        if (tabs != null)
-            tabs.addOnTabSelectedListener(this);
+        binding.CBViewPager.setAdapter(new MenusPagerAdapter(getSupportFragmentManager()));
+        if (binding.CBTabs != null)
+            binding.CBTabs.addOnTabSelectedListener(this);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        // Look at intent
+        doIntentAction(getIntent());
     }
 
     @Override
@@ -115,18 +124,30 @@ public class CashBoxManagerActivity extends AppCompatActivity implements TabLayo
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
+        doIntentAction(intent);
         setIntent(intent);
     }
 
+    private void doIntentAction(Intent intent) {
+        if (intent == null || intent.getIntExtra(EXTRA_ACTION, NO_ACTION) == NO_ACTION)
+            return;
+
+        if (intent.getIntExtra(EXTRA_CASHBOX_TYPE, CashBoxType.LOCAL) == CashBoxType.ONLINE) {
+            selectTab(CashBoxType.ONLINE);
+        } else {
+            selectTab(CashBoxType.LOCAL);
+        }
+    }
+
     private Fragment getPagerFragment(int position) {
-        return getSupportFragmentManager().findFragmentByTag("android:switcher:" + pager.getId() +
+        return getSupportFragmentManager().findFragmentByTag("android:switcher:" + binding.CBViewPager.getId() +
                 ":" + position);
     }
 
     @Override
     public void onBackPressed() {
-        LogUtil.debug("Prueba", "Current item " + pager.getCurrentItem());
-        Fragment fragment = getPagerFragment(pager.getCurrentItem());
+        LogUtil.debug("Prueba", "Current item " + binding.CBViewPager.getCurrentItem());
+        Fragment fragment = getPagerFragment(binding.CBViewPager.getCurrentItem());
         if (fragment instanceof PagerFragment) {
             if (((PagerFragment) fragment).onBackPressed())
                 return;
@@ -134,24 +155,30 @@ public class CashBoxManagerActivity extends AppCompatActivity implements TabLayo
         super.onBackPressed();
     }
 
+//    imp https://developer.android.com/guide/navigation/navigation-swipe-view-2
+
     // Implementing PagerActivity
     @Override
     public int getCurrentPagerPosition() {
-        return pager.getCurrentItem();
+        return binding.CBViewPager.getCurrentItem();
     }
 
     @Override
     public void setTabLayoutVisibility(int visibility) {
-        if (tabs != null)
-            tabs.setVisibility(visibility);
+        if (binding.CBTabs != null)
+            binding.CBTabs.setVisibility(visibility);
     }
 
     // Implementing TabLayout.OnTabSelectedListener
     @Override
     public void onTabSelected(@NonNull TabLayout.Tab tab) {
-        LogUtil.debug("PruebaViewPager", "Position: " + tab.getPosition());
+        selectTab(tab.getPosition());
+    }
+
+    private void selectTab(int position) {
+        LogUtil.debug("PruebaViewPager", "Position: " + position);
         supportInvalidateOptionsMenu();
-        pager.setCurrentItem(tab.getPosition(), true);
+        binding.CBViewPager.setCurrentItem(position, true);
     }
 
     @Override
@@ -173,9 +200,9 @@ public class CashBoxManagerActivity extends AppCompatActivity implements TabLayo
         public Fragment getItem(int position) {
             LogUtil.debug("PruebaViewPager", "Position get Item: " + position);
             switch (position) {
-                case 0:
+                case CashBoxType.LOCAL:
                     return CashBoxViewFragment.newInstance(position, false);
-                case 1:
+                case CashBoxType.ONLINE:
                     return CashBoxViewFragment.newInstance(position, true);
                 case 2:
                     return CashBoxDeletedFragment.newInstance(position);

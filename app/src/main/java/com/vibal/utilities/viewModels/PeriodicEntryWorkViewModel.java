@@ -18,8 +18,8 @@ import io.reactivex.Single;
 public class PeriodicEntryWorkViewModel extends AndroidViewModel {
     private static final String TAG = "PruebaPeriodicViewModel";
 
-    private PeriodicEntryWorkRepository repository;
-    private LiveData<List<PeriodicEntryPojo>> periodicEntries;
+    private final PeriodicEntryWorkRepository repository;
+    private final LiveData<List<PeriodicEntryPojo>> periodicEntries;
 //    @NonNull
 //    private CompositeDisposable compositeDisposable = new CompositeDisposable();
 

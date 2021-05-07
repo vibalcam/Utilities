@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:layout_constraintHeight_min="?listPreferredItemHeightSmall"
+    android:paddingHorizontal="@dimen/main_marginHorizontal"
+    android:paddingVertical="@dimen/rvMarginItemCB"
+    android:layout_marginTop="@dimen/rvMarginItemCB"
+    android:background="@drawable/layout_rounded">
+
+    <TextView
+        android:id="@+id/rvFrom"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textColor="@color/colorPrimaryDark"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textStyle="bold"
+        android:layout_marginEnd="@dimen/marginRV_date_amount"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/text"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/rvAmount"
+        app:layout_constraintHorizontal_weight="4"
+        tools:text="Pepito" />
+
+    <TextView
+        android:id="@+id/text"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textColor="@android:color/black"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textStyle="italic"
+        android:gravity="start|center_horizontal"
+        android:paddingStart="@dimen/marginRV_date_amount"
+        app:layout_constraintTop_toBottomOf="@+id/rvFrom"
+        app:layout_constraintBottom_toTopOf="@id/rvTo"
+        app:layout_constraintStart_toStartOf="@id/rvFrom"
+        app:layout_constraintEnd_toEndOf="@id/rvFrom"
+        android:text="@string/owes" />
+
+    <TextView
+        android:id="@+id/rvTo"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textColor="@color/colorPrimaryDark"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@id/text"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="@id/rvFrom"
+        app:layout_constraintEnd_toEndOf="@id/rvFrom"
+        tools:text="Juan" />
+
+    <TextView
+        android:id="@+id/rvAmount"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:textColor="@color/colorPositiveNumber"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textStyle="bold"
+        android:gravity="center"
+        app:layout_constraintTop_toTopOf="@+id/rvFrom"
+        app:layout_constraintBottom_toBottomOf="@id/rvTo"
+        app:layout_constraintStart_toEndOf="@id/rvFrom"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_weight="3"
+        tools:text="50,00 €" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

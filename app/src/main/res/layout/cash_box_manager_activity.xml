@@ -48,10 +48,6 @@
                 android:layout_width="0dp"
                 android:text="@string/menuCBM_showPeriodic"
                 android:icon="@drawable/calendar_clock"/>
-<!--            <com.google.android.material.tabs.TabItem-->
-<!--                android:layout_height="0dp"-->
-<!--                android:layout_width="0dp"-->
-<!--                android:text="@string/menuCBM_notifications" />-->
         </com.google.android.material.tabs.TabLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
