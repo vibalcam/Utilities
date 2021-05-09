@@ -128,22 +128,11 @@ public abstract class UtilitiesDatabase extends RoomDatabase {
                     "`onlineId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
                     "FOREIGN KEY(`entryId`) REFERENCES `entries_table`(`id`) " +
                     "ON UPDATE CASCADE ON DELETE CASCADE )");
-//            database.execSQL("CREATE TABLE IF NOT EXISTS `entriesParticipants_table` (" +
-//                    "`name` TEXT NOT NULL COLLATE NOCASE, " +
-//                    "`entryId` INTEGER NOT NULL, " +
-//                    "`isFrom` INTEGER NOT NULL, " +
-//                    "`amount` REAL NOT NULL DEFAULT 1, " +
-//                    "`onlineId` INTEGER NOT NULL DEFAULT 0, " +
-//                    "PRIMARY KEY(`name`, `entryId`, `isFrom`), " +
-//                    "FOREIGN KEY(`entryId`) REFERENCES `entries_table`(`id`) " +
-//                    "ON UPDATE CASCADE ON DELETE CASCADE )");
             database.execSQL("CREATE INDEX IF NOT EXISTS `index_entriesParticipants_table_entryId` " +
                     "ON `entriesParticipants_table` (`entryId`)");
             database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS " +
                     "`index_entriesParticipants_table_name_entryId_isFrom` " +
                     "ON `entriesParticipants_table` (`name`, `entryId`, `isFrom`)");
-//            database.execSQL("CREATE INDEX IF NOT EXISTS `index_entriesParticipants_table_entryId` " +
-//                    "ON `entriesParticipants_table` (`entryId`)");
 
             // Add online Participants for entries
             database.execSQL("CREATE TABLE IF NOT EXISTS `entriesOnlineParticipants_table` (" +
@@ -154,23 +143,12 @@ public abstract class UtilitiesDatabase extends RoomDatabase {
                     "`onlineId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
                     "FOREIGN KEY(`entryId`) REFERENCES `entriesOnline_table`(`id`) " +
                     "ON UPDATE CASCADE ON DELETE CASCADE )");
-//            database.execSQL("CREATE TABLE IF NOT EXISTS `entriesOnlineParticipants_table` (" +
-//                    "`name` TEXT NOT NULL COLLATE NOCASE, " +
-//                    "`entryId` INTEGER NOT NULL, " +
-//                    "`isFrom` INTEGER NOT NULL, " +
-//                    "`amount` REAL NOT NULL DEFAULT 1, " +
-//                    "`onlineId` INTEGER NOT NULL DEFAULT 0, " +
-//                    "PRIMARY KEY(`name`, `entryId`, `isFrom`), " +
-//                    "FOREIGN KEY(`entryId`) REFERENCES `entriesOnline_table`(`id`) " +
-//                    "ON UPDATE CASCADE ON DELETE CASCADE )");
             database.execSQL("CREATE INDEX IF NOT EXISTS " +
                     "`index_entriesOnlineParticipants_table_entryId` " +
                     "ON `entriesOnlineParticipants_table` (`entryId`)");
             database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS " +
                     "`index_entriesOnlineParticipants_table_name_entryId_isFrom` " +
                     "ON `entriesOnlineParticipants_table` (`name`, `entryId`, `isFrom`)");
-//            database.execSQL("CREATE INDEX IF NOT EXISTS `index_entriesOnlineParticipants_table_entryId` " +
-//                    "ON `entriesOnlineParticipants_table` (`entryId`)");
 
             // Create views
             database.execSQL("CREATE VIEW `entriesOnlineAsEntries_view` AS " +
@@ -183,6 +161,16 @@ public abstract class UtilitiesDatabase extends RoomDatabase {
                     "SELECT * FROM entriesParticipants_table WHERE isFrom==1");
             database.execSQL("CREATE VIEW `fromEntriesOnlineParticipants_view` AS " +
                     "SELECT * FROM entriesOnlineParticipants_table WHERE isFrom==1");
+
+            // Add default participants
+            database.execSQL("INSERT INTO entriesParticipants_table (name, entryId, isFrom) " +
+                    "SELECT " + Participant.getSelfName() + ", id, 0 FROM entries_table");
+            database.execSQL("INSERT INTO entriesParticipants_table (name, entryId, isFrom) " +
+                    "SELECT " + Participant.getSelfName() + ", id, 1 FROM entries_table");
+            database.execSQL("INSERT INTO entriesOnlineParticipants_table (name, entryId, isFrom) " +
+                    "SELECT " + Participant.getSelfName() + ", id, 0 FROM entriesOnline_table");
+            database.execSQL("INSERT INTO entriesOnlineParticipants_table (name, entryId, isFrom) " +
+                    "SELECT " + Participant.getSelfName() + ", id, 1 FROM entriesOnline_table");
         }
     };
 

@@ -104,8 +104,8 @@
         android:textAppearance="?android:attr/textAppearanceSmall"
         app:layout_constraintTop_toBottomOf="@id/rvItemFrom"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="@id/rvItemFrom"
-        app:layout_constraintEnd_toEndOf="@id/rvItemBalance"
+        app:layout_constraintStart_toStartOf="@id/rvItemDate"
+        app:layout_constraintEnd_toEndOf="@id/rvItemAmount"
         tools:text="Esto es una prueba de la info" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

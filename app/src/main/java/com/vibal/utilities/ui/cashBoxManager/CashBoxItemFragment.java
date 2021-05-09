@@ -250,8 +250,11 @@ public abstract class CashBoxItemFragment extends PagerFragment implements CashB
             // Show balances fab if more than one participant
             if (cashBox.getCacheNames().size() <= 1)
                 binding.balancesCB.setVisibility(View.GONE);
-            else
+            else {
+                if (binding.balancesCB.getVisibility() != View.VISIBLE)
+                    adapter.notifyDataSetChanged();
                 binding.balancesCB.setVisibility(View.VISIBLE);
+            }
 
             // Update ShareIntent
             if (shareActionProvider != null)
