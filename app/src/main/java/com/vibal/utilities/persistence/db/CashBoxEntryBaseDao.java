@@ -7,6 +7,7 @@ import androidx.room.Dao;
 import com.vibal.utilities.models.CashBoxBalances;
 import com.vibal.utilities.models.EntryBase;
 import com.vibal.utilities.models.EntryInfo;
+import com.vibal.utilities.models.Participant;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -113,16 +114,16 @@ public interface CashBoxEntryBaseDao {
     /**
      * Insert participant with the given entryId
      */
-    default Completable insertParticipant(long entryId, @NonNull EntryBase.Participant participant) {
+    default Completable insertParticipant(long entryId, @NonNull Participant participant) {
         return insertParticipantRaw(participant.getParticipantWithEntryId(entryId));
     }
 
     /**
      * Insert participants with the given entryId
      */
-    default Completable insertParticipant(long entryId, @NonNull Collection<EntryBase.Participant> participants) {
-        List<EntryBase.Participant> list = new ArrayList<>();
-        for (EntryBase.Participant p : participants)
+    default Completable insertParticipant(long entryId, @NonNull Collection<Participant> participants) {
+        List<Participant> list = new ArrayList<>();
+        for (Participant p : participants)
             list.add(p.getParticipantWithEntryId(entryId));
         return insertParticipantRaw(list);
     }
@@ -140,22 +141,22 @@ public interface CashBoxEntryBaseDao {
     /**
      * Insert participant as given
      */
-    Completable insertParticipantRaw(EntryBase.Participant participant);
+    Completable insertParticipantRaw(Participant participant);
 
     /**
      * Insert participants as given
      */
-    Completable insertParticipantRaw(Collection<EntryBase.Participant> participantList);
+    Completable insertParticipantRaw(Collection<Participant> participantList);
 
-    Single<Integer> updateParticipant(EntryBase.Participant participant);
+    Single<Integer> updateParticipant(Participant participant);
 
-    default Completable deleteParticipant(EntryBase.Participant participant) {
+    default Completable deleteParticipant(Participant participant) {
         return unSafeDeleteParticipant(participant.getOnlineId())
                 .andThen(countParticipants(participant.getEntryId(), participant.isFrom())
                         .flatMapCompletable(integer -> {
                             if (integer > 0)
                                 return Completable.complete();
-                            return insertParticipantRaw(EntryBase.Participant.createDefaultParticipant(
+                            return insertParticipantRaw(Participant.createDefaultParticipant(
                                     participant.getEntryId(), participant.isFrom()));
                         }));
     }
@@ -167,7 +168,7 @@ public interface CashBoxEntryBaseDao {
 
     Completable unSafeDeleteParticipant(long id);
 
-    Single<EntryBase.Participant> getParticipantById(long id);
+    Single<Participant> getParticipantById(long id);
 
     Single<Integer> countParticipants(long entryId, boolean isFrom);
 }

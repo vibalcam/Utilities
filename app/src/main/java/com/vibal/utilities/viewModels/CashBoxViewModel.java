@@ -11,6 +11,7 @@ import com.vibal.utilities.models.CashBoxInfo;
 import com.vibal.utilities.models.EntryBase;
 import com.vibal.utilities.models.EntryInfo;
 import com.vibal.utilities.models.InfoWithCash;
+import com.vibal.utilities.models.Participant;
 import com.vibal.utilities.models.PeriodicEntryPojo;
 import com.vibal.utilities.persistence.repositories.CashBoxRepository;
 import com.vibal.utilities.util.LogUtil;
@@ -62,10 +63,10 @@ public abstract class CashBoxViewModel extends AndroidViewModel {
         if (getCurrentCashBoxId() == NO_ID)
             throw new IllegalStateException("No cashBox selected for balance");
         // If different, get the current self balance
-        LiveData<Double> liveData = participantBalances.get(EntryBase.getSelfName());
+        LiveData<Double> liveData = participantBalances.get(Participant.getSelfName());
         if (liveData == null) {
-            liveData = getRepository().getCashBalance(getCurrentCashBoxId(), EntryBase.getSelfName());
-            participantBalances.put(EntryBase.getSelfName(), liveData);
+            liveData = getRepository().getCashBalance(getCurrentCashBoxId(), Participant.getSelfName());
+            participantBalances.put(Participant.getSelfName(), liveData);
         }
         return liveData;
     }

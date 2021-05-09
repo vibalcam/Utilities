@@ -67,7 +67,7 @@ public abstract class CashBoxBalances {
         }
 
         public String printFromName() {
-            return EntryBase.Participant.printName(getFromName());
+            return Participant.printName(getFromName());
         }
 
         public double getAmount() {
@@ -99,7 +99,7 @@ public abstract class CashBoxBalances {
         }
 
         public String printToName() {
-            return EntryBase.Participant.printName(getToName());
+            return Participant.printName(getToName());
         }
 
         @Override

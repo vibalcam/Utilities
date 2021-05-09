@@ -14,7 +14,7 @@ import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.SwitchPreference;
 
 import com.vibal.utilities.R;
-import com.vibal.utilities.models.EntryBase;
+import com.vibal.utilities.models.Participant;
 import com.vibal.utilities.persistence.repositories.CashBoxOnlineRepository;
 import com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity;
 import com.vibal.utilities.util.LogUtil;
@@ -83,7 +83,7 @@ public class SettingsActivity extends AppCompatActivity {
             findPreference(KEY_ONLINE).setOnPreferenceClickListener(this);
             findPreference(KEY_SELF_PARTICIPANT).setOnPreferenceChangeListener(
                     (preference, newValue) -> {
-                        EntryBase.setSelfName(requireContext());
+                        Participant.setSelfName(requireContext());
                         return true;
                     });
         }

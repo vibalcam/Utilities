@@ -87,7 +87,7 @@ public class EntryOnlineInfo extends EntryInfo implements Comparable<EntryOnline
     @Entity(tableName = "entriesOnlineParticipants_table", inheritSuperIndices = true,
             foreignKeys = @ForeignKey(entity = EntryOnlineInfo.class, parentColumns = "id",
                     childColumns = "entryId", onDelete = CASCADE, onUpdate = CASCADE))
-    public static class Participant extends EntryBase.Participant {
+    public static class Participant extends com.vibal.utilities.models.Participant {
         public Participant(@NonNull String name, long entryId, boolean isFrom, double amount) {
             super(name, entryId, isFrom, amount);
         }

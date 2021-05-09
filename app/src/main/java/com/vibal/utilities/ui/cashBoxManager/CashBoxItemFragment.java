@@ -46,6 +46,7 @@ import com.vibal.utilities.exceptions.UtilAppException;
 import com.vibal.utilities.models.CashBox;
 import com.vibal.utilities.models.EntryBase;
 import com.vibal.utilities.models.EntryInfo;
+import com.vibal.utilities.models.Participant;
 import com.vibal.utilities.ui.NameSelectSpinner;
 import com.vibal.utilities.ui.bindingHolder.CashBoxItemFragmentBindingHolder;
 import com.vibal.utilities.ui.settings.SettingsActivity;
@@ -142,8 +143,8 @@ public abstract class CashBoxItemFragment extends PagerFragment implements CashB
                                 double amount = Util.parseExpression(inputAmount.getText().toString());
                                 EntryBase<EntryInfo> entry = EntryBase.getInstance(new EntryInfo(
                                                 amount, inputInfo.getText().toString(), calendarListener.getCalendar()),
-                                        EntryBase.Participant.newFrom(spinnerFrom.getSelectedString()),
-                                        EntryBase.Participant.newTo(spinnerTo.getSelectedString()));
+                                        Participant.newFrom(spinnerFrom.getSelectedString()),
+                                        Participant.newTo(spinnerTo.getSelectedString()));
 
                                 compositeDisposable.add(viewModel.addEntry(cashBoxId, entry)
                                         .subscribeOn(Schedulers.io())
@@ -621,7 +622,7 @@ public abstract class CashBoxItemFragment extends PagerFragment implements CashB
                 // Amount Balance
                 viewHolder.binding.rvItemBalance.setVisibility(View.VISIBLE);
                 double balance = entry.getParticipantBalance(
-                        EntryBase.Participant.createDefaultParticipant(entryInfo.getId(), true));
+                        Participant.createDefaultParticipant(entryInfo.getId(), true));
                 viewHolder.binding.rvItemBalance.setText(getString(R.string.between_parenthesis, formatCurrency.format(balance)));
 
                 if (balance == 0)

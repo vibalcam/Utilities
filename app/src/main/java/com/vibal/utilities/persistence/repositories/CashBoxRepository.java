@@ -12,6 +12,7 @@ import com.vibal.utilities.models.CashBoxInfo;
 import com.vibal.utilities.models.EntryBase;
 import com.vibal.utilities.models.EntryInfo;
 import com.vibal.utilities.models.InfoWithCash;
+import com.vibal.utilities.models.Participant;
 import com.vibal.utilities.models.PeriodicEntryPojo;
 import com.vibal.utilities.persistence.db.CashBoxBaseDao;
 import com.vibal.utilities.persistence.db.CashBoxEntryBaseDao;
@@ -97,7 +98,7 @@ public abstract class CashBoxRepository {
         liveDataMerger.addSource(getCashBoxDao().getNamesByCashBox(id),
                 strings -> {
                     HashSet<String> stringSet = new HashSet<>(strings);
-                    stringSet.add(EntryBase.getSelfName());
+                    stringSet.add(Participant.getSelfName());
                     CashBox cashBox = liveDataMerger.getValue();
                     cashBox.setCacheNames(stringSet);
                     liveDataMerger.setValue(cashBox);
@@ -212,15 +213,15 @@ public abstract class CashBoxRepository {
 
     // Main functionality to override
 
-    public Completable insertParticipant(long entryId, @NonNull EntryBase.Participant participant) {
+    public Completable insertParticipant(long entryId, @NonNull Participant participant) {
         return getCashBoxEntryDao().insertParticipant(entryId, participant);
     }
 
-    public Completable updateParticipant(@NonNull EntryBase.Participant participant) {
+    public Completable updateParticipant(@NonNull Participant participant) {
         return getCashBoxEntryDao().updateParticipant(participant).ignoreElement();
     }
 
-    public Completable deleteParticipant(@NonNull EntryBase.Participant participant) {
+    public Completable deleteParticipant(@NonNull Participant participant) {
         return getCashBoxEntryDao().deleteParticipant(participant);
     }
 }

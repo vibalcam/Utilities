@@ -3,8 +3,8 @@ package com.vibal.utilities.persistence.retrofit;
 import androidx.annotation.NonNull;
 
 import com.google.gson.annotations.SerializedName;
-import com.vibal.utilities.models.EntryBase.Participant;
 import com.vibal.utilities.models.EntryInfo;
+import com.vibal.utilities.models.Participant;
 import com.vibal.utilities.persistence.retrofit.UtilAppAPI.OperationCode;
 import com.vibal.utilities.util.Converters;
 

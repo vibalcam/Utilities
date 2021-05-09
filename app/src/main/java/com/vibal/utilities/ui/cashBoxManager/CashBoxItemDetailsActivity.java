@@ -30,6 +30,7 @@ import com.vibal.utilities.databinding.CashBoxItemDetailsActivityBinding;
 import com.vibal.utilities.databinding.CashBoxItemDetailsFragmentBinding;
 import com.vibal.utilities.models.CashBoxInfo;
 import com.vibal.utilities.models.EntryBase;
+import com.vibal.utilities.models.Participant;
 import com.vibal.utilities.ui.NameSelectSpinner;
 import com.vibal.utilities.util.Util;
 import com.vibal.utilities.viewModels.CashBoxDetailsViewModel;
@@ -69,7 +70,7 @@ public class CashBoxItemDetailsActivity extends AppCompatActivity {
     private final NumberFormat formatCurrency = NumberFormat.getCurrencyInstance();
     private final DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
-    private final HashSet<EntryBase.Participant> participantsChanged = new HashSet<>();
+    private final HashSet<Participant> participantsChanged = new HashSet<>();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -144,7 +145,7 @@ public class CashBoxItemDetailsActivity extends AppCompatActivity {
 //                Toast.makeText(this, "No changes made", Toast.LENGTH_SHORT).show();
 
             Completable completable = Completable.complete();
-            for (EntryBase.Participant p : participantsChanged) {
+            for (Participant p : participantsChanged) {
                 completable = completable.andThen(viewModel.updateParticipant(p));
             }
             compositeDisposable.add(completable.subscribeOn(Schedulers.io())
@@ -191,17 +192,17 @@ public class CashBoxItemDetailsActivity extends AppCompatActivity {
     public static class ItemDetailsFragment extends Fragment {
         private static final String POSITION_ARG = "posArg";
 
-        private final DiffUtil.ItemCallback<EntryBase.Participant> DIFF_CALLBACK =
-                new DiffUtil.ItemCallback<EntryBase.Participant>() {
+        private final DiffUtil.ItemCallback<Participant> DIFF_CALLBACK =
+                new DiffUtil.ItemCallback<Participant>() {
                     @Override
-                    public boolean areItemsTheSame(@NonNull EntryBase.Participant oldItem,
-                                                   @NonNull EntryBase.Participant newItem) {
+                    public boolean areItemsTheSame(@NonNull Participant oldItem,
+                                                   @NonNull Participant newItem) {
                         return oldItem.areItemsTheSame(newItem);
                     }
 
                     @Override
-                    public boolean areContentsTheSame(@NonNull EntryBase.Participant oldItem,
-                                                      @NonNull EntryBase.Participant newItem) {
+                    public boolean areContentsTheSame(@NonNull Participant oldItem,
+                                                      @NonNull Participant newItem) {
                         return oldItem.areContentsTheSame(oldItem);
                     }
                 };
@@ -259,13 +260,13 @@ public class CashBoxItemDetailsActivity extends AppCompatActivity {
             binding.titleTo.setOnClickListener(view1 -> toggleExpandableView(binding.elTo, binding.addImageTo));
             binding.addImageFrom.setOnClickListener(v -> {
                 if (binding.elFrom.isExpanded())
-                    showAddParticipantDialog(binding.addImageFrom, EntryBase.Participant::newFrom);
+                    showAddParticipantDialog(binding.addImageFrom, Participant::newFrom);
                 else
                     toggleExpandableView(binding.elFrom, binding.addImageFrom);
             });
             binding.addImageTo.setOnClickListener(v -> {
                 if (binding.elTo.isExpanded())
-                    showAddParticipantDialog(binding.addImageTo, EntryBase.Participant::newTo);
+                    showAddParticipantDialog(binding.addImageTo, Participant::newTo);
                 else
                     toggleExpandableView(binding.elTo, binding.addImageTo);
             });
@@ -279,7 +280,7 @@ public class CashBoxItemDetailsActivity extends AppCompatActivity {
                 imageView.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.ms__arrow));
         }
 
-        private void showAddParticipantDialog(View anchor, Function<String, EntryBase.Participant> create) {
+        private void showAddParticipantDialog(View anchor, Function<String, Participant> create) {
             // Show pop-up with names
             PopupMenu popupMenu = new PopupMenu(requireContext(), anchor);
             Menu menu = popupMenu.getMenu();
@@ -350,7 +351,7 @@ public class CashBoxItemDetailsActivity extends AppCompatActivity {
                     });
         }
 
-        private class ItemDetailsRecyclerAdapter extends ListAdapter<EntryBase.Participant, ItemDetailsRecyclerAdapter.ViewHolder> {
+        private class ItemDetailsRecyclerAdapter extends ListAdapter<Participant, ItemDetailsRecyclerAdapter.ViewHolder> {
             public ItemDetailsRecyclerAdapter() {
                 super(DIFF_CALLBACK);
             }
@@ -365,7 +366,7 @@ public class CashBoxItemDetailsActivity extends AppCompatActivity {
 
             @Override
             public void onBindViewHolder(@NonNull ItemDetailsRecyclerAdapter.ViewHolder holder, int position) {
-                EntryBase.Participant participant = getItem(position);
+                Participant participant = getItem(position);
                 holder.binding.rvName.setText(participant.printName());
                 holder.setAmount(participant.getAmount());
             }
@@ -396,7 +397,7 @@ public class CashBoxItemDetailsActivity extends AppCompatActivity {
                         return;
 
                     String input = binding.inputTextAmount.getText().toString().trim();
-                    EntryBase.Participant oldPart = getItem(getAdapterPosition());
+                    Participant oldPart = getItem(getAdapterPosition());
                     double amount = oldPart.getAmount();
 
                     if (!input.isEmpty()) {

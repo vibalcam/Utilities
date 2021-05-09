@@ -12,16 +12,16 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import com.vibal.utilities.models.CashBoxInfoLocal;
 import com.vibal.utilities.models.CashBoxInfoOnline;
-import com.vibal.utilities.models.EntryBase;
 import com.vibal.utilities.models.EntryInfo;
 import com.vibal.utilities.models.EntryOnlineInfo;
+import com.vibal.utilities.models.Participant;
 import com.vibal.utilities.models.PeriodicEntryPojo;
 import com.vibal.utilities.util.Converters;
 
 @Database(entities = {
         CashBoxInfoLocal.class, CashBoxInfoOnline.class,
         EntryInfo.class, EntryOnlineInfo.class,
-        EntryBase.Participant.class, EntryOnlineInfo.Participant.class,
+        Participant.class, EntryOnlineInfo.Participant.class,
         PeriodicEntryPojo.PeriodicEntryWorkInfo.class
 }, views = {
         EntryInfo.class,

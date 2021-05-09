@@ -4,10 +4,10 @@ import androidx.annotation.NonNull;
 
 import com.google.gson.annotations.SerializedName;
 import com.vibal.utilities.exceptions.UtilAppException;
-import com.vibal.utilities.models.EntryBase;
 import com.vibal.utilities.models.EntryInfo;
 import com.vibal.utilities.models.EntryOnline;
 import com.vibal.utilities.models.EntryOnlineInfo;
+import com.vibal.utilities.models.Participant;
 import com.vibal.utilities.util.Converters;
 
 import java.util.Calendar;
@@ -184,8 +184,8 @@ public class UtilAppResponse {
         }
 
         @NonNull
-        public EntryBase.Participant changeNotificationToParticipant() {
-            return new EntryBase.Participant(getParticipantName(), getParticipantEntryId(),
+        public Participant changeNotificationToParticipant() {
+            return new Participant(getParticipantName(), getParticipantEntryId(),
                     getParticipantIsFrom(), getAmount(), getParticipantOnlineId());
         }
 

@@ -284,7 +284,7 @@ public class EntryInfo implements Cloneable, DiffDbUsable<EntryInfo> {
 
     @DatabaseView(viewName = "fromEntriesParticipants_view",
             value = "SELECT * FROM entriesParticipants_table WHERE isFrom==1")
-    public abstract static class ParticipantFromView extends EntryBase.Participant {
+    public abstract static class ParticipantFromView extends Participant {
         public ParticipantFromView(@NonNull String name, long entryId, boolean isFrom, double amount) {
             super(name, entryId, isFrom, amount);
         }
@@ -292,7 +292,7 @@ public class EntryInfo implements Cloneable, DiffDbUsable<EntryInfo> {
 
     @DatabaseView(viewName = "toEntriesParticipants_view",
             value = "SELECT * FROM entriesParticipants_table WHERE isFrom==0")
-    public abstract static class ParticipantToView extends EntryBase.Participant {
+    public abstract static class ParticipantToView extends Participant {
         public ParticipantToView(@NonNull String name, long entryId, boolean isFrom, double amount) {
             super(name, entryId, isFrom, amount);
         }

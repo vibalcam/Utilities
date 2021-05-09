@@ -9,9 +9,9 @@ import androidx.room.Transaction;
 import androidx.room.Update;
 
 import com.vibal.utilities.models.CashBoxBalances;
-import com.vibal.utilities.models.EntryBase;
 import com.vibal.utilities.models.EntryInfo;
 import com.vibal.utilities.models.EntryLocal;
+import com.vibal.utilities.models.Participant;
 
 import java.util.Calendar;
 import java.util.Collection;
@@ -87,21 +87,21 @@ public interface CashBoxEntryLocalDao extends CashBoxEntryBaseDao {
 
     // Participants Methods
 
-    @Insert(entity = EntryBase.Participant.class)
-    Completable insertParticipantRaw(EntryBase.Participant participant);
+    @Insert(entity = Participant.class)
+    Completable insertParticipantRaw(Participant participant);
 
-    @Insert(entity = EntryBase.Participant.class)
-    Completable insertParticipantRaw(Collection<EntryBase.Participant> participantList);
+    @Insert(entity = Participant.class)
+    Completable insertParticipantRaw(Collection<Participant> participantList);
 
-    @Update(entity = EntryBase.Participant.class)
-    Single<Integer> updateParticipant(EntryBase.Participant participant);
+    @Update(entity = Participant.class)
+    Single<Integer> updateParticipant(Participant participant);
 
     @Query("DELETE FROM entriesParticipants_table WHERE onlineId=:id")
     Completable unSafeDeleteParticipant(long id);
 
     @Override
     @Query("SELECT * FROM entriesParticipants_table WHERE onlineId=:id")
-    Single<EntryBase.Participant> getParticipantById(long id);
+    Single<Participant> getParticipantById(long id);
 
     @Query("SELECT COUNT(*) FROM entriesParticipants_table " +
             "WHERE entryId=:entryId AND isFrom=:isFrom")

@@ -14,6 +14,7 @@ import com.vibal.utilities.models.EntryBase;
 import com.vibal.utilities.models.EntryInfo;
 import com.vibal.utilities.models.EntryOnline;
 import com.vibal.utilities.models.EntryOnlineInfo;
+import com.vibal.utilities.models.Participant;
 import com.vibal.utilities.persistence.db.CashBoxEntryOnlineDao;
 import com.vibal.utilities.persistence.db.CashBoxOnlineDao;
 import com.vibal.utilities.persistence.db.UtilitiesDatabase;
@@ -376,7 +377,7 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
                     .parallelStream()
                     .map(entryJSON -> entryJSON.changeNotificationToEntry().getEntryInfo())
                     .collect(Collectors.toList());
-            List<EntryBase.Participant> participants = entriesResponse.getEntries(cashBoxId)
+            List<Participant> participants = entriesResponse.getEntries(cashBoxId)
                     .parallelStream()
                     .map(UtilAppResponse.EntryJSON::changeNotificationToParticipant)
                     .collect(Collectors.toList());
@@ -403,7 +404,7 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
                     if (modificationResponse.isOperationSuccessful(1)) {
                         long id = modificationResponse.getValue(1);
                         EntryBase<?> inserted = entry.cloneContents(id, cashBoxId);
-                        ArrayList<EntryBase.Participant> participants = new ArrayList<>(inserted.getToParticipants());
+                        ArrayList<Participant> participants = new ArrayList<>(inserted.getToParticipants());
                         participants.addAll(inserted.getFromParticipants());
                         return insertParticipantsRaw(participants)
                                 .andThen(super.insertEntryRaw(inserted));
@@ -530,8 +531,8 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
     // Participants
 
     @Override
-    public Completable insertParticipant(long entryId, @NonNull EntryBase.Participant participant) {
-        EntryBase.Participant inserted = participant.cloneContents(entryId);
+    public Completable insertParticipant(long entryId, @NonNull Participant participant) {
+        Participant inserted = participant.cloneContents(entryId);
         return UTILAPP_API.operationParticipant(new UtilAppRequest.ParticipantRequest(
                 INSERT_PARTICIPANT, 1, inserted))
                 .flatMap(new CheckResponseErrorFunction<>())
@@ -545,7 +546,7 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
                 });
     }
 
-    public Completable insertParticipantsRaw(@NonNull List<EntryBase.Participant> participants) {
+    public Completable insertParticipantsRaw(@NonNull List<Participant> participants) {
         List<UtilAppRequest.ParticipantRequest> requests = new ArrayList<>();
         for (int k = 0; k < participants.size(); k++)
             requests.add(new UtilAppRequest.ParticipantRequest(INSERT_PARTICIPANT, k + 1, participants.get(k)));
@@ -554,7 +555,7 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
                 .flatMap(new CheckResponseErrorFunction<>())
                 .flatMapCompletable(modificationResponse -> {
                     Completable completable = Completable.complete();
-                    EntryBase.Participant participant;
+                    Participant participant;
                     boolean error = false;
                     for (Map.Entry<Long, Long> e : modificationResponse.getValues().entrySet()) {
                         if (modificationResponse.isOperationSuccessful(e.getKey())) {
@@ -572,7 +573,7 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
     }
 
     @Override
-    public Completable updateParticipant(@NonNull EntryBase.Participant participant) {
+    public Completable updateParticipant(@NonNull Participant participant) {
         final long onlineId = participant.getOnlineId();
         return UTILAPP_API.operationParticipant(new UtilAppRequest.ParticipantRequest(
                 UtilAppAPI.UPDATE_PARTICIPANT, onlineId, participant))
@@ -588,7 +589,7 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
     // test add check if at least one participant
     // test add request modified to php
     @Override
-    public Completable deleteParticipant(@NonNull EntryBase.Participant participant) {
+    public Completable deleteParticipant(@NonNull Participant participant) {
         final long onlineId = participant.getOnlineId();
         return UTILAPP_API.operationParticipant(new UtilAppRequest.ParticipantRequest(
                 UtilAppAPI.DELETE_PARTICIPANT, onlineId, participant))

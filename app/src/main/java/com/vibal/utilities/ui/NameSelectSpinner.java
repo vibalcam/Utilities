@@ -12,7 +12,7 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.jaredrummler.materialspinner.MaterialSpinner;
 import com.vibal.utilities.R;
-import com.vibal.utilities.models.EntryBase;
+import com.vibal.utilities.models.Participant;
 import com.vibal.utilities.util.MyDialogBuilder;
 import com.vibal.utilities.util.Util;
 
@@ -47,8 +47,8 @@ public class NameSelectSpinner extends MaterialSpinner {
         // Add new option
         names.add(INDEX_ADD, STRING_ADD);
         // Self option as second option
-        names.remove(EntryBase.getSelfName());
-        names.add(1, EntryBase.getSelfName());
+        names.remove(Participant.getSelfName());
+        names.add(1, Participant.getSelfName());
         // Set items and select self option
         setItems(names);
         setSelectedIndex(INDEX_DEFAULT);

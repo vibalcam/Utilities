@@ -1,23 +1,9 @@
 package com.vibal.utilities.models;
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.text.TextUtils;
-
 import androidx.annotation.NonNull;
-import androidx.preference.PreferenceManager;
-import androidx.room.ColumnInfo;
 import androidx.room.Embedded;
-import androidx.room.Entity;
-import androidx.room.ForeignKey;
-import androidx.room.Ignore;
-import androidx.room.Index;
-import androidx.room.PrimaryKey;
 
-import com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity;
-import com.vibal.utilities.ui.settings.SettingsActivity;
 import com.vibal.utilities.util.DiffDbUsable;
-import com.vibal.utilities.util.LogUtil;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -25,12 +11,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
-import static androidx.room.ColumnInfo.NOCASE;
-import static androidx.room.ForeignKey.CASCADE;
-
 public abstract class EntryBase<E extends EntryInfo> implements DiffDbUsable<EntryBase<?>>, Cloneable {
-    public static final String DEFAULT_PARTICIPANT = "me";
-    private static String SELF_NAME;
 
     @NonNull
     @Embedded
@@ -47,11 +28,11 @@ public abstract class EntryBase<E extends EntryInfo> implements DiffDbUsable<Ent
                                                    Participant participant2) {
         ArrayList<Participant> fromParticipants = new ArrayList<>();
         ArrayList<Participant> toParticipants = new ArrayList<>();
-        if (participant1.isFrom)
+        if (participant1.isFrom())
             fromParticipants.add(participant1);
         else
             toParticipants.add(participant1);
-        if (participant2.isFrom)
+        if (participant2.isFrom())
             fromParticipants.add(participant2);
         else
             toParticipants.add(participant2);
@@ -63,24 +44,6 @@ public abstract class EntryBase<E extends EntryInfo> implements DiffDbUsable<Ent
         return new EntryLocal(entryInfo);
     }
 
-    public static void setSelfName(@NonNull Context context) {
-        String name = PreferenceManager.getDefaultSharedPreferences(context)
-                .getString(SettingsActivity.KEY_SELF_PARTICIPANT, DEFAULT_PARTICIPANT);
-        if (name.equals(DEFAULT_PARTICIPANT)) {
-            SharedPreferences sharedPreferences = context.getSharedPreferences(
-                    CashBoxManagerActivity.CASHBOX_MANAGER_PREFERENCE, Context.MODE_PRIVATE);
-            name = sharedPreferences.getString(CashBoxManagerActivity.USERNAME_KEY, null);
-            if (name == null)
-                name = DEFAULT_PARTICIPANT;
-        }
-
-        SELF_NAME = name;
-    }
-
-    public static String getSelfName() {
-        return SELF_NAME;
-    }
-
     public EntryBase(@NonNull E entryInfo, @NonNull List<Participant> fromParticipants,
                      @NonNull List<Participant> toParticipants) {
         this.entryInfo = entryInfo;
@@ -90,9 +53,9 @@ public abstract class EntryBase<E extends EntryInfo> implements DiffDbUsable<Ent
     private void checkParticipantsEmpty(@NonNull List<Participant> fromParticipants,
                                         @NonNull List<Participant> toParticipants) {
         if (fromParticipants.isEmpty())
-            fromParticipants.add(Participant.newFrom(EntryBase.SELF_NAME));
+            fromParticipants.add(Participant.newFrom(Participant.getSelfName()));
         if (toParticipants.isEmpty())
-            toParticipants.add(Participant.newTo(EntryBase.SELF_NAME));
+            toParticipants.add(Participant.newTo(Participant.getSelfName()));
     }
 
     @NonNull
@@ -123,7 +86,7 @@ public abstract class EntryBase<E extends EntryInfo> implements DiffDbUsable<Ent
     public double getParticipantBalance(Participant participant) {
         double balance = 0;
         double sumParticipantsAmounts = 0;
-        for (EntryBase.Participant p : getToParticipants()) {
+        for (Participant p : getToParticipants()) {
             if (p.isSameParticipant(participant))
                 balance += p.getAmount();
             sumParticipantsAmounts += p.getAmount();
@@ -131,7 +94,7 @@ public abstract class EntryBase<E extends EntryInfo> implements DiffDbUsable<Ent
         balance /= Math.abs(sumParticipantsAmounts);
         double balanceFrom = 0;
         sumParticipantsAmounts = 0;
-        for (EntryBase.Participant p : getFromParticipants()) {
+        for (Participant p : getFromParticipants()) {
             if (p.isSameParticipant(participant))
                 balanceFrom += p.getAmount();
             sumParticipantsAmounts += p.getAmount();
@@ -242,208 +205,4 @@ public abstract class EntryBase<E extends EntryInfo> implements DiffDbUsable<Ent
         }
     }
 
-    /**
-     * Immutable class representing a participant of an CashBox EntryInfo
-     */
-    @Entity(tableName = "entriesParticipants_table",
-//            primaryKeys = {"name", "entryId", "isFrom"},
-            foreignKeys = @ForeignKey(entity = EntryInfo.class, parentColumns = "id",
-                    childColumns = "entryId", onDelete = CASCADE, onUpdate = CASCADE),
-            indices = {@Index(value = "entryId"),
-                    @Index(value = {"name", "entryId", "isFrom"}, unique = true)})
-    public static class Participant implements DiffDbUsable<Participant>, Cloneable {
-        @NonNull
-        @ColumnInfo(collate = NOCASE)
-        private final String name;
-        private long entryId;
-        private final boolean isFrom;
-        @ColumnInfo(defaultValue = "1")
-        private double amount;    // If from it amount positive, negative if to
-
-        // test make primary key and the other unique and index, for non viewed in the future
-//        @ColumnInfo(defaultValue = "0")
-        @PrimaryKey(autoGenerate = true)
-        private long onlineId;
-
-        public static Participant newFrom(@NonNull String name) {
-            return new Participant(name, true, 1);
-        }
-
-        public static Participant newTo(@NonNull String name) {
-            return new Participant(name, false, 1);
-        }
-
-        @NonNull
-        public static String printName(@NonNull String name) {
-            if (name.equalsIgnoreCase(SELF_NAME) &&
-                    !name.equalsIgnoreCase(DEFAULT_PARTICIPANT))
-                return DEFAULT_PARTICIPANT + '(' + name + ')';
-            return name;
-        }
-
-        @NonNull
-        public static Participant createDefaultParticipant(long entryId, boolean isFrom) {
-            return new Participant(getSelfName(),
-                    entryId, isFrom, 1);
-        }
-
-        public Participant(@NonNull String name, long entryId, boolean isFrom, double amount,
-                           long onlineId) {
-            name = name.trim();
-            if (TextUtils.isEmpty(name))
-                throw new IllegalArgumentException("Name cannot be empty");
-            else if (amount == 0)
-                throw new IllegalArgumentException("Amount cannot be 0");
-
-            this.name = name.toLowerCase();
-            setEntryId(entryId);
-            this.isFrom = isFrom;
-            setAmount(amount);
-            this.onlineId = onlineId;
-        }
-
-        @Ignore
-        public Participant(@NonNull String name, long entryId, boolean isFrom, double amount) {
-            this(name, entryId, isFrom, amount, CashBoxInfo.NO_ID);
-        }
-
-        @Ignore
-        private Participant(@NonNull String name, boolean isFrom, double amount) {
-            this(name, CashBoxInfo.NO_ID, isFrom, amount);
-        }
-
-        @NonNull
-        public String getName() {
-            return name;
-        }
-
-        public long getEntryId() {
-            return entryId;
-        }
-
-        public boolean isFrom() {
-            return isFrom;
-        }
-
-        /**
-         * Represents the importance of the participant in the total entry amount
-         *
-         * @return amount given (positive) or received (negative)
-         */
-        public double getAmount() {
-            return amount;
-        }
-
-        private void setEntryId(long entryId) {
-            this.entryId = entryId;
-        }
-
-        private void setAmount(double amount) {
-            this.amount = isFrom ? Math.abs(amount) : -Math.abs(amount);
-        }
-
-        public long getOnlineId() {
-            return onlineId;
-        }
-
-        public void setOnlineId(long onlineId) {
-            this.onlineId = onlineId;
-        }
-
-        public String printName() {
-            return printName(name);
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            Participant that = (Participant) o;
-            // imp only take into account name
-            return onlineId == that.onlineId &&
-                    entryId == that.entryId &&
-                    isFrom == that.isFrom &&
-                    Double.compare(that.amount, amount) == 0 &&
-                    name.equals(that.name);
-        }
-
-        public boolean isSameParticipant(@NonNull Participant p) {
-            return p.getName().equals(this.getName());
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(name, entryId, isFrom);
-        }
-
-        // Implement DiffDbUssable
-
-        @Override
-        public boolean areItemsTheSame(@NonNull Participant newItem) {
-            return this.onlineId == newItem.onlineId;
-//                    this.entryId == newItem.entryId && this.name.equalsIgnoreCase(newItem.name) &&
-//                    this.isFrom == newItem.isFrom;
-        }
-
-        @Override
-        public boolean areContentsTheSame(@NonNull Participant newItem) {
-            return this.name.equalsIgnoreCase(newItem.name) &&
-                    this.amount == newItem.amount;
-//                    this.entryId == newItem.entryId  &&
-//                    this.isFrom == newItem.isFrom;
-        }
-
-        // Implement Cloneable
-
-        @NonNull
-        public Participant cloneContents(long entryId) {
-            Participant participant = clone();
-            participant.setEntryId(entryId);
-            return participant;
-        }
-
-        @NonNull
-        public Participant cloneContents(long entryId, long onlineId) {
-            Participant participant = clone();
-            participant.setEntryId(entryId);
-            participant.setOnlineId(onlineId);
-            return participant;
-        }
-
-        public Participant clone(double amount) {
-            Participant participant = clone();
-            participant.setAmount(amount);
-            return participant;
-        }
-
-        @NonNull
-        @Override
-        public Participant clone() {
-            try {
-                return (Participant) super.clone();
-            } catch (CloneNotSupportedException e) { // won't happen
-                LogUtil.error("Participant", "Cloning error", e);
-                return null;
-            }
-        }
-
-        public Participant getParticipantWithEntryId(long entryId) {
-            if (this.entryId == entryId)
-                return this;
-
-            Participant participant;
-            if (this.entryId == CashBoxInfo.NO_ID) {    // If not already set use this one
-                participant = this;
-                setEntryId(entryId);
-            } else {    // if already set clone it
-                participant = cloneContents(entryId);
-            }
-            return participant;
-        }
-
-        @Override
-        public String toString() {
-            return getName();
-        }
-    }
 }

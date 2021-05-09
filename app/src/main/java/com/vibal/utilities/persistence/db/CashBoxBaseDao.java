@@ -5,8 +5,8 @@ import androidx.room.Dao;
 
 import com.vibal.utilities.models.CashBox;
 import com.vibal.utilities.models.CashBoxInfo;
-import com.vibal.utilities.models.EntryBase;
 import com.vibal.utilities.models.InfoWithCash;
+import com.vibal.utilities.models.Participant;
 
 import java.util.Collection;
 import java.util.Currency;
@@ -64,7 +64,7 @@ public abstract class CashBoxBaseDao {
                 .flatMap(infoWithCash -> entryDao.getSingleEntriesByCashBox(id).flatMap(
                         entries -> getSingleNamesByCashBox(id).map(
                                 names -> {
-                                    names.add(EntryBase.getSelfName());
+                                    names.add(Participant.getSelfName());
                                     return new CashBox(infoWithCash, names, entries);
                                 })));
     }

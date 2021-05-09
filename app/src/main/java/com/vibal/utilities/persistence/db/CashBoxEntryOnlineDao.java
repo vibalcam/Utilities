@@ -9,10 +9,10 @@ import androidx.room.Transaction;
 import androidx.room.Update;
 
 import com.vibal.utilities.models.CashBoxBalances;
-import com.vibal.utilities.models.EntryBase;
 import com.vibal.utilities.models.EntryInfo;
 import com.vibal.utilities.models.EntryOnline;
 import com.vibal.utilities.models.EntryOnlineInfo;
+import com.vibal.utilities.models.Participant;
 
 import java.util.Calendar;
 import java.util.Collection;
@@ -121,24 +121,24 @@ public interface CashBoxEntryOnlineDao extends CashBoxEntryBaseDao {
     // Participants Methods
 
     @Insert(entity = EntryOnlineInfo.Participant.class)
-    Completable insertParticipantRaw(EntryBase.Participant participant);
+    Completable insertParticipantRaw(Participant participant);
 
     @Insert(entity = EntryOnlineInfo.Participant.class)
-    Completable insertParticipantRaw(Collection<EntryBase.Participant> participantList);
+    Completable insertParticipantRaw(Collection<Participant> participantList);
 
     // test change
 //    @Insert(entity = EntryOnlineInfo.Participant.class)
 //    Completable insertAllJSONParticipants(Collection<UtilAppResponse.EntryJSON> participants);
 
     @Update(entity = EntryOnlineInfo.Participant.class)
-    Single<Integer> updateParticipant(EntryBase.Participant participant);
+    Single<Integer> updateParticipant(Participant participant);
 
     @Query("DELETE FROM entriesOnlineParticipants_table WHERE onlineId=:id")
     Completable unSafeDeleteParticipant(long id);
 
     @Override
     @Query("SELECT * FROM entriesonlineparticipants_table WHERE onlineId=:id")
-    Single<EntryBase.Participant> getParticipantById(long id);
+    Single<Participant> getParticipantById(long id);
 
     @Query("SELECT COUNT(*) FROM entriesOnlineParticipants_table " +
             "WHERE entryId=:entryId AND isFrom=:isFrom")

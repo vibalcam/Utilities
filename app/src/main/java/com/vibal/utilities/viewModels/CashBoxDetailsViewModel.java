@@ -9,7 +9,7 @@ import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.vibal.utilities.models.CashBox;
-import com.vibal.utilities.models.EntryBase;
+import com.vibal.utilities.models.Participant;
 import com.vibal.utilities.persistence.repositories.CashBoxRepository;
 
 import java.lang.reflect.InvocationTargetException;
@@ -55,15 +55,15 @@ public class CashBoxDetailsViewModel extends AndroidViewModel {
         return repository.getCashBoxCurrency(cashBoxId);
     }
 
-    public Completable insertParticipant(long entryId, @NonNull EntryBase.Participant participant) {
+    public Completable insertParticipant(long entryId, @NonNull Participant participant) {
         return repository.insertParticipant(entryId, participant);
     }
 
-    public Completable updateParticipant(@NonNull EntryBase.Participant participant) {
+    public Completable updateParticipant(@NonNull Participant participant) {
         return repository.updateParticipant(participant.clone());
     }
 
-    public Completable deleteParticipant(@NonNull EntryBase.Participant participant) {
+    public Completable deleteParticipant(@NonNull Participant participant) {
         return repository.deleteParticipant(participant);
     }
 
