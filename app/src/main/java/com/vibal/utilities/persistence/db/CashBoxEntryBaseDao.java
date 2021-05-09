@@ -106,6 +106,8 @@ public interface CashBoxEntryBaseDao {
 
     LiveData<List<CashBoxBalances.Entry>> getBalances(long cashBoxId);
 
+    LiveData<Double> getCashBalance(long cashBoxId, String name);
+
     // Participants Methods
 
     /**

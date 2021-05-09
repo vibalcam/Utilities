@@ -45,6 +45,12 @@ public class CashBoxDetailsViewModel extends AndroidViewModel {
         return cashBox;
     }
 
+    public CashBox requireCashBox() {
+        if (cashBox == null || cashBox.getValue() == null)
+            throw new IllegalStateException("CashBox has not yet been initialized");
+        return cashBox.getValue();
+    }
+
     public Single<Currency> getCurrency() {
         return repository.getCashBoxCurrency(cashBoxId);
     }

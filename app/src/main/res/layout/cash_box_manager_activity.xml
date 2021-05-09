@@ -28,26 +28,26 @@
             android:layout_height="wrap_content"
             style="@style/AppTheme.TabLayout"
             app:tabMode="auto">
-            <com.google.android.material.tabs.TabItem
-                android:layout_height="0dp"
-                android:layout_width="0dp"
-                android:text="@string/menuCBM_manager"
-                android:icon="@drawable/ic_wallet_white_24dp"/>
-            <com.google.android.material.tabs.TabItem
-                android:layout_height="0dp"
-                android:layout_width="0dp"
-                android:text="@string/menuCBM_managerOnline"
-                android:icon="@drawable/ic_cloud_white_24dp"/>
-            <com.google.android.material.tabs.TabItem
-                android:layout_height="0dp"
-                android:layout_width="0dp"
-                android:text="@string/menuCBM_recycleBin"
-                android:icon="@drawable/recycle"/>
-            <com.google.android.material.tabs.TabItem
-                android:layout_height="0dp"
-                android:layout_width="0dp"
-                android:text="@string/menuCBM_showPeriodic"
-                android:icon="@drawable/calendar_clock"/>
+            <!--            <com.google.android.material.tabs.TabItem-->
+            <!--                android:layout_height="0dp"-->
+            <!--                android:layout_width="0dp"-->
+            <!--                android:text="@string/menuCBM_manager"-->
+            <!--                android:icon="@drawable/ic_wallet_white_24dp"/>-->
+            <!--            <com.google.android.material.tabs.TabItem-->
+            <!--                android:layout_height="0dp"-->
+            <!--                android:layout_width="0dp"-->
+            <!--                android:text="@string/menuCBM_managerOnline"-->
+            <!--                android:icon="@drawable/ic_cloud_white_24dp"/>-->
+            <!--            <com.google.android.material.tabs.TabItem-->
+            <!--                android:layout_height="0dp"-->
+            <!--                android:layout_width="0dp"-->
+            <!--                android:text="@string/menuCBM_recycleBin"-->
+            <!--                android:icon="@drawable/recycle"/>-->
+            <!--            <com.google.android.material.tabs.TabItem-->
+            <!--                android:layout_height="0dp"-->
+            <!--                android:layout_width="0dp"-->
+            <!--                android:text="@string/menuCBM_showPeriodic"-->
+            <!--                android:icon="@drawable/calendar_clock"/>-->
         </com.google.android.material.tabs.TabLayout>
     </com.google.android.material.appbar.AppBarLayout>
 

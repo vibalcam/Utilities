@@ -108,6 +108,15 @@ public interface CashBoxEntryOnlineDao extends CashBoxEntryBaseDao {
             "ORDER BY amount DESC")
     LiveData<List<CashBoxBalances.Entry>> getBalances(long cashBoxId);
 
+    @Query("SELECT SUM(P.amount * E.amount /" +
+            "ABS((SELECT SUM(O.amount) FROM entriesOnlineParticipants_table as O " +
+            "WHERE O.entryId=P.entryId AND O.isFrom=P.isFrom GROUP BY O.entryId))" +
+            ") " +
+            "FROM entriesOnlineParticipants_table AS P LEFT JOIN entriesOnline_table AS E ON P.entryId=E.id " +
+            "WHERE E.cashBoxId=:cashBoxId AND P.name=:name " +
+            "GROUP BY P.name")
+    @Override
+    LiveData<Double> getCashBalance(long cashBoxId, String name);
 
     // Participants Methods
 

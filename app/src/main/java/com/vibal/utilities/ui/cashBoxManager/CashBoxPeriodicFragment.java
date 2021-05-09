@@ -217,7 +217,7 @@ public class CashBoxPeriodicFragment extends PagerFragment {
             holder.binding.periodicRvRepetitions.setText(getString(R.string.periodic_repetitionsLeft, workInfo.getRepetitions()));
             holder.binding.periodicRvAmountPeriod.setText(getString(R.string.periodic_amountPeriod,
                     currencyFormat.format(workInfo.getAmount()), workInfo.getRepeatInterval()));
-            int colorRes = workInfo.getAmount() < 0 ? R.color.colorNegativeNumber : R.color.colorPositiveNumber;
+            int colorRes = workInfo.getAmount() < 0 ? R.color.colorNegativeNumber : R.color.colorNeutralNumber;
             holder.binding.periodicRvAmountPeriod.setTextColor(getContext().getColor(colorRes));
         }
 

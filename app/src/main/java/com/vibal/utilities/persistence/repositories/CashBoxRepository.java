@@ -178,6 +178,10 @@ public abstract class CashBoxRepository {
         return getCashBoxEntryDao().getBalances(cashBoxId);
     }
 
+    public LiveData<Double> getCashBalance(long cashBoxId, String name) {
+        return getCashBoxEntryDao().getCashBalance(cashBoxId, name);
+    }
+
     // Group Entries
 
     // Main functionality to override

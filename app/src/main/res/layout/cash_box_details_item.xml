@@ -36,7 +36,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:textSize="15sp"
-            android:textColor="@color/colorPositiveNumber"
+            android:textColor="@color/colorNeutralNumber"
             android:inputType="numberSigned|numberDecimal|text"
             android:digits="0123456789.-,+*/" />
     </com.google.android.material.textfield.TextInputLayout>

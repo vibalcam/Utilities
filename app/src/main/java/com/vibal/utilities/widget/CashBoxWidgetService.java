@@ -70,7 +70,7 @@ public class CashBoxWidgetService extends RemoteViewsService {
             if (cashBoxInfo.getCash() < 0)
                 views.setTextColor(R.id.amountCBMWidgetItem, context.getColor(R.color.colorNegativeNumber));
             else
-                views.setTextColor(R.id.amountCBMWidgetItem, context.getColor(R.color.colorPositiveNumber));
+                views.setTextColor(R.id.amountCBMWidgetItem, context.getColor(R.color.colorNeutralNumber));
 
             // Intent for OnClick
             Intent fillIntent = new Intent();

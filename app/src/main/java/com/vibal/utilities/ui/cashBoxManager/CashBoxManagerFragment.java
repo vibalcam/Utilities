@@ -28,6 +28,7 @@ import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.ActionMode;
+import androidx.core.view.ViewCompat;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -294,6 +295,7 @@ public abstract class CashBoxManagerFragment extends PagerFragment implements Ca
                 preferences));
         itemTouchHelper.attachToRecyclerView(rvCashBoxManager);
         adapter.setOnStartDragListener(itemTouchHelper::startDrag);
+        ViewCompat.setNestedScrollingEnabled(rvCashBoxManager, false);
     }
 
     @Override
@@ -893,7 +895,7 @@ public abstract class CashBoxManagerFragment extends PagerFragment implements Ca
                 currencyFormat.setCurrency(cashBoxInfo.getCashBoxInfo().getCurrency());
                 viewHolder.binding.rvAmount.setText(currencyFormat.format(cashBoxInfo.getCash()));
                 viewHolder.binding.rvAmount.setTextColor(requireContext().getColor(cashBoxInfo.getCash() < 0 ?
-                        R.color.colorNegativeNumber : R.color.colorPositiveNumber));
+                        R.color.colorNegativeNumber : R.color.colorNeutralNumber));
             }
 
             // Update if item selected

@@ -9,7 +9,7 @@ import androidx.annotation.Nullable;
 import androidx.viewpager.widget.ViewPager;
 
 public class CashBoxViewPager extends ViewPager {
-    private static final boolean PAGING_ENABLED = false;
+    private static final boolean PAGING_ENABLED = true;
 
     public CashBoxViewPager(@NonNull Context context) {
         super(context);

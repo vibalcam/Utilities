@@ -109,13 +109,8 @@ public class CashBoxItemOnlineFragment extends CashBoxItemFragment implements Ca
     @NonNull
     @Override
     protected CashBoxViewModel getViewModel() {
-        return viewModel;
-    }
-
-    @NonNull
-    @Override
-    protected CashBoxViewModel initializeViewModel() {
-        viewModel = new ViewModelProvider(requireParentFragment()).get(CashBoxOnlineViewModel.class);
+        if (viewModel == null)
+            viewModel = new ViewModelProvider(requireParentFragment()).get(CashBoxOnlineViewModel.class);
         return viewModel;
     }
 

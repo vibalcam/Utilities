@@ -209,7 +209,7 @@ public class CashBoxDeletedFragment extends PagerFragment {
         public void onBindViewHolder(@NonNull CashBoxDeletedRecyclerAdapter.ViewHolder viewHolder, int position) {
             InfoWithCash infoWithCash = getItem(position);
             viewHolder.binding.rvName.setText(infoWithCash.getCashBoxInfo().getName());
-            int colorRes = infoWithCash.getCash() < 0 ? R.color.colorNegativeNumber : R.color.colorPositiveNumber;
+            int colorRes = infoWithCash.getCash() < 0 ? R.color.colorNegativeNumber : R.color.colorNeutralNumber;
             viewHolder.binding.rvAmount.setTextColor(getContext().getColor(colorRes));
         }
 

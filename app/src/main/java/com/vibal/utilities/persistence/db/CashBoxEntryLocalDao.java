@@ -75,6 +75,15 @@ public interface CashBoxEntryLocalDao extends CashBoxEntryBaseDao {
             "ORDER BY amount DESC")
     LiveData<List<CashBoxBalances.Entry>> getBalances(long cashBoxId);
 
+    @Query("SELECT SUM(P.amount * E.amount /" +
+            "ABS((SELECT SUM(O.amount) FROM entriesParticipants_table as O " +
+            "WHERE O.entryId=P.entryId AND O.isFrom=P.isFrom GROUP BY O.entryId))" +
+            ") " +
+            "FROM entriesParticipants_table AS P LEFT JOIN entries_table AS E ON P.entryId=E.id " +
+            "WHERE E.cashBoxId=:cashBoxId AND P.name=:name " +
+            "GROUP BY P.name")
+    @Override
+    LiveData<Double> getCashBalance(long cashBoxId, String name);
 
     // Participants Methods
 

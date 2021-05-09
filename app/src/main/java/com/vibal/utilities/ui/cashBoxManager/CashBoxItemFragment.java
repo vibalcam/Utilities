@@ -27,6 +27,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.ShareActionProvider;
 import androidx.core.view.MenuItemCompat;
+import androidx.lifecycle.Observer;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -88,7 +89,15 @@ public abstract class CashBoxItemFragment extends PagerFragment implements CashB
     private CashBoxItemRecyclerAdapter adapter;
     private ShareActionProvider shareActionProvider;
     private boolean notificationEnabled = false; //By default, the icon is set to alarm off
+    private boolean showCashTextTotal = true;
     private MenuItem menuItemNotification;
+
+    private final Observer<Double> balanceObserver = cash -> {
+        if (cash != null)
+            updateCash(cash);
+        else
+            binding.itemCash.setText(R.string.error);
+    };
 
     @NonNull
     static AlertDialog getAddEntryDialog(long cashBoxId, @NonNull Context context,
@@ -101,20 +110,26 @@ public abstract class CashBoxItemFragment extends PagerFragment implements CashB
                 .setPositiveButton(R.string.addEntryDialog, null)
                 .setActions(dialog -> {
                     Button positive = ((AlertDialog) dialog).getButton(DialogInterface.BUTTON_POSITIVE);
-                    TextInputEditText inputInfo = ((AlertDialog) dialog).findViewById(R.id.inputTextInfo);
-                    TextInputEditText inputAmount = ((AlertDialog) dialog).findViewById(R.id.inputTextAmount);
-                    TextInputLayout layoutAmount = ((AlertDialog) dialog).findViewById(R.id.inputLayoutAmount);
-                    MaterialTextView inputDate = ((AlertDialog) dialog).findViewById(R.id.inputDate);
-                    NameSelectSpinner spinnerTo = ((AlertDialog) dialog).findViewById(R.id.spinnerTo);
-                    NameSelectSpinner spinnerFrom = ((AlertDialog) dialog).findViewById(R.id.spinnerFrom);
+                    TextInputEditText inputInfo = Objects.requireNonNull(((AlertDialog) dialog).findViewById(R.id.inputTextInfo));
+                    TextInputEditText inputAmount = Objects.requireNonNull(((AlertDialog) dialog).findViewById(R.id.inputTextAmount));
+                    TextInputLayout layoutAmount = Objects.requireNonNull(((AlertDialog) dialog).findViewById(R.id.inputLayoutAmount));
+                    MaterialTextView inputDate = Objects.requireNonNull(((AlertDialog) dialog).findViewById(R.id.inputDate));
+                    NameSelectSpinner spinnerTo = Objects.requireNonNull(((AlertDialog) dialog).findViewById(R.id.spinnerTo));
+                    NameSelectSpinner spinnerFrom = Objects.requireNonNull(((AlertDialog) dialog).findViewById(R.id.spinnerFrom));
 
                     // Set up Date Picker
                     Util.TextViewDatePickerClickListener calendarListener =
                             new Util.TextViewDatePickerClickListener(context, inputDate, true);
                     inputDate.setOnClickListener(calendarListener);
                     // Set up spinners
-                    spinnerFrom.config(new ArrayList<>(participantNames));
-                    spinnerTo.config(new ArrayList<>(participantNames));
+                    if (participantNames != null && participantNames.size() <= 1) { // Show spinners if more than one participant
+                        spinnerTo.setVisibility(View.GONE);
+                        spinnerFrom.setVisibility(View.GONE);
+                    } else {
+                        ArrayList<String> namesList = new ArrayList<>(participantNames);
+                        spinnerFrom.config(namesList);
+                        spinnerTo.config(namesList);
+                    }
 
                     Util.showKeyboard(context, inputAmount);
                     positive.setOnClickListener((View v) -> {
@@ -193,6 +208,7 @@ public abstract class CashBoxItemFragment extends PagerFragment implements CashB
         // Set up listeners
         binding.fabCBItem.setOnClickListener(v -> onFabAddClicked());
         binding.balancesCB.setOnClickListener(v -> onFabBalancesClicked());
+        binding.itemCashLayout.setOnClickListener(v -> onTextCashClicked());
 
         //Set up RecyclerView
         binding.rvCashBoxItem.setHasFixedSize(true);
@@ -212,7 +228,7 @@ public abstract class CashBoxItemFragment extends PagerFragment implements CashB
         super.onActivityCreated(savedInstanceState);
 
         // Initialize data
-        initializeViewModel().getCurrentCashBox().observe(getViewLifecycleOwner(), cashBox -> {
+        getViewModel().getCurrentCashBox().observe(getViewLifecycleOwner(), cashBox -> {
             LogUtil.debug("PruebaItemFragment", "Is Visible onSubmitList: " + isVisible());
 
             // Set Title
@@ -227,7 +243,14 @@ public abstract class CashBoxItemFragment extends PagerFragment implements CashB
                 adapter.notifyItemRangeChanged(0, adapter.getItemCount());
             }
             adapter.submitList(cashBox.getEntries());
-            updateCash(cashBox.getCash());
+            if (showCashTextTotal)
+                updateCash(cashBox.getCash());
+
+            // Show balances fab if more than one participant
+            if (cashBox.getCacheNames().size() <= 1)
+                binding.balancesCB.setVisibility(View.GONE);
+            else
+                binding.balancesCB.setVisibility(View.VISIBLE);
 
             // Update ShareIntent
             if (shareActionProvider != null)
@@ -238,13 +261,27 @@ public abstract class CashBoxItemFragment extends PagerFragment implements CashB
     @NonNull
     protected abstract CashBoxViewModel getViewModel();
 
-    @NonNull
-    protected abstract CashBoxViewModel initializeViewModel();
-
     @Override
     public void onDestroy() {
         super.onDestroy();
         compositeDisposable.dispose();
+    }
+
+    private void onTextCashClicked() {
+        if (getViewModel().requireCashBox().getCacheNames().size() <= 1)
+            return;
+
+        showCashTextTotal = !showCashTextTotal;
+        if (showCashTextTotal) { // show total value
+            binding.titleItemCash.setText(R.string.item_totalCash);
+            getViewModel().getCurrentSelfCashBalance()
+                    .removeObserver(balanceObserver);
+            updateCash(getViewModel().requireCashBox().getCash());
+        } else { // show just my balance
+            binding.titleItemCash.setText(R.string.myBalance);
+            getViewModel().getCurrentSelfCashBalance()
+                    .observe(getViewLifecycleOwner(), balanceObserver);
+        }
     }
 
     private void updateCash(double cash) {
@@ -257,7 +294,7 @@ public abstract class CashBoxItemFragment extends PagerFragment implements CashB
                         .getColor(R.color.colorNegativeNumber));
             else
                 binding.itemCash.setTextColor(requireActivity()
-                        .getColor(R.color.colorPositiveNumber));
+                        .getColor(showCashTextTotal ? R.color.colorNeutralNumber : R.color.colorPositiveNumber));
         }
     }
 
@@ -567,18 +604,32 @@ public abstract class CashBoxItemFragment extends PagerFragment implements CashB
             if (entryInfo.getAmount() < 0)
                 viewHolder.binding.rvItemAmount.setTextColor(requireContext().getColor(R.color.colorNegativeNumber));
             else
-                viewHolder.binding.rvItemAmount.setTextColor(requireContext().getColor(R.color.colorPositiveNumber));
+                viewHolder.binding.rvItemAmount.setTextColor(requireContext().getColor(R.color.colorNeutralNumber));
+
             // CashBoxInfo
             viewHolder.binding.rvItemInfo.setText(entryInfo.printInfo());
             // Date
             viewHolder.binding.rvItemDate.setText(dateFormat.format(entryInfo.getDate().getTime()));
-            // Item from
-            if (getViewModel().requireCashBox().getCacheNames().size() < 1) {
+            // Item from and amount balance
+            if (getViewModel().requireCashBox().getCacheNames().size() <= 1) {
                 viewHolder.binding.rvItemFrom.setVisibility(View.GONE);
+                viewHolder.binding.rvItemBalance.setVisibility(View.GONE);
             } else {
                 viewHolder.binding.rvItemFrom.setVisibility(View.VISIBLE);
                 viewHolder.binding.rvItemFrom.setText(getString(R.string.paidBy,
                         EntryBase.formatParticipants(entry.getFromParticipants())));
+                // Amount Balance
+                viewHolder.binding.rvItemBalance.setVisibility(View.VISIBLE);
+                double balance = entry.getParticipantBalance(
+                        EntryBase.Participant.createDefaultParticipant(entryInfo.getId(), true));
+                viewHolder.binding.rvItemBalance.setText(getString(R.string.between_parenthesis, formatCurrency.format(balance)));
+
+                if (balance == 0)
+                    viewHolder.binding.rvItemBalance.setTextColor(requireContext().getColor(R.color.colorNeutralNumber));
+                else if (balance < 0)
+                    viewHolder.binding.rvItemBalance.setTextColor(requireContext().getColor(R.color.colorNegativeNumber));
+                else
+                    viewHolder.binding.rvItemBalance.setTextColor(requireContext().getColor(R.color.colorPositiveNumber));
             }
         }
 

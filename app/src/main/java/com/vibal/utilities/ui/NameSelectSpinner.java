@@ -22,7 +22,7 @@ import java.util.List;
 public class NameSelectSpinner extends MaterialSpinner {
     private static final int INDEX_ADD = 0;    // add option in first position of spinner
     private static final int INDEX_DEFAULT = 1;
-    private static final String STRING_ADD = "New Name";
+    public static final String STRING_ADD = "New Name";
 
     public NameSelectSpinner(Context context) {
         super(context);

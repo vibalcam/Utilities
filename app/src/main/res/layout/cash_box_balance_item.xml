@@ -57,7 +57,7 @@
         android:id="@+id/rvAmount"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:textColor="@color/colorPositiveNumber"
+        android:textColor="@color/colorNeutralNumber"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:textStyle="bold"
         android:gravity="center"

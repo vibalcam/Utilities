@@ -26,7 +26,7 @@
         android:id="@+id/periodic_rvAmountPeriod"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:textColor="@color/colorPositiveNumber"
+        android:textColor="@color/colorNeutralNumber"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:gravity="center_horizontal"
         app:layout_constraintTop_toTopOf="@+id/periodic_rvName"

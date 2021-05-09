@@ -192,6 +192,11 @@ public class CashBoxManagerOnlineFragment extends CashBoxManagerFragment impleme
         return CashBoxItemOnlineFragment.newInstance(getPagerPosition());
     }
 
+    @NonNull
+    private CashBoxManagerActivity requireCashBoxActivity() {
+        return (CashBoxManagerActivity) requireActivity();
+    }
+
     @Override
     protected void showAddDialog() {
         closeFabMenu();
@@ -207,7 +212,8 @@ public class CashBoxManagerOnlineFragment extends CashBoxManagerFragment impleme
                             .putBoolean(SettingsActivity.KEY_ONLINE, true)
                             .apply();
                     showSelectUsername();
-                });
+                }).setOnDismissListener(dialog -> requireCashBoxActivity().selectTab(CashBoxType.LOCAL))
+                        .show();
             else
                 showSelectUsername();
         } else
@@ -268,11 +274,12 @@ public class CashBoxManagerOnlineFragment extends CashBoxManagerFragment impleme
                             Util.showKeyboard(requireContext(), inputUsername);
                         }
                     });
-                }).show();
+                }).setOnDismissListener(dialog -> requireCashBoxActivity().selectTab(CashBoxType.LOCAL))
+                .show();
     }
 
     @Override
-    protected void showInvitationDialog(InfoWithCash infoWithCash) {
+    protected void showInvitationDialog(@NonNull InfoWithCash infoWithCash) {
         // Get the username without the added fix character
         String name = infoWithCash.getCashBoxInfo().getName();
         int index = name.indexOf(CashBoxInfo.FIX_NAME_CHARACTER);

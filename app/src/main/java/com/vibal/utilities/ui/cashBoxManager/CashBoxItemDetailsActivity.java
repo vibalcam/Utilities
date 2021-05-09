@@ -8,6 +8,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -136,10 +137,11 @@ public class CashBoxItemDetailsActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        // imp make save not dependent in clicking button
         if (item.getItemId() == R.id.action_save) {
             Util.clearFocus(this);  // First clear focus so any changes are saved
-            if (participantsChanged.isEmpty())
-                Toast.makeText(this, "No changes made", Toast.LENGTH_SHORT).show();
+//            if (participantsChanged.isEmpty())
+//                Toast.makeText(this, "No changes made", Toast.LENGTH_SHORT).show();
 
             Completable completable = Completable.complete();
             for (EntryBase.Participant p : participantsChanged) {
@@ -257,13 +259,13 @@ public class CashBoxItemDetailsActivity extends AppCompatActivity {
             binding.titleTo.setOnClickListener(view1 -> toggleExpandableView(binding.elTo, binding.addImageTo));
             binding.addImageFrom.setOnClickListener(v -> {
                 if (binding.elFrom.isExpanded())
-                    showAddParticipantDialog(EntryBase.Participant::newFrom);
+                    showAddParticipantDialog(binding.addImageFrom, EntryBase.Participant::newFrom);
                 else
                     toggleExpandableView(binding.elFrom, binding.addImageFrom);
             });
             binding.addImageTo.setOnClickListener(v -> {
                 if (binding.elTo.isExpanded())
-                    showAddParticipantDialog(EntryBase.Participant::newTo);
+                    showAddParticipantDialog(binding.addImageTo, EntryBase.Participant::newTo);
                 else
                     toggleExpandableView(binding.elTo, binding.addImageTo);
             });
@@ -277,19 +279,54 @@ public class CashBoxItemDetailsActivity extends AppCompatActivity {
                 imageView.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.ms__arrow));
         }
 
-        private void showAddParticipantDialog(Function<String, EntryBase.Participant> create) {
-            NameSelectSpinner.createAddParticipantDialog(requireContext(), (dialog, inputName, layoutName) -> {
-                getDetailsActivity().compositeDisposable.add(
-                        getDetailsActivity().viewModel.insertParticipant(entryId,
-                                create.apply(inputName.getText().toString()))
-                                .subscribeOn(Schedulers.io())
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe()
-                );
-                dialog.dismiss();
-            }).show();
+        private void showAddParticipantDialog(View anchor, Function<String, EntryBase.Participant> create) {
+            // Show pop-up with names
+            PopupMenu popupMenu = new PopupMenu(requireContext(), anchor);
+            Menu menu = popupMenu.getMenu();
+            final int ITEM_ID_STRING_ADD = 1;
+            menu.add(Menu.NONE, ITEM_ID_STRING_ADD, 0, NameSelectSpinner.STRING_ADD);
+            for (String name : getDetailsActivity().viewModel.requireCashBox().getCacheNames()) {
+                menu.add(name);
+            }
+            popupMenu.setOnMenuItemClickListener(item -> {
+                if (item.getItemId() == ITEM_ID_STRING_ADD) {
+                    // Show dialog to add new names
+                    NameSelectSpinner.createAddParticipantDialog(requireContext(), (dialog, inputName, layoutName) -> {
+                        getDetailsActivity().compositeDisposable.add(
+                                getDetailsActivity().viewModel.insertParticipant(entryId,
+                                        create.apply(inputName.getText().toString()))
+                                        .subscribeOn(Schedulers.io())
+                                        .observeOn(AndroidSchedulers.mainThread())
+                                        .subscribe()
+                        );
+                        dialog.dismiss();
+                    }).show();
+                } else {
+                    getDetailsActivity().compositeDisposable.add(
+                            getDetailsActivity().viewModel.insertParticipant(entryId,
+                                    create.apply(item.getTitle().toString()))
+                                    .subscribeOn(Schedulers.io())
+                                    .observeOn(AndroidSchedulers.mainThread())
+                                    .subscribe()
+                    );
+                }
+                return true;
+            });
+            popupMenu.show();
+
+//            NameSelectSpinner.createAddParticipantDialog(requireContext(), (dialog, inputName, layoutName) -> {
+//                getDetailsActivity().compositeDisposable.add(
+//                        getDetailsActivity().viewModel.insertParticipant(entryId,
+//                                create.apply(inputName.getText().toString()))
+//                                .subscribeOn(Schedulers.io())
+//                                .observeOn(AndroidSchedulers.mainThread())
+//                                .subscribe()
+//                );
+//                dialog.dismiss();
+//            }).show();
         }
 
+        @NonNull
         private CashBoxItemDetailsActivity getDetailsActivity() {
             return ((CashBoxItemDetailsActivity) requireActivity());
         }
@@ -350,7 +387,7 @@ public class CashBoxItemDetailsActivity extends AppCompatActivity {
                     if (amount < 0)
                         binding.inputTextAmount.setTextColor(requireContext().getColor(R.color.colorNegativeNumber));
                     else
-                        binding.inputTextAmount.setTextColor(requireContext().getColor(R.color.colorPositiveNumber));
+                        binding.inputTextAmount.setTextColor(requireContext().getColor(R.color.colorNeutralNumber));
                 }
 
                 @Override

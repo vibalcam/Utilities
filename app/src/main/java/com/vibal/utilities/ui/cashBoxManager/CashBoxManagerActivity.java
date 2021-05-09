@@ -3,6 +3,7 @@ package com.vibal.utilities.ui.cashBoxManager;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.content.res.TypedArray;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -92,10 +93,18 @@ public class CashBoxManagerActivity extends AppCompatActivity implements TabLayo
 //            }
 //        }
 
-        // Set up TabLayout
+        // Set up TabLayout and ViewPager
+//        MenusPagerAdapter.TABS_TITLES = getResources().getStringArray(R.array.tabLayout_titles);
         binding.CBViewPager.setAdapter(new MenusPagerAdapter(getSupportFragmentManager()));
-        if (binding.CBTabs != null)
+        if (binding.CBTabs != null) {
             binding.CBTabs.addOnTabSelectedListener(this);
+            binding.CBTabs.setupWithViewPager(binding.CBViewPager);
+            // Set the tab icons
+            TypedArray iconsIds = getResources().obtainTypedArray(R.array.tabLayout_icons);
+            for (int k = 0; k < iconsIds.length(); k++)
+                binding.CBTabs.getTabAt(k).setIcon(iconsIds.getResourceId(k, 0));
+            iconsIds.recycle();
+        }
     }
 
     @Override
@@ -155,8 +164,6 @@ public class CashBoxManagerActivity extends AppCompatActivity implements TabLayo
         super.onBackPressed();
     }
 
-//    imp https://developer.android.com/guide/navigation/navigation-swipe-view-2
-
     // Implementing PagerActivity
     @Override
     public int getCurrentPagerPosition() {
@@ -175,7 +182,7 @@ public class CashBoxManagerActivity extends AppCompatActivity implements TabLayo
         selectTab(tab.getPosition());
     }
 
-    private void selectTab(int position) {
+    public void selectTab(int position) {
         LogUtil.debug("PruebaViewPager", "Position: " + position);
         supportInvalidateOptionsMenu();
         binding.CBViewPager.setCurrentItem(position, true);
@@ -190,6 +197,7 @@ public class CashBoxManagerActivity extends AppCompatActivity implements TabLayo
     }
 
     private static class MenusPagerAdapter extends FragmentPagerAdapter {
+        private static String[] TABS_TITLES = {};
 
         private MenusPagerAdapter(@NonNull FragmentManager fm) {
             super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
@@ -212,6 +220,12 @@ public class CashBoxManagerActivity extends AppCompatActivity implements TabLayo
                     throw new IllegalArgumentException("No fragment associated to position");
             }
         }
+
+//        @Nullable
+//        @Override
+//        public CharSequence getPageTitle(int position) {
+//            return TABS_TITLES[position].toUpperCase();
+//        }
 
         @Override
         public int getCount() {

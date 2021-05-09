@@ -43,13 +43,12 @@ public class SettingsActivity extends AppCompatActivity {
     // Online
     public static final String KEY_ONLINE = "allowOnline";
 
-    public static void acceptOnlineMode(Context context, DialogInterface.OnClickListener onClickListener) {
-        new MyDialogBuilder(context)
+    public static MyDialogBuilder acceptOnlineMode(Context context, DialogInterface.OnClickListener onClickListener) {
+        return new MyDialogBuilder(context)
                 .setTitle(R.string.pref_online)
                 .setMessage(R.string.allowOnline_acceptMessage)
                 .setCancelOnTouchOutside(true)
-                .setPositiveButton(onClickListener)
-                .show();
+                .setPositiveButton(onClickListener);
     }
 
     @Override

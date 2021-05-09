@@ -21,13 +21,8 @@ public class CashBoxItemLocalFragment extends CashBoxItemFragment implements Cas
     @NonNull
     @Override
     protected CashBoxViewModel getViewModel() {
-        return viewModel;
-    }
-
-    @NonNull
-    @Override
-    protected CashBoxViewModel initializeViewModel() {
-        viewModel = new ViewModelProvider(requireParentFragment()).get(CashBoxLocalViewModel.class);
+        if (viewModel == null)
+            viewModel = new ViewModelProvider(requireParentFragment()).get(CashBoxLocalViewModel.class);
         return viewModel;
     }
 

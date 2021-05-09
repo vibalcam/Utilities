@@ -30,7 +30,7 @@ import static androidx.room.ForeignKey.CASCADE;
 
 public abstract class EntryBase<E extends EntryInfo> implements DiffDbUsable<EntryBase<?>>, Cloneable {
     public static final String DEFAULT_PARTICIPANT = "me";
-    protected static String SELF_NAME;
+    private static String SELF_NAME;
 
     @NonNull
     @Embedded
@@ -120,6 +120,25 @@ public abstract class EntryBase<E extends EntryInfo> implements DiffDbUsable<Ent
     @NonNull
     public abstract List<Participant> getToParticipants();
 
+    public double getParticipantBalance(Participant participant) {
+        double balance = 0;
+        double sumParticipantsAmounts = 0;
+        for (EntryBase.Participant p : getToParticipants()) {
+            if (p.isSameParticipant(participant))
+                balance += p.getAmount();
+            sumParticipantsAmounts += p.getAmount();
+        }
+        balance /= Math.abs(sumParticipantsAmounts);
+        double balanceFrom = 0;
+        sumParticipantsAmounts = 0;
+        for (EntryBase.Participant p : getFromParticipants()) {
+            if (p.isSameParticipant(participant))
+                balanceFrom += p.getAmount();
+            sumParticipantsAmounts += p.getAmount();
+        }
+        return (balance + balanceFrom / Math.abs(sumParticipantsAmounts)) * getEntryInfo().getAmount();
+    }
+
     // Implement DiffDbUssable
 
     @Override
@@ -130,7 +149,8 @@ public abstract class EntryBase<E extends EntryInfo> implements DiffDbUsable<Ent
     @Override
     public boolean areContentsTheSame(@NonNull EntryBase<?> newItem) {
         return getEntryInfo().areContentsTheSame(newItem.getEntryInfo()) &&
-                Objects.equals(getFromParticipants(), newItem.getFromParticipants());
+                Objects.equals(getFromParticipants(), newItem.getFromParticipants()) &&
+                Objects.equals(getToParticipants(), newItem.getToParticipants());
     }
 
     // Implement Cloneable
@@ -263,7 +283,7 @@ public abstract class EntryBase<E extends EntryInfo> implements DiffDbUsable<Ent
 
         @NonNull
         public static Participant createDefaultParticipant(long entryId, boolean isFrom) {
-            return new Participant(DEFAULT_PARTICIPANT,
+            return new Participant(getSelfName(),
                     entryId, isFrom, 1);
         }
 
@@ -339,10 +359,16 @@ public abstract class EntryBase<E extends EntryInfo> implements DiffDbUsable<Ent
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             Participant that = (Participant) o;
-            return entryId == that.entryId &&
+            // imp only take into account name
+            return onlineId == that.onlineId &&
+                    entryId == that.entryId &&
                     isFrom == that.isFrom &&
                     Double.compare(that.amount, amount) == 0 &&
                     name.equals(that.name);
+        }
+
+        public boolean isSameParticipant(@NonNull Participant p) {
+            return p.getName().equals(this.getName());
         }
 
         @Override
@@ -354,13 +380,17 @@ public abstract class EntryBase<E extends EntryInfo> implements DiffDbUsable<Ent
 
         @Override
         public boolean areItemsTheSame(@NonNull Participant newItem) {
-            return this.entryId == newItem.entryId && this.name.equalsIgnoreCase(newItem.name) &&
-                    this.isFrom == newItem.isFrom;
+            return this.onlineId == newItem.onlineId;
+//                    this.entryId == newItem.entryId && this.name.equalsIgnoreCase(newItem.name) &&
+//                    this.isFrom == newItem.isFrom;
         }
 
         @Override
         public boolean areContentsTheSame(@NonNull Participant newItem) {
-            return this.amount == newItem.amount;
+            return this.name.equalsIgnoreCase(newItem.name) &&
+                    this.amount == newItem.amount;
+//                    this.entryId == newItem.entryId  &&
+//                    this.isFrom == newItem.isFrom;
         }
 
         // Implement Cloneable

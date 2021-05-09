@@ -31,7 +31,10 @@
     <string name="modifyEntry">Modify Entry</string>
     <string name="addEntryDialog">Add Entry</string>
     <string name="item_totalCash">Total Cash</string>
+    <string name="myBalance">My Balance</string>
     <string name="errorMessageAmount">" "</string>
+    <string name="error">ERROR</string>
+    <string name="between_parenthesis">(%s)</string>
     <string name="noEntriesDelete">"No entries to delete"</string>
     <string name="menu_contextualToolbar">Edit Mode</string>
     <string name="helperEnterNameDialog">Max. 15 characters</string>

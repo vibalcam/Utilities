@@ -23,7 +23,9 @@ import java.security.cert.CertificateException;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Currency;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
@@ -35,6 +37,8 @@ public abstract class CashBoxViewModel extends AndroidViewModel {
 
     private LiveData<List<InfoWithCash>> cashBoxesInfo;
     private LiveData<CashBox> cashBox;
+    private long cashBoxId = NO_ID;
+    private final Map<String, LiveData<Double>> participantBalances = new HashMap<>();
 
     protected CashBoxViewModel(@NonNull Application application) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException, IOException {
         super(application);
@@ -54,14 +58,28 @@ public abstract class CashBoxViewModel extends AndroidViewModel {
     }
 
     @NonNull
+    public LiveData<Double> getCurrentSelfCashBalance() {
+        if (getCurrentCashBoxId() == NO_ID)
+            throw new IllegalStateException("No cashBox selected for balance");
+        // If different, get the current self balance
+        LiveData<Double> liveData = participantBalances.get(EntryBase.getSelfName());
+        if (liveData == null) {
+            liveData = getRepository().getCashBalance(getCurrentCashBoxId(), EntryBase.getSelfName());
+            participantBalances.put(EntryBase.getSelfName(), liveData);
+        }
+        return liveData;
+    }
+
+    @NonNull
     public LiveData<CashBox> getCurrentCashBox() {
         LogUtil.debug(TAG, "Id cashBox: " + getCurrentCashBoxId());
         return cashBox;
     }
 
     public long getCurrentCashBoxId() {
-        return cashBox == null || cashBox.getValue() == null ? NO_ID :
-                cashBox.getValue().getInfoWithCash().getId();
+        return cashBoxId;
+//        return cashBox == null || cashBox.getValue() == null ? NO_ID :
+//                cashBox.getValue().getInfoWithCash().getId();
     }
 
     public CashBox requireCashBox() {
@@ -71,9 +89,12 @@ public abstract class CashBoxViewModel extends AndroidViewModel {
     }
 
     public void setCurrentCashBoxId(long currentCashBoxId) {
-        // If different, get the current cashbox
-        if (this.getCurrentCashBoxId() != currentCashBoxId)
+        // If different, get the current data
+        if (getCurrentCashBoxId() != currentCashBoxId) {
             cashBox = getRepository().getOrderedCashBox(currentCashBoxId);
+            participantBalances.clear();
+            cashBoxId = currentCashBoxId;
+        }
     }
 
     public Single<CashBox> getCashBox(long id) {

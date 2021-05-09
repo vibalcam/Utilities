@@ -9,6 +9,7 @@ import com.vibal.utilities.util.Util;
 import java.util.ArrayList;
 import java.util.List;
 
+// imp make not abstract and entry is the parent class
 public abstract class CashBoxBalances {
     /**
      * IMPORTANT: Balances already sorted from greater to lowest
