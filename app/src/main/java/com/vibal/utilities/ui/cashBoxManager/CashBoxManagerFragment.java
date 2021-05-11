@@ -1062,6 +1062,7 @@ public abstract class CashBoxManagerFragment extends PagerFragment implements Ca
             }
 
             boolean onImageTouch(@NonNull MotionEvent event) {
+                boolean ret = false;
                 if (actionMode == null) { //Normal behavior
                     if (event.getActionMasked() == MotionEvent.ACTION_UP) {
                         InfoWithCash infoWithCash = currentList.get(getAdapterPosition());
@@ -1074,14 +1075,15 @@ public abstract class CashBoxManagerFragment extends PagerFragment implements Ca
                                     requireContext(), getViewModel(), compositeDisposable, null)
                                     .show();
                     }
-                    return true; //to consume the touch action so it does not count as a click on the view
+                    ret = true; //to consume the touch action so it does not count as a click on the view
                 } else { //While in edit mode/action mode
                     if (onStartDragListener != null && event.getActionMasked() == MotionEvent.ACTION_DOWN) {
                         onStartDragListener.onStartDrag(this);
-                        return true;
-                    } else
-                        return false;
+                        ret = true;
+                    }
                 }
+                binding.reorderImage.performClick();
+                return ret;
             }
 
             @Override

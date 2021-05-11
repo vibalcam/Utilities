@@ -20,8 +20,10 @@
             android:textStyle="bold"
             android:gravity="center_horizontal"
             android:textAppearance="?android:attr/textAppearanceLarge"
+            android:layout_marginEnd="@dimen/marginRV_date_amount"
+            app:layout_constraintHorizontal_weight="2"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/titleFrom"
+            app:layout_constraintBottom_toTopOf="@id/itemInfo"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/itemAmount"
             tools:text="12/23/2020" />
@@ -34,11 +36,51 @@
             android:textStyle="bold"
             android:gravity="center_horizontal"
             android:textAppearance="?android:attr/textAppearanceLarge"
+            android:layout_marginEnd="@dimen/marginRV_date_amount"
+            app:layout_constraintHorizontal_weight="2"
             app:layout_constraintTop_toTopOf="@id/itemDate"
             app:layout_constraintBottom_toBottomOf="@id/itemDate"
             app:layout_constraintStart_toEndOf="@id/itemDate"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/itemBalance"
             tools:text="$ 20" />
+
+        <TextView
+            android:id="@+id/itemBalance"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:textColor="@color/colorPositiveNumber"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:gravity="center"
+            app:layout_constraintHorizontal_weight="1"
+            app:layout_constraintTop_toTopOf="@id/itemAmount"
+            app:layout_constraintBottom_toBottomOf="@id/itemAmount"
+            app:layout_constraintStart_toEndOf="@id/itemAmount"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:text="50,00 €" />
+
+        <TextView
+            android:id="@+id/itemInfo"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/black"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            app:layout_constraintTop_toBottomOf="@id/itemDate"
+            app:layout_constraintBottom_toTopOf="@id/dividerRVItem2"
+            app:layout_constraintStart_toStartOf="@id/itemDate"
+            app:layout_constraintEnd_toEndOf="@id/itemBalance"
+            tools:text="Esto es una prueba de la info" />
+
+        <View
+            android:id="@+id/dividerRVItem2"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:background="@color/colorDivider"
+            android:layout_marginHorizontal="@dimen/divider_marginParent"
+            android:layout_marginVertical="@dimen/main_marginVertical"
+            app:layout_constraintTop_toBottomOf="@id/itemInfo"
+            app:layout_constraintBottom_toTopOf="@id/titleFrom"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
         <TextView
             android:id="@+id/titleFrom"
@@ -48,7 +90,7 @@
             android:textStyle="bold"
             android:textSize="17sp"
             android:text="@string/paidByParticipants"
-            app:layout_constraintTop_toBottomOf="@id/itemAmount"
+            app:layout_constraintTop_toBottomOf="@id/dividerRVItem2"
             app:layout_constraintBottom_toTopOf="@id/el_from"
             app:layout_constraintStart_toStartOf="@id/itemDate"
             app:layout_constraintEnd_toStartOf="@id/addImageFrom"
@@ -61,7 +103,7 @@
             android:layout_marginStart="@dimen/main_marginHorizontal"
             android:scaleType="center"
             app:layout_constraintBottom_toBottomOf="@id/titleFrom"
-            app:layout_constraintEnd_toEndOf="@id/itemAmount"
+            app:layout_constraintEnd_toEndOf="@id/itemBalance"
             app:layout_constraintStart_toEndOf="@id/titleFrom"
             app:layout_constraintTop_toTopOf="@id/titleFrom"
             app:layout_constraintVertical_bias="0.423"
@@ -76,7 +118,7 @@
             app:layout_constraintTop_toBottomOf="@id/titleFrom"
             app:layout_constraintBottom_toTopOf="@id/dividerRVItem"
             app:layout_constraintStart_toStartOf="@id/itemDate"
-            app:layout_constraintEnd_toEndOf="@id/itemAmount"
+            app:layout_constraintEnd_toEndOf="@id/itemBalance"
             app:el_expanded="false">
 
             <androidx.recyclerview.widget.RecyclerView
@@ -122,7 +164,7 @@
             app:layout_constraintTop_toTopOf="@id/titleTo"
             app:layout_constraintBottom_toBottomOf="@id/titleTo"
             app:layout_constraintStart_toEndOf="@id/titleTo"
-            app:layout_constraintEnd_toEndOf="@id/itemAmount"
+            app:layout_constraintEnd_toEndOf="@id/itemBalance"
             android:scaleType="center"
             app:srcCompat="@drawable/ic_add"
             app:tint="@android:color/black"
@@ -135,7 +177,7 @@
             app:layout_constraintTop_toBottomOf="@id/titleTo"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="@id/itemDate"
-            app:layout_constraintEnd_toEndOf="@id/itemAmount"
+            app:layout_constraintEnd_toEndOf="@id/itemBalance"
             app:el_expanded="true">
 
             <androidx.recyclerview.widget.RecyclerView

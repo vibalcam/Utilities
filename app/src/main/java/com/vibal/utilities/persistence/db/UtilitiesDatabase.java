@@ -124,7 +124,7 @@ public abstract class UtilitiesDatabase extends RoomDatabase {
                     "`name` TEXT NOT NULL COLLATE NOCASE, " +
                     "`entryId` INTEGER NOT NULL, " +
                     "`isFrom` INTEGER NOT NULL, " +
-                    "`amount` REAL NOT NULL DEFAULT 1, " +
+                    "`amount` REAL NOT NULL, " +
                     "`onlineId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
                     "FOREIGN KEY(`entryId`) REFERENCES `entries_table`(`id`) " +
                     "ON UPDATE CASCADE ON DELETE CASCADE )");
@@ -139,7 +139,7 @@ public abstract class UtilitiesDatabase extends RoomDatabase {
                     "`name` TEXT NOT NULL COLLATE NOCASE, " +
                     "`entryId` INTEGER NOT NULL, " +
                     "`isFrom` INTEGER NOT NULL, " +
-                    "`amount` REAL NOT NULL DEFAULT 1, " +
+                    "`amount` REAL NOT NULL, " +
                     "`onlineId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
                     "FOREIGN KEY(`entryId`) REFERENCES `entriesOnline_table`(`id`) " +
                     "ON UPDATE CASCADE ON DELETE CASCADE )");
@@ -163,14 +163,14 @@ public abstract class UtilitiesDatabase extends RoomDatabase {
                     "SELECT * FROM entriesOnlineParticipants_table WHERE isFrom==1");
 
             // Add default participants
-            database.execSQL("INSERT INTO entriesParticipants_table (name, entryId, isFrom) " +
-                    "SELECT '" + Participant.getSelfName() + "', id, 0 FROM entries_table");
-            database.execSQL("INSERT INTO entriesParticipants_table (name, entryId, isFrom) " +
-                    "SELECT '" + Participant.getSelfName() + "', id, 1 FROM entries_table");
-            database.execSQL("INSERT INTO entriesOnlineParticipants_table (name, entryId, isFrom) " +
-                    "SELECT '" + Participant.getSelfName() + "', id, 0 FROM entriesOnline_table");
-            database.execSQL("INSERT INTO entriesOnlineParticipants_table (name, entryId, isFrom) " +
-                    "SELECT '" + Participant.getSelfName() + "', id, 1 FROM entriesOnline_table");
+            database.execSQL("INSERT INTO entriesParticipants_table (name, entryId, isFrom, amount) " +
+                    "SELECT '" + Participant.getSelfName() + "', id, 0, -1 FROM entries_table");
+            database.execSQL("INSERT INTO entriesParticipants_table (name, entryId, isFrom, amount) " +
+                    "SELECT '" + Participant.getSelfName() + "', id, 1, 1 FROM entries_table");
+            database.execSQL("INSERT INTO entriesOnlineParticipants_table (name, entryId, isFrom, amount) " +
+                    "SELECT '" + Participant.getSelfName() + "', id, 0, -1 FROM entriesOnline_table");
+            database.execSQL("INSERT INTO entriesOnlineParticipants_table (name, entryId, isFrom, amount) " +
+                    "SELECT '" + Participant.getSelfName() + "', id, 1, 1 FROM entriesOnline_table");
         }
     };
 

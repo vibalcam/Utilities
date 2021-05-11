@@ -30,6 +30,7 @@ import com.vibal.utilities.databinding.CashBoxItemDetailsActivityBinding;
 import com.vibal.utilities.databinding.CashBoxItemDetailsFragmentBinding;
 import com.vibal.utilities.models.CashBoxInfo;
 import com.vibal.utilities.models.EntryBase;
+import com.vibal.utilities.models.EntryInfo;
 import com.vibal.utilities.models.Participant;
 import com.vibal.utilities.ui.NameSelectSpinner;
 import com.vibal.utilities.util.Util;
@@ -339,15 +340,30 @@ public class CashBoxItemDetailsActivity extends AppCompatActivity {
             getDetailsActivity().viewModel.getCashBox()
                     .observe(getViewLifecycleOwner(), cashBox -> {
                         EntryBase<?> entry = cashBox.getEntries().get(position);
-                        entryId = entry.getEntryInfo().getId();
+                        EntryInfo entryInfo = entry.getEntryInfo();
+                        entryId = entryInfo.getId();
                         adapterFrom.submitList(entry.getFromParticipants());
                         adapterTo.submitList(entry.getToParticipants());
 
                         // Set viewTexts
-                        binding.itemAmount.setText(getDetailsActivity().formatCurrency.format(
-                                entry.getEntryInfo().getAmount()));
+                        // Amount
+                        Util.formatAmountTextView(binding.itemAmount,
+                                getDetailsActivity().formatCurrency, entryInfo.getAmount(), false);
+//                        binding.itemAmount.setText(getDetailsActivity().formatCurrency.format(
+//                                entryInfo.getAmount()));
+
+                        // Date
                         binding.itemDate.setText(getDetailsActivity().dateFormat.format(
-                                entry.getEntryInfo().getDate().getTime()));
+                                entryInfo.getDate().getTime()));
+                        // Info
+                        binding.itemInfo.setText(entryInfo.printInfo());
+                        // Amount balance
+                        double balance = entry.getParticipantBalance(
+                                Participant.createDefaultParticipant(entryInfo.getId(), true));
+                        Util.formatAmountTextView(binding.itemBalance,
+                                getString(R.string.between_parenthesis,
+                                        getDetailsActivity().formatCurrency.format(balance)),
+                                balance, true);
                     });
         }
 

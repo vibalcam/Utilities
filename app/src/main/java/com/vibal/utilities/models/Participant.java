@@ -41,7 +41,7 @@ public class Participant implements DiffDbUsable<com.vibal.utilities.models.Part
     private final String name;
     private long entryId;
     private final boolean isFrom;
-    @ColumnInfo(defaultValue = "1")
+//    @ColumnInfo(defaultValue = "1")
     private double amount;    // If from it amount positive, negative if to
 
     // test make primary key and the other unique and index, for non viewed in the future

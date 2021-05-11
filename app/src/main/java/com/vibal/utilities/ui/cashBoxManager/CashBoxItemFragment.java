@@ -123,7 +123,8 @@ public abstract class CashBoxItemFragment extends PagerFragment implements CashB
                             new Util.TextViewDatePickerClickListener(context, inputDate, true);
                     inputDate.setOnClickListener(calendarListener);
                     // Set up spinners
-                    ArrayList<String> namesList = new ArrayList<>(participantNames);
+                    ArrayList<String> namesList = participantNames != null ?
+                            new ArrayList<>(participantNames) : null;
                     spinnerFrom.config(namesList);
                     spinnerTo.config(namesList);
 
@@ -599,11 +600,13 @@ public abstract class CashBoxItemFragment extends PagerFragment implements CashB
             EntryInfo entryInfo = entry.getEntryInfo();
 
             // Amount
-            viewHolder.binding.rvItemAmount.setText(formatCurrency.format(entryInfo.getAmount()));
-            if (entryInfo.getAmount() < 0)
-                viewHolder.binding.rvItemAmount.setTextColor(requireContext().getColor(R.color.colorNegativeNumber));
-            else
-                viewHolder.binding.rvItemAmount.setTextColor(requireContext().getColor(R.color.colorNeutralNumber));
+            Util.formatAmountTextView(viewHolder.binding.rvItemAmount, formatCurrency,
+                    entryInfo.getAmount(), false);
+//            viewHolder.binding.rvItemAmount.setText(formatCurrency.format(entryInfo.getAmount()));
+//            if (entryInfo.getAmount() < 0)
+//                viewHolder.binding.rvItemAmount.setTextColor(requireContext().getColor(R.color.colorNegativeNumber));
+//            else
+//                viewHolder.binding.rvItemAmount.setTextColor(requireContext().getColor(R.color.colorNeutralNumber));
 
             // CashBoxInfo
             viewHolder.binding.rvItemInfo.setText(entryInfo.printInfo());
@@ -621,14 +624,17 @@ public abstract class CashBoxItemFragment extends PagerFragment implements CashB
                 viewHolder.binding.rvItemBalance.setVisibility(View.VISIBLE);
                 double balance = entry.getParticipantBalance(
                         Participant.createDefaultParticipant(entryInfo.getId(), true));
-                viewHolder.binding.rvItemBalance.setText(getString(R.string.between_parenthesis, formatCurrency.format(balance)));
-
-                if (balance == 0)
-                    viewHolder.binding.rvItemBalance.setTextColor(requireContext().getColor(R.color.colorNeutralNumber));
-                else if (balance < 0)
-                    viewHolder.binding.rvItemBalance.setTextColor(requireContext().getColor(R.color.colorNegativeNumber));
-                else
-                    viewHolder.binding.rvItemBalance.setTextColor(requireContext().getColor(R.color.colorPositiveNumber));
+                Util.formatAmountTextView(viewHolder.binding.rvItemBalance,
+                        getString(R.string.between_parenthesis, formatCurrency.format(balance)),
+                        balance, true);
+//                viewHolder.binding.rvItemBalance.setText(getString(R.string.between_parenthesis, formatCurrency.format(balance)));
+//
+//                if (balance == 0)
+//                    viewHolder.binding.rvItemBalance.setTextColor(requireContext().getColor(R.color.colorNeutralNumber));
+//                else if (balance < 0)
+//                    viewHolder.binding.rvItemBalance.setTextColor(requireContext().getColor(R.color.colorNegativeNumber));
+//                else
+//                    viewHolder.binding.rvItemBalance.setTextColor(requireContext().getColor(R.color.colorPositiveNumber));
             }
         }
 
