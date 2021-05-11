@@ -123,14 +123,9 @@ public abstract class CashBoxItemFragment extends PagerFragment implements CashB
                             new Util.TextViewDatePickerClickListener(context, inputDate, true);
                     inputDate.setOnClickListener(calendarListener);
                     // Set up spinners
-                    if (participantNames != null && participantNames.size() <= 1) { // Show spinners if more than one participant
-                        spinnerTo.setVisibility(View.GONE);
-                        spinnerFrom.setVisibility(View.GONE);
-                    } else {
-                        ArrayList<String> namesList = new ArrayList<>(participantNames);
-                        spinnerFrom.config(namesList);
-                        spinnerTo.config(namesList);
-                    }
+                    ArrayList<String> namesList = new ArrayList<>(participantNames);
+                    spinnerFrom.config(namesList);
+                    spinnerTo.config(namesList);
 
                     Util.showKeyboard(context, inputAmount);
                     positive.setOnClickListener((View v) -> {

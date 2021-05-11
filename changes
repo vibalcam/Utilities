@@ -1,9 +1,0 @@
-- imp change so you can scroll when not touching recycler view
-- imp click total cash and change to me
-- imp possibility to update participants in all default (change me to juan if change default)
-
-- todo cancel online then go back to local
-- todo not show participants if just me
-- todo same list in both selectors
-- todo paid by and to the following add selector
-- todo click save and put changes saved (paid by and to)

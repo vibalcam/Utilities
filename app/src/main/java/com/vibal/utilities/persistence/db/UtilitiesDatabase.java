@@ -164,13 +164,13 @@ public abstract class UtilitiesDatabase extends RoomDatabase {
 
             // Add default participants
             database.execSQL("INSERT INTO entriesParticipants_table (name, entryId, isFrom) " +
-                    "SELECT " + Participant.getSelfName() + ", id, 0 FROM entries_table");
+                    "SELECT '" + Participant.getSelfName() + "', id, 0 FROM entries_table");
             database.execSQL("INSERT INTO entriesParticipants_table (name, entryId, isFrom) " +
-                    "SELECT " + Participant.getSelfName() + ", id, 1 FROM entries_table");
+                    "SELECT '" + Participant.getSelfName() + "', id, 1 FROM entries_table");
             database.execSQL("INSERT INTO entriesOnlineParticipants_table (name, entryId, isFrom) " +
-                    "SELECT " + Participant.getSelfName() + ", id, 0 FROM entriesOnline_table");
+                    "SELECT '" + Participant.getSelfName() + "', id, 0 FROM entriesOnline_table");
             database.execSQL("INSERT INTO entriesOnlineParticipants_table (name, entryId, isFrom) " +
-                    "SELECT " + Participant.getSelfName() + ", id, 1 FROM entriesOnline_table");
+                    "SELECT '" + Participant.getSelfName() + "', id, 1 FROM entriesOnline_table");
         }
     };
 
