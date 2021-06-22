@@ -175,13 +175,27 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
 //    }
 
     @NonNull
-    private OkHttpClient getOkHttpClient(Context context) {
+    private OkHttpClient getOkHttpClient(Context context) throws NoSuchAlgorithmException, KeyManagementException {
         // Create an SSLContext that uses our TrustManager
 //        TrustManagerFactory tmf = getTrustManagerFactory(context);
 //        SSLContext sslContext = SSLContext.getInstance("TLS");
 //        sslContext.init(null, tmf.getTrustManagers(), null);
+//        SSLContext sslContext = SSLContext.getInstance("TLS");
+//        TrustManager[] trustManagers = new TrustManager[] {
+//                new X509TrustManager() {
+//                    public void checkClientTrusted(X509Certificate[] chain, String authType) {}
+//                    public void checkServerTrusted(X509Certificate[] chain, String authType) {}
+//                    public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[]{}; }
+//                }
+//        };
+//        sslContext.init(null, trustManagers, null);
+//        todo change before submit
 
         OkHttpClient.Builder httpClientBuilder = new OkHttpClient.Builder()
+                .connectTimeout(0, TimeUnit.SECONDS)
+                .readTimeout(0, TimeUnit.SECONDS)
+                .writeTimeout(0, TimeUnit.SECONDS)
+//                .sslSocketFactory(sslContext.getSocketFactory(), (X509TrustManager) (trustManagers[0]))
 //                .sslSocketFactory(sslContext.getSocketFactory(), (X509TrustManager) (tmf.getTrustManagers()[0]))
                 .addInterceptor(chain -> {
                     if (!isOnline())
@@ -198,7 +212,7 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
                 });
         // for usage in debug
         if (BuildConfig.DEBUG_MODE)
-            httpClientBuilder.hostnameVerifier((hostname, session) -> hostname.equals("192.168.0.41"));
+            httpClientBuilder.hostnameVerifier((hostname, session) -> hostname.equals(BuildConfig.ONLINE_IP));
 
         return httpClientBuilder.build();
     }

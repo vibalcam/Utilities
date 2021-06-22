@@ -176,33 +176,34 @@ public abstract class EntryBase<E extends EntryInfo> implements DiffDbUsable<Ent
         }
     }
 
-    @NonNull
-    public EntryBase<?> getEntryWithCashBoxId(long cashBoxId) {
-        if (this.entryInfo.getCashBoxId() == cashBoxId)
-            return this;
+//    todo fix cashbox id = 0
+@NonNull
+public EntryBase<?> getEntryWithCashBoxId(long cashBoxId) {
+    if (this.entryInfo.getCashBoxId() == cashBoxId)
+        return this;
 
-        List<Participant> cloneFromParticipants, cloneToParticipants;
-        EntryInfo entryInfo = getEntryInfo().getEntryWithCashBoxId(cashBoxId);
-        if (this.entryInfo.getCashBoxId() != CashBoxInfo.NO_ID) {    // get a clone with this cashbox id
-            cloneFromParticipants = new ArrayList<>();
-            for (Participant p : getFromParticipants())
-                cloneFromParticipants.add(p.getParticipantWithEntryId(entryInfo.getId()));
-            cloneToParticipants = new ArrayList<>();
-            for (Participant p : getToParticipants())
-                cloneToParticipants.add(p.getParticipantWithEntryId(entryInfo.getId()));
-        } else {
-            cloneFromParticipants = getFromParticipants();
-            cloneToParticipants = getToParticipants();
-        }
-
-        try {
-            return getClass()
-                    .getDeclaredConstructor(entryInfo.getClass(), List.class, List.class)
-                    .newInstance(entryInfo, cloneFromParticipants, cloneToParticipants);
-        } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Error while cloning", e);
-        }
+    List<Participant> cloneFromParticipants, cloneToParticipants;
+    EntryInfo entryInfo = getEntryInfo().getEntryWithCashBoxId(cashBoxId);
+    if (this.entryInfo.getCashBoxId() != CashBoxInfo.NO_ID) {    // get a clone with this cashbox id
+        cloneFromParticipants = new ArrayList<>();
+        for (Participant p : getFromParticipants())
+            cloneFromParticipants.add(p.getParticipantWithEntryId(entryInfo.getId()));
+        cloneToParticipants = new ArrayList<>();
+        for (Participant p : getToParticipants())
+            cloneToParticipants.add(p.getParticipantWithEntryId(entryInfo.getId()));
+    } else {
+        cloneFromParticipants = getFromParticipants();
+        cloneToParticipants = getToParticipants();
     }
+
+    try {
+        return getClass()
+                .getDeclaredConstructor(entryInfo.getClass(), List.class, List.class)
+                .newInstance(entryInfo, cloneFromParticipants, cloneToParticipants);
+    } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
+        e.printStackTrace();
+        throw new RuntimeException("Error while cloning", e);
+    }
+}
 
 }

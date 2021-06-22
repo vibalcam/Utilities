@@ -18,17 +18,16 @@ android {
             keyPassword properties['keyPassword']
         }
     }
-    compileSdkVersion 29
+    compileSdkVersion 30
     defaultConfig {
         applicationId "com.utilities.vibal.utilities"
         minSdkVersion 24
-        targetSdkVersion 29
+        targetSdkVersion 30
         versionCode 25
         versionName "3.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         resValue "string", "aboutApp", "Utilities v" + versionName + "\\n\\nvibal " +
                 (new Date().format("dd/MM/yyyy"))
-        buildConfigField "String", "ONLINE_PWD", properties['onlinePwd']
 
         // For room database schema
         javaCompileOptions {
@@ -58,12 +57,15 @@ android {
             signingConfig signingConfigs.release
             buildConfigField "boolean", "DEBUG_MODE", "false"
             buildConfigField "String", "BASE_URL", properties['baseUrl']
+            buildConfigField "String", "ONLINE_PWD", properties['onlinePwd']
         }
         debug {
             buildConfigField "boolean", "DEBUG_MODE", "true"
             resValue "string", "aboutApp", "Utilities debug " + getVersion()
             applicationIdSuffix ".debug"
-            buildConfigField "String", "BASE_URL", "\"https://192.168.0.41/util/\""
+            buildConfigField "String", "BASE_URL", properties['baseUrl_debug']
+            buildConfigField "String", "ONLINE_PWD", properties['onlinePwd_debug']
+            buildConfigField "String", "ONLINE_IP", properties['ip_debug']
         }
     }
     flavorDimensions "version"
@@ -95,7 +97,7 @@ dependencies {
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
-    implementation 'com.google.android.material:material:1.4.0-alpha02'
+    implementation 'com.google.android.material:material:1.4.0-beta01'
     implementation 'androidx.preference:preference:1.1.1'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     testImplementation 'junit:junit:4.13.2'
