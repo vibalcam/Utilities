@@ -89,7 +89,6 @@ public interface UtilAppAPI {
     @POST(REQ_URL)
     Single<UtilAppResponse.EntriesResponse> acceptInvitation(@Body UtilAppRequest request);
 
-    // test if works
     @Headers(REQ_CODE + REQ_CASHBOXES)
     @POST(REQ_URL)
     Single<UtilAppResponse.EntriesResponse> reloadCashBox(@Body UtilAppRequest request);
@@ -126,7 +125,6 @@ public interface UtilAppAPI {
     @POST(REQ_URL)
     Single<UtilAppResponse> confirmReceivedChanges(@Body Collection<Long> notificationIds);
 
-    // test do in server
     @Headers(REQ_CODE + REQ_CASHBOX_GET)
     @POST(REQ_URL)
     Single<UtilAppResponse.ListResponse<String>> getCashBoxParticipants(@Body long id);

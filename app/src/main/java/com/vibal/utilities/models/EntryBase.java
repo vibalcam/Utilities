@@ -176,7 +176,6 @@ public abstract class EntryBase<E extends EntryInfo> implements DiffDbUsable<Ent
         }
     }
 
-//    todo fix cashbox id = 0
 @NonNull
 public EntryBase<?> getEntryWithCashBoxId(long cashBoxId) {
     if (this.entryInfo.getCashBoxId() == cashBoxId)

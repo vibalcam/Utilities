@@ -19,7 +19,6 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.vibal.utilities.R;
 import com.vibal.utilities.databinding.CashBoxOnlineItemFragmentBinding;
-import com.vibal.utilities.databinding.DialogInviteUserBinding;
 import com.vibal.utilities.exceptions.UtilAppException;
 import com.vibal.utilities.models.EntryBase;
 import com.vibal.utilities.models.EntryInfo;
@@ -35,6 +34,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.observers.DisposableObserver;
 import io.reactivex.schedulers.Schedulers;
 
+//imp https://developer.android.com/studio/inspect/database?utm_source=android-studio
 public class CashBoxItemOnlineFragment extends CashBoxItemFragment implements CashBoxType.ONLINE {
     private static final String TAG = "PruebaOnlineItemFrag";
 
@@ -88,21 +88,26 @@ public class CashBoxItemOnlineFragment extends CashBoxItemFragment implements Ca
                     @Override
                     public void onComplete() {
                         Toast.makeText(requireContext(), "Up to date!", Toast.LENGTH_SHORT).show();
-                        binding.refreshCBItem.setRefreshing(false);
+                        if (binding != null)
+                            binding.refreshCBItem.setRefreshing(false);
                     }
                 }));
     }
 
-    // test add so you can reload a CashBox fully
     private void reloadFromServer() {
         compositeDisposable.add(viewModel.hardReload(viewModel.getCurrentCashBoxId())
-                .doFinally(() -> binding.refreshCBItem.setRefreshing(false))
-                .subscribeOn(Schedulers.io())
+                .doFinally(() -> {
+                    if (binding != null)
+                        binding.refreshCBItem.setRefreshing(false);
+                }).subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(() -> Toast.makeText(requireContext(),
                         "CashBox reloaded from server succesfully", Toast.LENGTH_SHORT).show(),
-                        throwable -> Toast.makeText(requireContext(),
-                                UtilAppException.getErrorMsg(throwable), Toast.LENGTH_SHORT).show())
+                        throwable -> {
+                            LogUtil.error("", throwable);
+                            Toast.makeText(requireContext(),
+                                    UtilAppException.getErrorMsg(throwable), Toast.LENGTH_SHORT).show();
+                        })
         );
     }
 
@@ -142,25 +147,24 @@ public class CashBoxItemOnlineFragment extends CashBoxItemFragment implements Ca
         }
     }
 
-    // test ver quienes estan en una cashbox online: look at currencies for list
     private void showInviteDialog() {
-        DialogInviteUserBinding dialogBinding =
-                DialogInviteUserBinding.inflate(LayoutInflater.from(getContext()));
+//        DialogInviteUserBinding dialogBinding =
+//                DialogInviteUserBinding.inflate(LayoutInflater.from(getContext()));
 
         new MyDialogBuilder(requireContext())
                 .setTitle(R.string.dialog_inviteTitle)
-//                .setView(R.layout.dialog_invite_user)
-                .setView(dialogBinding.getRoot())
+                .setView(R.layout.dialog_invite_user)
+//                .setView(dialogBinding.getRoot())
                 .setPositiveButton(R.string.invite, null)
                 .setCancelOnTouchOutside(true)
                 .setActions(dialog -> {
                     Button positive = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
-//                    TextInputEditText inputUsername = ((AlertDialog) dialog).findViewById(R.id.inputTextUsername);
-                    TextInputEditText inputUsername = dialogBinding.inputUsername.inputTextUsername;
-//                    TextInputLayout layoutUsername = ((AlertDialog) dialog).findViewById(R.id.inputLayoutUsername);
-                    TextInputLayout layoutUsername = dialogBinding.inputUsername.inputLayoutUsername;
-//                    ListView listView = ((AlertDialog) dialog).findViewById(R.id.listViewInvite);
-                    ListView listView = dialogBinding.listViewInvite;
+                    TextInputEditText inputUsername = ((AlertDialog) dialog).findViewById(R.id.inputTextUsername);
+//                    TextInputEditText inputUsername = dialogBinding.inputUsername.inputTextUsername;
+                    TextInputLayout layoutUsername = ((AlertDialog) dialog).findViewById(R.id.inputLayoutUsername);
+//                    TextInputLayout layoutUsername = dialogBinding.inputUsername.inputLayoutUsername;
+                    ListView listView = ((AlertDialog) dialog).findViewById(R.id.listViewInvite);
+//                    ListView listView = dialogBinding.listViewInvite;
                     compositeDisposable.add(
                             viewModel.getCashBoxParticipants(viewModel.getCurrentCashBoxId())
                                     .subscribeOn(Schedulers.io())
@@ -221,6 +225,7 @@ public class CashBoxItemOnlineFragment extends CashBoxItemFragment implements Ca
         if (!(throwable instanceof UtilAppException.NonExistentException))
             super.doOnModifyEntryError(throwable, entryInfo);
 
+        onRefresh();
         new MyDialogBuilder(requireContext())
                 .setTitle(R.string.dialog_nonExistentModify)
                 .setMessage(R.string.dialog_nonExistentModify_message)

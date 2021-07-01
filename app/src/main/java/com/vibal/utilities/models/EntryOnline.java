@@ -10,7 +10,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Objects;
 
-// test check if entryOnlineInfo is ever used
+// imp check if entryOnlineInfo is ever used
 
 public class EntryOnline<E extends EntryInfo> extends EntryBase<E> implements Comparable<EntryOnline<?>> {
     @NonNull

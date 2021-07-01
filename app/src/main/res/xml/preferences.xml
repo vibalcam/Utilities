@@ -30,7 +30,7 @@
         <EditTextPreference
             app:key="selfParticipant"
             app:title="@string/pref_self_participant"
-            app:defaultValue="Me" />
+            app:defaultValue="me" />
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/pref_CBMOnline_header">

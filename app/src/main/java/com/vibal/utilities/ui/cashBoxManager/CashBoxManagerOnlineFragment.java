@@ -37,6 +37,8 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.observers.DisposableObserver;
 import io.reactivex.schedulers.Schedulers;
 
+//imp accept cashbox by clicking
+
 public class CashBoxManagerOnlineFragment extends CashBoxManagerFragment implements CashBoxType.ONLINE {
     private static final String TAG = "PruebaOnlineManFrag";
 
@@ -109,7 +111,8 @@ public class CashBoxManagerOnlineFragment extends CashBoxManagerFragment impleme
                     @Override
                     public void onComplete() {
                         Toast.makeText(requireContext(), "Up to date!", Toast.LENGTH_SHORT).show();
-                        binding.refreshCBM.setRefreshing(false);
+                        if (binding != null)
+                            binding.refreshCBM.setRefreshing(false);
                     }
                 }));
     }

@@ -36,7 +36,6 @@ public interface CashBoxEntryOnlineDao extends CashBoxEntryBaseDao {
     @Insert(entity = EntryOnlineInfo.class)
     Completable insertAllEntries(Collection<EntryInfo> entries);
 
-    // test change
 //    @Insert(entity = EntryOnlineInfo.class)
 //    Completable insertAllJSONEntriesInfo(Collection<UtilAppResponse.EntryJSON> entries);
 
@@ -92,8 +91,10 @@ public interface CashBoxEntryOnlineDao extends CashBoxEntryBaseDao {
             "WHERE id>0 AND groupId!=0 AND groupId=:groupId")
     Single<Integer> deleteGroup(long groupId);
 
-    @Query("DELETE FROM entriesOnline_table WHERE id>0 AND cashBoxId=:cashBoxId")
-    Single<Integer> deleteAll(long cashBoxId);
+//    imp only for id>0
+@Query("DELETE FROM entriesOnline_table WHERE cashBoxId=:cashBoxId")
+//    @Query("DELETE FROM entriesOnline_table WHERE id>0 AND cashBoxId=:cashBoxId")
+Single<Integer> deleteAll(long cashBoxId);
 
     @Query("SELECT id FROM entriesOnline_table WHERE id>0 AND cashBoxId=:cashBoxId")
     Single<List<Integer>> getCashBoxEntriesIds(long cashBoxId);
@@ -126,7 +127,6 @@ public interface CashBoxEntryOnlineDao extends CashBoxEntryBaseDao {
     @Insert(entity = EntryOnlineInfo.Participant.class)
     Completable insertParticipantRaw(Collection<Participant> participantList);
 
-    // test change
 //    @Insert(entity = EntryOnlineInfo.Participant.class)
 //    Completable insertAllJSONParticipants(Collection<UtilAppResponse.EntryJSON> participants);
 

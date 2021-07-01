@@ -22,7 +22,7 @@ import java.util.List;
 public class NameSelectSpinner extends MaterialSpinner {
     private static final int INDEX_ADD = 0;    // add option in first position of spinner
     private static final int INDEX_DEFAULT = 1;
-    public static final String STRING_ADD = "New Name";
+    public static final String STRING_ADD = "NEW NAME";
 
     public NameSelectSpinner(Context context) {
         super(context);
@@ -45,6 +45,7 @@ public class NameSelectSpinner extends MaterialSpinner {
         if (names == null)
             names = new ArrayList<>();
         // Add new option
+        names.remove(STRING_ADD);
         names.add(INDEX_ADD, STRING_ADD);
         // Self option as second option
         names.remove(Participant.getSelfName());
@@ -101,7 +102,7 @@ public class NameSelectSpinner extends MaterialSpinner {
 
             Context context = spinner.getContext();
             createAddParticipantDialog(context, (dialog, inputName, layoutName) -> {
-                String input = inputName.getText().toString().trim();
+                String input = inputName.getText().toString().trim().toLowerCase();
                 List<String> names = spinner.getItems();
                 int pos = names.indexOf(input);
                 if (pos != -1) {

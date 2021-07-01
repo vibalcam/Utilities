@@ -10,6 +10,7 @@ import com.vibal.utilities.models.EntryOnlineInfo;
 import com.vibal.utilities.models.Participant;
 import com.vibal.utilities.util.Converters;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
@@ -44,14 +45,23 @@ public class UtilAppResponse {
         return message;
     }
 
-    // test do in server
     public static class ListResponse<T> extends UtilAppResponse {
         @SerializedName(VALUES)
-        public final List<T> list;
+        private final List<Map<String, T>> list;
+        private List<T> values = null;
 
-        public ListResponse(int success, String message, List<T> list) {
+        public ListResponse(int success, String message, List<Map<String, T>> list) {
             super(success, message);
             this.list = list;
+        }
+
+        public List<T> getValues() {
+            if (values == null) {
+                values = new ArrayList<>();
+                for (Map<String, T> map : list)
+                    values.addAll(map.values());
+            }
+            return values;
         }
     }
 
@@ -165,8 +175,6 @@ public class UtilAppResponse {
         private final long date;
         @SerializedName(UtilAppAPI.INFO)
         private final String info;
-
-        // test change namings in php so they are the same for entry and participant
 
         public EntryJSON(long id, long cashBoxId, double amount, long date, String info) {
             this.id = id;

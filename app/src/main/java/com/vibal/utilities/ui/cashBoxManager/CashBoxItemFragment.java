@@ -658,7 +658,6 @@ public abstract class CashBoxItemFragment extends PagerFragment implements CashB
             EntryBase<?> entry = currentList.get(position);
 
             if (entry.getEntryInfo().getGroupId() == EntryInfo.NO_GROUP) {
-                // todo check
                 deleteEntry(entry, position);
                 return;
             }
@@ -668,7 +667,7 @@ public abstract class CashBoxItemFragment extends PagerFragment implements CashB
                     .setMessage(R.string.messageGroupDelete)
                     .setOnCancelListener(dialogInterface -> notifyItemChanged(position))   // since the item is deleted from swipping we have to show it back again)
                     .setNegativeButton(R.string.groupEntryIndividual,
-                            (dialogInterface, i) -> deleteEntry(entry, position))//todo check
+                            (dialogInterface, i) -> deleteEntry(entry, position))
                     .setPositiveButton(R.string.groupEntryAll, (dialogInterface, i) ->
                             compositeDisposable.add(getViewModel().getGroupEntries(entry.getEntryInfo())
                                     .flatMap(entries -> getViewModel().deleteGroupEntries(entry)
@@ -690,7 +689,6 @@ public abstract class CashBoxItemFragment extends PagerFragment implements CashB
                     .show();
         }
 
-        // todo check
         private void deleteEntry(EntryBase<?> entry, int position) {
             compositeDisposable.add(getViewModel().deleteEntry(entry)
                     .subscribeOn(Schedulers.io())

@@ -197,7 +197,7 @@ public class CashBoxManagerActivity extends AppCompatActivity implements TabLayo
     }
 
     private static class MenusPagerAdapter extends FragmentPagerAdapter {
-        private static String[] TABS_TITLES = {};
+        private static final String[] TABS_TITLES = {};
 
         private MenusPagerAdapter(@NonNull FragmentManager fm) {
             super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);

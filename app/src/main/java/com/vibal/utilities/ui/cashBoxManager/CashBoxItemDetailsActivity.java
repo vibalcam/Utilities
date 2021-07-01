@@ -33,6 +33,7 @@ import com.vibal.utilities.models.EntryBase;
 import com.vibal.utilities.models.EntryInfo;
 import com.vibal.utilities.models.Participant;
 import com.vibal.utilities.ui.NameSelectSpinner;
+import com.vibal.utilities.util.LogUtil;
 import com.vibal.utilities.util.Util;
 import com.vibal.utilities.viewModels.CashBoxDetailsViewModel;
 import com.vibal.utilities.workaround.LinearLayoutManagerWrapper;
@@ -152,7 +153,11 @@ public class CashBoxItemDetailsActivity extends AppCompatActivity {
             compositeDisposable.add(completable.subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(() ->
-                            Toast.makeText(this, "Changes saved", Toast.LENGTH_SHORT).show()));
+                                    Toast.makeText(this, "Changes saved", Toast.LENGTH_SHORT).show(),
+                            throwable -> {
+                                LogUtil.error("", throwable);
+                                Toast.makeText(this, throwable.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+                            }));
             return true;
         } else
             return super.onOptionsItemSelected(item);
@@ -299,7 +304,12 @@ public class CashBoxItemDetailsActivity extends AppCompatActivity {
                                         create.apply(inputName.getText().toString()))
                                         .subscribeOn(Schedulers.io())
                                         .observeOn(AndroidSchedulers.mainThread())
-                                        .subscribe()
+                                        .subscribe(() -> {
+                                        }, throwable ->
+                                        {
+                                            LogUtil.error("", throwable);
+                                            Toast.makeText(getContext(), throwable.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+                                        })
                         );
                         dialog.dismiss();
                     }).show();
@@ -309,7 +319,12 @@ public class CashBoxItemDetailsActivity extends AppCompatActivity {
                                     create.apply(item.getTitle().toString()))
                                     .subscribeOn(Schedulers.io())
                                     .observeOn(AndroidSchedulers.mainThread())
-                                    .subscribe()
+                                    .subscribe(() -> {
+                                    }, throwable ->
+                                    {
+                                        LogUtil.error("", throwable);
+                                        Toast.makeText(getContext(), throwable.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+                                    })
                     );
                 }
                 return true;
@@ -413,7 +428,7 @@ public class CashBoxItemDetailsActivity extends AppCompatActivity {
                         return;
 
                     String input = binding.inputTextAmount.getText().toString().trim();
-                    Participant oldPart = getItem(getAdapterPosition());
+                    Participant oldPart = getItem(getBindingAdapterPosition());
                     double amount = oldPart.getAmount();
 
                     if (!input.isEmpty()) {
@@ -433,10 +448,14 @@ public class CashBoxItemDetailsActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View v) {
                     getDetailsActivity().compositeDisposable.add(
-                            getDetailsActivity().viewModel.deleteParticipant(getItem(getAdapterPosition()))
+                            getDetailsActivity().viewModel.deleteParticipant(getItem(getBindingAdapterPosition()))
                                     .subscribeOn(Schedulers.io())
                                     .observeOn(AndroidSchedulers.mainThread())
-                                    .subscribe(() -> Toast.makeText(requireContext(), "Participant deleted", Toast.LENGTH_SHORT).show())
+                                    .subscribe(() -> Toast.makeText(requireContext(), "Participant deleted", Toast.LENGTH_SHORT).show(),
+                                            throwable -> {
+                                                LogUtil.error("", throwable);
+                                                Toast.makeText(getContext(), throwable.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+                                            })
                     );
                 }
 
