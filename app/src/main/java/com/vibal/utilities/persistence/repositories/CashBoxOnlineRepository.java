@@ -206,7 +206,7 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
                 });
         // for usage in debug
         if (BuildConfig.DEBUG_MODE)
-            httpClientBuilder.hostnameVerifier((hostname, session) -> hostname.equals(BuildConfig.ONLINE_IP))
+            httpClientBuilder.hostnameVerifier((hostname, session) -> hostname.equals(BuildConfig.ONLINE_DEBUG_IP))
                     .connectTimeout(0, TimeUnit.SECONDS)
                     .readTimeout(0, TimeUnit.SECONDS)
                     .writeTimeout(0, TimeUnit.SECONDS);

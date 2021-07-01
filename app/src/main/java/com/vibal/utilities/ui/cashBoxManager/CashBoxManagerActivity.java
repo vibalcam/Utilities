@@ -5,26 +5,28 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.res.TypedArray;
 import android.os.Bundle;
+import android.view.Menu;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.fragment.app.FragmentActivity;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
+import com.vibal.utilities.BuildConfig;
 import com.vibal.utilities.R;
 import com.vibal.utilities.databinding.CashBoxManagerActivityBinding;
 import com.vibal.utilities.ui.viewPager.PagerActivity;
-import com.vibal.utilities.ui.viewPager.PagerFragment;
 import com.vibal.utilities.util.LogUtil;
 import com.vibal.utilities.widget.CashBoxWidgetProvider;
 
 import java.util.Objects;
 
-public class CashBoxManagerActivity extends AppCompatActivity implements TabLayout.OnTabSelectedListener, PagerActivity {
+public class CashBoxManagerActivity extends PagerActivity {
     // Extras for intents
     public static final String EXTRA_CASHBOX_ID = "com.vibal.utilities.cashBoxId";
     public static final String EXTRA_CASHBOX_TYPE = "com.vibal.utilities.cashBoxId";
@@ -61,6 +63,8 @@ public class CashBoxManagerActivity extends AppCompatActivity implements TabLayo
     public static final String USERNAME_KEY = "com.vibal.utilities.cashBoxManager.USERNAME";
 
     private CashBoxManagerActivityBinding binding;
+    @Nullable
+    private Menu optionsMenu;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -95,10 +99,12 @@ public class CashBoxManagerActivity extends AppCompatActivity implements TabLayo
 
         // Set up TabLayout and ViewPager
 //        MenusPagerAdapter.TABS_TITLES = getResources().getStringArray(R.array.tabLayout_titles);
-        binding.CBViewPager.setAdapter(new MenusPagerAdapter(getSupportFragmentManager()));
+//        binding.CBTabs.addOnTabSelectedListener(this);
+        binding.CBViewPager.setAdapter(new MenusPagerAdapter(this));
         if (binding.CBTabs != null) {
-            binding.CBTabs.addOnTabSelectedListener(this);
-            binding.CBTabs.setupWithViewPager(binding.CBViewPager);
+            new TabLayoutMediator(binding.CBTabs, binding.CBViewPager, (tab, position) -> {
+            }).attach();
+
             // Set the tab icons
             TypedArray iconsIds = getResources().obtainTypedArray(R.array.tabLayout_icons);
             for (int k = 0; k < iconsIds.length(); k++)
@@ -130,6 +136,12 @@ public class CashBoxManagerActivity extends AppCompatActivity implements TabLayo
         sendBroadcast(intent);
     }
 
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        optionsMenu = menu;
+//        return super.onCreateOptionsMenu(menu);
+//    }
+
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
@@ -148,65 +160,61 @@ public class CashBoxManagerActivity extends AppCompatActivity implements TabLayo
         }
     }
 
-    private Fragment getPagerFragment(int position) {
-        return getSupportFragmentManager().findFragmentByTag("android:switcher:" + binding.CBViewPager.getId() +
-                ":" + position);
-    }
-
-    @Override
-    public void onBackPressed() {
-        LogUtil.debug("Prueba", "Current item " + binding.CBViewPager.getCurrentItem());
-        Fragment fragment = getPagerFragment(binding.CBViewPager.getCurrentItem());
-        if (fragment instanceof PagerFragment) {
-            if (((PagerFragment) fragment).onBackPressed())
-                return;
-        }
-        super.onBackPressed();
-    }
-
     // Implementing PagerActivity
-    @Override
-    public int getCurrentPagerPosition() {
-        return binding.CBViewPager.getCurrentItem();
+
+    @NonNull
+    protected ViewPager2 getViewPager2() {
+        return binding.CBViewPager;
     }
 
-    @Override
-    public void setTabLayoutVisibility(int visibility) {
-        if (binding.CBTabs != null)
-            binding.CBTabs.setVisibility(visibility);
+    @Nullable
+    protected TabLayout getTabLayout() {
+        return binding.CBTabs;
     }
+
 
     // Implementing TabLayout.OnTabSelectedListener
-    @Override
-    public void onTabSelected(@NonNull TabLayout.Tab tab) {
-        selectTab(tab.getPosition());
-    }
+//    @Override
+//    public void onTabSelected(@NonNull TabLayout.Tab tab) {
+////        selectTab(tab.getPosition());
+//        if(optionsMenu != null)
+//            Completable.create(emitter -> {
+//                PagerFragment pagerFragment = getPagerFragment(tab.getPosition());
+//                if(pagerFragment != null)
+//                    pagerFragment.onCreateOptionsMenu(optionsMenu, getMenuInflater());
+//            }).delay(1, TimeUnit.SECONDS)
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe();
+//    }
+//
+//    public void selectTab(int position) {
+//        LogUtil.debug("PruebaViewPager", "Position: " + position);
+//        supportInvalidateOptionsMenu();
+//        binding.CBViewPager.setCurrentItem(position, true);
+//    }
+//
+//    @Override
+//    public void onTabUnselected(TabLayout.Tab tab) { // nothing to do
+//    }
+//
+//    @Override
+//    public void onTabReselected(TabLayout.Tab tab) { // nothing to do
+//    }
 
-    public void selectTab(int position) {
-        LogUtil.debug("PruebaViewPager", "Position: " + position);
-        supportInvalidateOptionsMenu();
-        binding.CBViewPager.setCurrentItem(position, true);
-    }
+    private static class MenusPagerAdapter extends FragmentStateAdapter {
+//        private static final String[] TABS_TITLES = {};
 
-    @Override
-    public void onTabUnselected(TabLayout.Tab tab) { // nothing to do
-    }
-
-    @Override
-    public void onTabReselected(TabLayout.Tab tab) { // nothing to do
-    }
-
-    private static class MenusPagerAdapter extends FragmentPagerAdapter {
-        private static final String[] TABS_TITLES = {};
-
-        private MenusPagerAdapter(@NonNull FragmentManager fm) {
-            super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
+        private MenusPagerAdapter(@NonNull FragmentActivity fragmentActivity) {
+            super(fragmentActivity);
         }
 
         @NonNull
         @Override
-        public Fragment getItem(int position) {
+        public Fragment createFragment(int position) {
             LogUtil.debug("PruebaViewPager", "Position get Item: " + position);
+            if (!BuildConfig.ONLINE && position >= CashBoxType.ONLINE)
+                position += 1;
             switch (position) {
                 case CashBoxType.LOCAL:
                     return CashBoxViewFragment.newInstance(position, false);
@@ -221,15 +229,9 @@ public class CashBoxManagerActivity extends AppCompatActivity implements TabLayo
             }
         }
 
-//        @Nullable
-//        @Override
-//        public CharSequence getPageTitle(int position) {
-//            return TABS_TITLES[position].toUpperCase();
-//        }
-
         @Override
-        public int getCount() {
-            return 4;
+        public int getItemCount() {
+            return BuildConfig.ONLINE ? 4 : 3;
         }
     }
 }

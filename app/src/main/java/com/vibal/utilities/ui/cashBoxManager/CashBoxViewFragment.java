@@ -23,7 +23,6 @@ public class CashBoxViewFragment extends PagerFragment {
     static CashBoxViewFragment newInstance(int pagerPosition, boolean onlineMode) {
         CashBoxViewFragment fragment = new CashBoxViewFragment();
         fragment.setPositionAsArgument(pagerPosition);
-        boolean prueba = fragment.getArguments() != null;
         Bundle bundle = fragment.getArguments() != null ? fragment.getArguments() :
                 new Bundle();
         bundle.putBoolean(ONLINE_MODE_ARG, onlineMode);
@@ -81,6 +80,12 @@ public class CashBoxViewFragment extends PagerFragment {
         }
         LogUtil.debug(TAG, fragmentManager.getFragments().toString());
     }
+
+//    imp make local and online not overwrite each other's title
+//    @Override
+//    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+//        getChildFragmentManager().getPrimaryNavigationFragment().onCreateOptionsMenu(menu, inflater);
+//    }
 
     @Override
     public boolean onBackPressed() {

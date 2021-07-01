@@ -51,9 +51,9 @@
         </com.google.android.material.tabs.TabLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <com.vibal.utilities.ui.viewPager.CashBoxViewPager
+    <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/CB_viewPager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
