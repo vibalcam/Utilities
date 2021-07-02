@@ -1,5 +1,6 @@
 package com.vibal.utilities.util;
 
+import android.content.Context;
 import android.os.Build;
 
 import androidx.annotation.NonNull;
@@ -12,7 +13,11 @@ import java.util.Locale;
 import java.util.UUID;
 
 public class Converters {
-    private static Currency defaultCurrency = Currency.getInstance(Locale.getDefault());
+    private static final Currency defaultCurrency = Currency.getInstance(Locale.getDefault());
+
+    public static float getScaleDpToPx(@NonNull Context context) {
+        return context.getResources().getDisplayMetrics().density;
+    }
 
     @NonNull
     @TypeConverter

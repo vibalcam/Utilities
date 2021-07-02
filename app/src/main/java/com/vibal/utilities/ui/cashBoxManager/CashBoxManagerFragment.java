@@ -17,9 +17,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.IntDef;
@@ -30,22 +28,27 @@ import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.ActionMode;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.view.ViewCompat;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.android.material.textview.MaterialTextView;
 import com.vibal.utilities.R;
+import com.vibal.utilities.databinding.CashBoxManagerFragmentBinding;
+import com.vibal.utilities.databinding.CashBoxManagerItemBinding;
+import com.vibal.utilities.exceptions.UtilAppException;
 import com.vibal.utilities.models.CashBox;
 import com.vibal.utilities.models.CashBoxInfo;
-import com.vibal.utilities.models.Entry;
+import com.vibal.utilities.models.EntryBase;
+import com.vibal.utilities.models.EntryInfo;
+import com.vibal.utilities.models.InfoWithCash;
 import com.vibal.utilities.models.PeriodicEntryPojo;
+import com.vibal.utilities.ui.bindingHolder.CashBoxManagerFragmentBindingHolder;
 import com.vibal.utilities.ui.settings.SettingsActivity;
 import com.vibal.utilities.ui.swipeController.CashBoxAdapterSwipable;
 import com.vibal.utilities.ui.swipeController.CashBoxSwipeController;
@@ -67,10 +70,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
-import butterknife.OnTouch;
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -82,11 +81,12 @@ import static com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity.ACTIO
 import static com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity.CASHBOX_MANAGER_PREFERENCE;
 import static com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity.EXTRA_ACTION;
 import static com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity.EXTRA_CASHBOX_ID;
+import static com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity.EXTRA_CASHBOX_TYPE;
 import static com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity.GROUP_ADD_MODE_KEY;
 import static com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity.GROUP_ID_COUNT_KEY;
 import static com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity.NO_ACTION;
 
-public abstract class CashBoxManagerFragment extends PagerFragment {
+public abstract class CashBoxManagerFragment extends PagerFragment implements CashBoxType {
     // Simulate enum
     static final int EDIT_MODE = 0;
     static final int GROUP_ADD_MODE = 1;
@@ -96,18 +96,16 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
     @Nullable
     protected ActionMode actionMode;
     protected CashBoxManagerRecyclerAdapter adapter;
-    @BindView(R.id.lyCBM)
-    CoordinatorLayout coordinatorLayout;
-    @BindView(R.id.fabCBM_main)
-    FloatingActionButton fabMain;
+    protected CashBoxManagerFragmentBindingHolder binding;
+
     private final ActionMode.Callback periodicAddModeCallback = new ActionMode.Callback() {
         @Override
         public boolean onCreateActionMode(ActionMode mode, Menu menu) {
             mode.getMenuInflater().inflate(R.menu.menu_contextual_confirm, menu);
             mode.setTitle("Choose CashBox:");
             //Hide fab
-            fabMain.animate().alpha(0f);
-            fabMain.setVisibility(View.GONE);
+            binding.fabCBMMain.animate().alpha(0f);
+            binding.fabCBMMain.setVisibility(View.GONE);
             // Hide TabLayout
             setTabLayoutVisibility(View.GONE);
             // Notify adapter to hide images for choosing
@@ -139,8 +137,8 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
         public void onDestroyActionMode(ActionMode mode) {
             actionMode = null;
             //Show fab
-            fabMain.setVisibility(View.VISIBLE);
-            fabMain.animate().alpha(1f);
+            binding.fabCBMMain.setVisibility(View.VISIBLE);
+            binding.fabCBMMain.animate().alpha(1f);
             // Hide TabLayout
             setTabLayoutVisibility(View.VISIBLE);
             //If menu was not clicked, clear selection and notify adapter to show images again
@@ -157,8 +155,8 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
             mode.getMenuInflater().inflate(R.menu.menu_contextual_confirm, menu);
             mode.setTitle("Choose CashBoxes:");
             //Hide fab
-            fabMain.animate().alpha(0f);
-            fabMain.setVisibility(View.GONE);
+            binding.fabCBMMain.animate().alpha(0f);
+            binding.fabCBMMain.setVisibility(View.GONE);
             // Hide TabLayout
             setTabLayoutVisibility(View.GONE);
             // Notify adapter to hide images for choosing
@@ -189,8 +187,8 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
         public void onDestroyActionMode(ActionMode mode) {
             actionMode = null;
             //Show fab
-            fabMain.setVisibility(View.VISIBLE);
-            fabMain.animate().alpha(1f);
+            binding.fabCBMMain.setVisibility(View.VISIBLE);
+            binding.fabCBMMain.animate().alpha(1f);
             // Hide TabLayout
             setTabLayoutVisibility(View.VISIBLE);
             //If menu was not clicked, clear selection and notify adapter to show images again
@@ -206,8 +204,8 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
             if (isCloneEnabled())
                 mode.getMenuInflater().inflate(R.menu.menu_contextual_toolbar_cash_box_manager, menu);
             //Hide fab
-            fabMain.animate().alpha(0f);
-            fabMain.setVisibility(View.GONE);
+            binding.fabCBMMain.animate().alpha(0f);
+            binding.fabCBMMain.setVisibility(View.GONE);
             // Hide TabLayout
             setTabLayoutVisibility(View.GONE);
             // Notify adapter to show images for dragging
@@ -239,8 +237,8 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
         public void onDestroyActionMode(ActionMode mode) {
             actionMode = null;
             //Show fab
-            fabMain.setVisibility(View.VISIBLE);
-            fabMain.animate().alpha(1f);
+            binding.fabCBMMain.setVisibility(View.VISIBLE);
+            binding.fabCBMMain.animate().alpha(1f);
             // Hide TabLayout
             setTabLayoutVisibility(View.VISIBLE);
             // Notify adapter to hide images for dragging
@@ -248,14 +246,6 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
             adapter.notifyItemRangeChanged(0, adapter.getItemCount());
         }
     };
-    @BindView(R.id.fabCBM_periodicAdd)
-    FloatingActionButton fabPeriodicAdd;
-    @BindView(R.id.fabCBM_groupAdd)
-    FloatingActionButton fabGroupAdd;
-    @BindView(R.id.fabCBM_singleAdd)
-    FloatingActionButton fabSingleAdd;
-    @BindView(R.id.bgFabMenu_CBM)
-    View viewBgFabMenu;
     private boolean isFabOpen = false;
     // Contextual toolbars
     private int actionModeType = EDIT_MODE;
@@ -272,13 +262,27 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         LogUtil.debug(TAG, "onCreate: ");
-        return inflater.inflate(R.layout.cash_box_manager_fragment, container, false);
+        binding = new CashBoxManagerFragmentBindingHolder(
+                CashBoxManagerFragmentBinding.inflate(inflater, container, false));
+        return binding.getRoot();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        ButterKnife.bind(this, view);
+
+        // Set up listeners
+        binding.fabCBMMain.setOnClickListener(v -> toggleFabMenu());
+        binding.bgFabMenuCBM.setOnClickListener(v -> closeFabMenu());
+        binding.fabCBMSingleAdd.setOnClickListener(v -> showAddDialog());
+        binding.fabCBMGroupAdd.setOnClickListener(v -> showContextualModeGroupAdd());
+        binding.fabCBMPeriodicAdd.setOnClickListener(v -> showContextualModePeriodicAdd());
 
         // Set up RecyclerView
         RecyclerView rvCashBoxManager = view.findViewById(R.id.rvCashBoxManager);
@@ -291,6 +295,7 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
                 preferences));
         itemTouchHelper.attachToRecyclerView(rvCashBoxManager);
         adapter.setOnStartDragListener(itemTouchHelper::startDrag);
+        ViewCompat.setNestedScrollingEnabled(rvCashBoxManager, false);
     }
 
     @Override
@@ -378,11 +383,16 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
         }
     }
 
+//    protected abstract @CashBoxManagerActivity.CashBoxType
+//    int getCashBoxType();
+
     private void doIntentAction() {
         Intent intent = requireActivity().getIntent();
-        int action = intent == null ? NO_ACTION : intent.getIntExtra(EXTRA_ACTION, NO_ACTION);
-        if (intent != null)
-            intent.removeExtra(EXTRA_ACTION); //So it only triggers once
+        if (intent == null || intent.getIntExtra(EXTRA_CASHBOX_TYPE, LOCAL) != getCashBoxType())
+            return;
+
+        int action = intent.getIntExtra(EXTRA_ACTION, NO_ACTION);
+        intent.removeExtra(EXTRA_ACTION); //So it only triggers once
 
         LogUtil.debug(TAG, "" + (action == ACTION_ADD_CASHBOX) + " " + (action == ACTION_DETAILS));
 
@@ -466,11 +476,10 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
                                             getString(R.string.snackbarEntriesMoveToRecycle, count),
                                             Toast.LENGTH_SHORT)
                                             .show();
-                                })));
+                                }, this::defaultDoOnRxError)));
     }
 
-    @OnClick(R.id.fabCBM_main)
-    void toggleFabMenu() {
+    private void toggleFabMenu() {
         if (isFabOpen) {
             closeFabMenu();
             return;
@@ -479,39 +488,38 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
         LogUtil.debug(TAG, "Open FAB Menu");
         //Open FAB Menu
         isFabOpen = true;
-        fabPeriodicAdd.setVisibility(View.VISIBLE);
-        fabGroupAdd.setVisibility(View.VISIBLE);
-        fabSingleAdd.setVisibility(View.VISIBLE);
-        viewBgFabMenu.setVisibility(View.VISIBLE);
+        binding.fabCBMPeriodicAdd.setVisibility(View.VISIBLE);
+        binding.fabCBMGroupAdd.setVisibility(View.VISIBLE);
+        binding.fabCBMSingleAdd.setVisibility(View.VISIBLE);
+        binding.bgFabMenuCBM.setVisibility(View.VISIBLE);
 
         //Animate
-        fabMain.animate().rotation(135f);
-        viewBgFabMenu.animate().alpha(1f);
-        fabPeriodicAdd.animate()
+        binding.fabCBMMain.animate().rotation(135f);
+        binding.bgFabMenuCBM.animate().alpha(1f);
+        binding.fabCBMPeriodicAdd.animate()
                 .translationY(-getResources().getDimension(R.dimen.standard_55))
                 .rotation(0f);
-        fabGroupAdd.animate()
+        binding.fabCBMGroupAdd.animate()
                 .translationY(-getResources().getDimension(R.dimen.standard_100))
                 .rotation(0f);
-        fabSingleAdd.animate()
+        binding.fabCBMSingleAdd.animate()
                 .translationY(-getResources().getDimension(R.dimen.standard_145))
                 .rotation(0f);
     }
 
-    @OnClick(R.id.bgFabMenu_CBM)
-    void closeFabMenu() {
+    protected void closeFabMenu() {
         LogUtil.debug(TAG, "Close FAB Menu");
         isFabOpen = false;
         //Animate
-        fabMain.animate().rotation(0f);
-        viewBgFabMenu.animate().alpha(0f);
-        fabPeriodicAdd.animate()
+        binding.fabCBMMain.animate().rotation(0f);
+        binding.bgFabMenuCBM.animate().alpha(0f);
+        binding.fabCBMPeriodicAdd.animate()
                 .translationY(0f)
                 .rotation(90f);
-        fabGroupAdd.animate()
+        binding.fabCBMGroupAdd.animate()
                 .translationY(0f)
                 .rotation(90f);
-        fabSingleAdd.animate()
+        binding.fabCBMSingleAdd.animate()
                 .translationY(0f)
                 .rotation(90f)
                 .setListener(new AnimatorListenerAdapter() {
@@ -519,18 +527,17 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
                     public void onAnimationEnd(Animator animation) {
                         if (!isFabOpen) {
                             LogUtil.debug(TAG, "Hide fabs");
-                            fabPeriodicAdd.setVisibility(View.GONE);
-                            fabGroupAdd.setVisibility(View.GONE);
-                            fabSingleAdd.setVisibility(View.GONE);
-                            viewBgFabMenu.setVisibility(View.GONE);
+                            binding.fabCBMPeriodicAdd.setVisibility(View.GONE);
+                            binding.fabCBMGroupAdd.setVisibility(View.GONE);
+                            binding.fabCBMSingleAdd.setVisibility(View.GONE);
+                            binding.bgFabMenuCBM.setVisibility(View.GONE);
                         }
                     }
                 });
 
     }
 
-    @OnClick(R.id.fabCBM_singleAdd)
-    void showAddDialog() {
+    protected void showAddDialog() {
         closeFabMenu();
         if (actionMode != null)
             actionMode.finish();
@@ -554,11 +561,15 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
                         try {
                             CashBox cashBox = CashBox.create(inputTextName.getText().toString());
                             String strInitCash = inputTextInitCash.getText().toString().trim();
+
                             if (!strInitCash.isEmpty()) {
                                 double initCash = Util.parseExpression(strInitCash);
-                                if (initCash != 0)
-                                    cashBox.getEntries().add(new Entry(initCash,
-                                            "Initial Amount", Calendar.getInstance()));
+                                if (initCash != 0) {
+                                    ArrayList<EntryBase<?>> arrayList = new ArrayList<>();
+                                    arrayList.add(EntryBase.getInstance(new EntryInfo(initCash,
+                                            "Initial Amount", Calendar.getInstance())));
+                                    cashBox.setEntries(arrayList);
+                                }
                             }
 
                             compositeDisposable.add(getViewModel().addCashBox(cashBox)
@@ -588,15 +599,13 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
                 }).show();
     }
 
-    @OnClick(R.id.fabCBM_groupAdd)
-    void showContextualModeGroupAdd() {
+    private void showContextualModeGroupAdd() {
         LogUtil.debug(TAG, "Group add");
         closeFabMenu();
         startActionMode(GROUP_ADD_MODE);
     }
 
-    @OnClick(R.id.fabCBM_periodicAdd)
-    void showContextualModePeriodicAdd() {
+    private void showContextualModePeriodicAdd() {
         LogUtil.debug(TAG, "Periodic add");
         closeFabMenu();
         startActionMode(PERIODIC_ADD_MODE);
@@ -659,8 +668,8 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
                         Completable addEntries = Completable.complete();
                         for (int k : adapter.selectedItems)
                             addEntries = addEntries.andThen(getViewModel().addEntry(adapter.currentList.get(k).getId(),
-                                    new Entry(amount, inputInfo.getText().toString().trim(),
-                                            calendarListener.getCalendar(), groupId)));
+                                    EntryBase.getInstance(new EntryInfo(amount, inputInfo.getText().toString().trim(),
+                                            calendarListener.getCalendar(), groupId))));
                         compositeDisposable.add(addEntries.subscribeOn(Schedulers.io())
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(() -> {
@@ -669,6 +678,9 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
                                             .putLong(GROUP_ID_COUNT_KEY, groupId + 1)
                                             .putInt(GROUP_ADD_MODE_KEY, mode)
                                             .apply();
+                                }, throwable -> {
+                                    dialog.dismiss();
+                                    defaultDoOnRxError(throwable);
                                 }));
                     }
                 } catch (NumberFormatException e) {
@@ -680,7 +692,7 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
         }).show();
     }
 
-    private void showAddPeriodicDialog(@NonNull CashBox.InfoWithCash infoWithCash) {
+    private void showAddPeriodicDialog(@NonNull InfoWithCash infoWithCash) {
         new MyDialogBuilder(requireContext())
                 .setTitle(R.string.periodic_dialog_newPeriodic)
                 .setView(R.layout.periodic_new_entry)
@@ -721,7 +733,10 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
                                                     calendarListener.getDaysFromCurrent()))
                                             .subscribeOn(Schedulers.io())
                                             .observeOn(AndroidSchedulers.mainThread())
-                                            .subscribe(dialog::dismiss));
+                                            .subscribe(dialog::dismiss, throwable -> {
+                                                dialog.dismiss();
+                                                defaultDoOnRxError(throwable);
+                                            }));
                                 } catch (NumberFormatException e) {
                                     layoutAmount.setError(getString(R.string.errorMessageAmount));
                                     inputAmount.selectAll();
@@ -737,7 +752,7 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
                 }).show();
     }
 
-    protected void doOnDelete(CashBox.InfoWithCash infoWithCash) {
+    protected void doOnDelete(InfoWithCash infoWithCash) {
         Toast.makeText(getContext(),
                 getString(R.string.snackbarEntriesDeleted, 1),
                 Toast.LENGTH_SHORT)
@@ -748,23 +763,28 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
         if (actionMode != null)
             actionMode.finish();
         LogUtil.debug(TAG, "Delete CashBox");
-        CashBox.InfoWithCash infoWithCash = adapter.currentList.get(position);
+        InfoWithCash infoWithCash = adapter.currentList.get(position);
         compositeDisposable.add(getViewModel().deleteCashBoxInfo(infoWithCash)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(() -> doOnDelete(infoWithCash)));
+                .subscribe(() -> doOnDelete(infoWithCash), this::defaultDoOnRxError));
+    }
+
+    protected void defaultDoOnRxError(Throwable throwable) {
+        Toast.makeText(requireContext(), UtilAppException.getErrorMsg(throwable), Toast.LENGTH_SHORT).show();
+        LogUtil.error(TAG, "RxJava error: ", throwable);
     }
 
     /**
      * Default implementation is empty
      */
-    protected void showInvitationDialog(CashBox.InfoWithCash infoWithCash) {
+    protected void showInvitationDialog(InfoWithCash infoWithCash) {
     }
 
     /**
      * Default implementation is empty
      */
-    protected void showChangesDialog(CashBox.InfoWithCash infoWithCash) {
+    protected void showChangesDialog(InfoWithCash infoWithCash) {
     }
 
     /**
@@ -781,11 +801,11 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
 
         private final NumberFormat currencyFormat = NumberFormat.getCurrencyInstance();
         @NonNull
-        private final ConcurrentLinkedQueue<Single<DiffCallback.DiffResultWithList<CashBox.InfoWithCash>>> pendingSubmitted = new ConcurrentLinkedQueue<>();
-        private Set<Integer> selectedItems = new HashSet<>();
+        private final ConcurrentLinkedQueue<Single<DiffCallback.DiffResultWithList<InfoWithCash>>> pendingSubmitted = new ConcurrentLinkedQueue<>();
+        private final Set<Integer> selectedItems = new HashSet<>();
         private OnStartDragListener onStartDragListener;
         @NonNull
-        private List<CashBox.InfoWithCash> currentList = new ArrayList<>();
+        private final List<InfoWithCash> currentList = new ArrayList<>();
 
         void setOnStartDragListener(OnStartDragListener onStartDragListener) {
             this.onStartDragListener = onStartDragListener;
@@ -797,7 +817,7 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
          *
          * @param newList New list to be submitted
          */
-        void submitList(@NonNull List<CashBox.InfoWithCash> newList) {
+        void submitList(@NonNull List<InfoWithCash> newList) {
             LogUtil.debug(TAG, "New list submitted: " + newList.toString());
             pendingSubmitted.add(Single.create(emitter ->
                     emitter.onSuccess(DiffCallback.DiffResultWithList.calculateDiff(
@@ -821,7 +841,7 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
         }
 
         private void runPendingSubmitted() {
-            Single<DiffCallback.DiffResultWithList<CashBox.InfoWithCash>> single = pendingSubmitted.peek();
+            Single<DiffCallback.DiffResultWithList<InfoWithCash>> single = pendingSubmitted.peek();
             if (single != null) {
                 compositeDisposable.add(single
                         .subscribeOn(Schedulers.io())
@@ -838,7 +858,7 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
                             pendingSubmitted.poll();
                             // Run next pending
                             runPendingSubmitted();
-                        }));
+                        }, CashBoxManagerFragment.this::defaultDoOnRxError));
             }
         }
 
@@ -852,30 +872,30 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
 
         @Override
         public void onBindViewHolder(@NonNull ViewHolder viewHolder, int index) {
-            CashBox.InfoWithCash cashBoxInfo = currentList.get(index);
-            viewHolder.rvName.setText(cashBoxInfo.getCashBoxInfo().getName());
+            InfoWithCash cashBoxInfo = currentList.get(index);
+            viewHolder.binding.rvName.setText(cashBoxInfo.getCashBoxInfo().getName());
 
             if (isDragEnabled()) { // drag mode
                 // Image show reorder
-                viewHolder.image.setVisibility(View.VISIBLE);
-                viewHolder.image.setImageResource(R.drawable.reorder_horizontal_gray_24dp);
-                viewHolder.rvAmount.setVisibility(View.GONE);
+                viewHolder.binding.reorderImage.setVisibility(View.VISIBLE);
+                viewHolder.binding.reorderImage.setImageResource(R.drawable.reorder_horizontal_gray_24dp);
+                viewHolder.binding.rvAmount.setVisibility(View.GONE);
             } else if (actionMode != null && actionModeType == GROUP_ADD_MODE) { // action mode
-                viewHolder.image.setVisibility(View.GONE);
-                viewHolder.rvAmount.setVisibility(View.GONE);
+                viewHolder.binding.reorderImage.setVisibility(View.GONE);
+                viewHolder.binding.rvAmount.setVisibility(View.GONE);
             } else { // regular mode
                 // Image show add
-                viewHolder.image.setVisibility(View.VISIBLE);
+                viewHolder.binding.reorderImage.setVisibility(View.VISIBLE);
                 if (cashBoxInfo.hasChanges())
-                    viewHolder.image.setImageResource(R.drawable.ic_fiber_new_white_24dp);
+                    viewHolder.binding.reorderImage.setImageResource(R.drawable.ic_fiber_new_white_24dp);
                 else
-                    viewHolder.image.setImageResource(R.drawable.ic_add);
+                    viewHolder.binding.reorderImage.setImageResource(R.drawable.ic_add);
                 // Amount show
-                viewHolder.rvAmount.setVisibility(View.VISIBLE);
+                viewHolder.binding.rvAmount.setVisibility(View.VISIBLE);
                 currencyFormat.setCurrency(cashBoxInfo.getCashBoxInfo().getCurrency());
-                viewHolder.rvAmount.setText(currencyFormat.format(cashBoxInfo.getCash()));
-                viewHolder.rvAmount.setTextColor(requireContext().getColor(cashBoxInfo.getCash() < 0 ?
-                        R.color.colorNegativeNumber : R.color.colorPositiveNumber));
+                viewHolder.binding.rvAmount.setText(currencyFormat.format(cashBoxInfo.getCash()));
+                viewHolder.binding.rvAmount.setTextColor(requireContext().getColor(cashBoxInfo.getCash() < 0 ?
+                        R.color.colorNegativeNumber : R.color.colorNeutralNumber));
             }
 
             // Update if item selected
@@ -903,7 +923,7 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
         @Override
         public void onItemDrop(int fromPosition, int toPosition) {
             // In order for the animations to not occur, oldList and newList have to be the same
-            CashBox.InfoWithCash infoWithCash = currentList.remove(fromPosition);
+            InfoWithCash infoWithCash = currentList.remove(fromPosition);
             currentList.add(toPosition, infoWithCash);
             // Since we are manually changing the lists, manually change selectedCashBoxes
             if (selectedItems.remove(fromPosition))
@@ -923,6 +943,8 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
         @Override
         public void onItemDelete(int position) {
             deleteCashBox(position);
+            // since the item is deleted from swipping we have to show it back again
+            notifyItemChanged(position);
         }
 
         @Override
@@ -938,7 +960,7 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
                         Button positive = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
                         TextInputEditText inputName = ((AlertDialog) dialog).findViewById(R.id.inputTextChangeName);
                         TextInputLayout layoutName = ((AlertDialog) dialog).findViewById(R.id.inputLayoutChangeName);
-                        CashBox.InfoWithCash infoWithCash = currentList.get(position);
+                        InfoWithCash infoWithCash = currentList.get(position);
 
                         inputName.setText(infoWithCash.getCashBoxInfo().getName());
                         layoutName.setCounterMaxLength(CashBoxInfo.MAX_LENGTH_NAME);
@@ -954,7 +976,10 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
                                                 .subscribeOn(Schedulers.io())
                                                 .observeOn(AndroidSchedulers.mainThread())
                                                 .subscribe(dialog::dismiss, throwable -> {
-                                                    layoutName.setError(getString(R.string.nameInUse));
+                                                    String message = throwable instanceof UtilAppException ?
+                                                            throwable.getLocalizedMessage() :
+                                                            getString(R.string.nameInUse);
+                                                    layoutName.setError(message);
                                                     inputName.selectAll();
                                                     Util.showKeyboard(requireContext(), inputName);
                                                 }));
@@ -1025,43 +1050,40 @@ public abstract class CashBoxManagerFragment extends PagerFragment {
         }
 
         public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
-            @BindView(R.id.rvName)
-            TextView rvName;
-            @BindView(R.id.rvAmount)
-            TextView rvAmount;
-            @BindView(R.id.reorderImage)
-            ImageView image;
+            private final CashBoxManagerItemBinding binding;
 
             ViewHolder(@NonNull View view) {
                 super(view);
-                ButterKnife.bind(this, view);
+                binding = CashBoxManagerItemBinding.bind(view);
+                binding.reorderImage.setOnTouchListener((v, event) -> onImageTouch(event));
 
                 view.setOnClickListener(this);
                 view.setOnLongClickListener(this);
             }
 
-            @OnTouch(R.id.reorderImage)
             boolean onImageTouch(@NonNull MotionEvent event) {
+                boolean ret = false;
                 if (actionMode == null) { //Normal behavior
                     if (event.getActionMasked() == MotionEvent.ACTION_UP) {
-                        CashBox.InfoWithCash infoWithCash = currentList.get(getAdapterPosition());
+                        InfoWithCash infoWithCash = currentList.get(getAdapterPosition());
                         if (infoWithCash.isNew())
                             showInvitationDialog(infoWithCash);
                         else if (infoWithCash.hasChanges())
                             showChangesDialog(infoWithCash);
                         else
                             CashBoxItemFragment.getAddEntryDialog(currentList.get(getAdapterPosition()).getId(),
-                                    requireContext(), getViewModel(), compositeDisposable)
+                                    requireContext(), getViewModel(), compositeDisposable, null)
                                     .show();
                     }
-                    return true; //to consume the touch action so it does not count as a click on the view
+                    ret = true; //to consume the touch action so it does not count as a click on the view
                 } else { //While in edit mode/action mode
                     if (onStartDragListener != null && event.getActionMasked() == MotionEvent.ACTION_DOWN) {
                         onStartDragListener.onStartDrag(this);
-                        return true;
-                    } else
-                        return false;
+                        ret = true;
+                    }
                 }
+                binding.reorderImage.performClick();
+                return ret;
             }
 
             @Override

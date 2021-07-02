@@ -9,7 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.vibal.utilities.R;
-import com.vibal.utilities.models.CashBox;
+import com.vibal.utilities.models.InfoWithCash;
 import com.vibal.utilities.persistence.db.UtilitiesDatabase;
 import com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity;
 
@@ -24,9 +24,9 @@ public class CashBoxWidgetService extends RemoteViewsService {
     }
 
     class CashBoxWidgetItemFactory implements RemoteViewsFactory {
-        private Context context;
+        private final Context context;
         private UtilitiesDatabase database;
-        private List<CashBox.InfoWithCash> cashBoxInfos;
+        private List<InfoWithCash> cashBoxInfos;
         private NumberFormat currencyFormat;
 
         CashBoxWidgetItemFactory(Context context) {
@@ -63,14 +63,14 @@ public class CashBoxWidgetService extends RemoteViewsService {
                 return null;
 
             // Set up layout
-            CashBox.InfoWithCash cashBoxInfo = cashBoxInfos.get(position);
+            InfoWithCash cashBoxInfo = cashBoxInfos.get(position);
             RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.cash_box_manager_widget_item);
             views.setTextViewText(R.id.nameCBMWidgetItem, cashBoxInfo.getCashBoxInfo().getName());
             views.setTextViewText(R.id.amountCBMWidgetItem, currencyFormat.format(cashBoxInfo.getCash()));
             if (cashBoxInfo.getCash() < 0)
                 views.setTextColor(R.id.amountCBMWidgetItem, context.getColor(R.color.colorNegativeNumber));
             else
-                views.setTextColor(R.id.amountCBMWidgetItem, context.getColor(R.color.colorPositiveNumber));
+                views.setTextColor(R.id.amountCBMWidgetItem, context.getColor(R.color.colorNeutralNumber));
 
             // Intent for OnClick
             Intent fillIntent = new Intent();

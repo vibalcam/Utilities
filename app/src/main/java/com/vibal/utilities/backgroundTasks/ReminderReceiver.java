@@ -11,55 +11,124 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.StringDef;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
 import com.vibal.utilities.App;
 import com.vibal.utilities.R;
-import com.vibal.utilities.models.CashBoxInfo;
+import com.vibal.utilities.persistence.db.CashBoxBaseDao;
 import com.vibal.utilities.persistence.db.UtilitiesDatabase;
 import com.vibal.utilities.ui.cashBoxManager.CashBoxItemFragment;
 import com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity;
+import com.vibal.utilities.ui.cashBoxManager.CashBoxType;
 import com.vibal.utilities.util.LogUtil;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.Calendar;
-import java.util.Locale;
 import java.util.Map;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
-import static com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity.EXTRA_CASHBOX_ID;
-
 public class ReminderReceiver extends BroadcastReceiver {
+    private static final String SEPARATOR = ":";
     public static final String REMINDER_PREFERENCE = "com.vibal.utilities.NOTIFICATION_PREFERENCE";
-    public static final String ACTION_REMINDER = "com.vibal.utilities.ACTION_REMINDER%d";
+    public static final String ACTION_REMINDER = "com.vibal.utilities.ACTION_REMINDER" + SEPARATOR + "%s";
+
+    // Reminder types
+    public static final String ONLINE = "%d" + SEPARATOR + "online";    // to be completed with CashBox id
+    public static final String LOCAL = "%d";      // to be completed with CashBox id
+
+    @StringDef({ONLINE, LOCAL})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ReminderType {
+    }
+
     private static final String TAG = "PruebaReminderReceiver";
 
-    public static void setAlarm(@NonNull AlarmManager alarmManager, Context context, long cashBoxId, long timeInMillis) {
+    private static SharedPreferences getSharedPreferences(@NonNull Context context) {
+        return context.getSharedPreferences(REMINDER_PREFERENCE, Context.MODE_PRIVATE);
+    }
+
+    public static boolean hasAlarm(@NonNull Context context, long cashBoxId,
+                                   @ReminderType String reminderType) {
+        return getSharedPreferences(context)
+                .contains(String.format(reminderType, cashBoxId));
+    }
+
+    public static long getTimeInMillis(@NonNull Context context, long cashBoxId,
+                                       @ReminderType String reminderType, long defaultValue) {
+        return getSharedPreferences(context)
+                .getLong(String.format(reminderType, cashBoxId), defaultValue);
+    }
+
+    private static PendingIntent createReminderIntent(Context context, String cashBoxExtra) {
+        Intent intentAlarm = new Intent(context, ReminderReceiver.class);
+        intentAlarm.setAction(String.format(ACTION_REMINDER, cashBoxExtra));
+
+        return PendingIntent.getBroadcast(context, CashBoxItemFragment.REMINDER_ID,
+                intentAlarm, 0);
+    }
+
+    private static String getCashBoxExtraFromAction(@NonNull String action) {
+        return action.split(SEPARATOR, 2)[1];
+    }
+
+    /**
+     * Sets a new alarm
+     *
+     * @return true if the alarm was set, false otherwise (time given has already passed)
+     */
+    public static boolean setAlarm(@NonNull AlarmManager alarmManager, @NonNull Context context,
+                                   long cashBoxId, long timeInMillis, @ReminderType String reminderType) {
+        String reminderExtra = String.format(reminderType, cashBoxId);
+        if (!setAlarmManager(alarmManager, context, timeInMillis, reminderExtra))
+            return false;
+
+        //Enable boot receiver
+        ReminderReceiver.setBootReceiverEnabled(context, true);
+        //Add reminder to Notification SharedPreferences
+        SharedPreferences sharedPref = getSharedPreferences(context);
+        sharedPref.edit().putLong(reminderExtra, timeInMillis).apply();
+        return true;
+    }
+
+    /**
+     * Sets the alarm in the alarm manager
+     *
+     * @return true if the alarm was set, false otherwise (time given has already passed)
+     */
+    private static boolean setAlarmManager(@NonNull AlarmManager alarmManager, Context context,
+                                           long timeInMillis, String reminderExtra) {
         // Do not set alarm if time is after current, instead call notification
         if (Calendar.getInstance().getTimeInMillis() >= timeInMillis) {
-            showReminderNotification(context, cashBoxId);
-            return;
+            showReminderNotification(context, reminderExtra);
+            return false;
         }
 
-        Intent intentAlarm = new Intent(context, ReminderReceiver.class);
-        intentAlarm.putExtra(EXTRA_CASHBOX_ID, cashBoxId);
-        intentAlarm.setAction(String.format(Locale.US, ACTION_REMINDER, cashBoxId));
         alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC, timeInMillis,
-                PendingIntent.getBroadcast(context, CashBoxItemFragment.REMINDER_ID,
-                        intentAlarm, 0));
+                createReminderIntent(context, reminderExtra));
+        return true;
     }
 
-    public static void cancelAlarm(@NonNull AlarmManager alarmManager, Context context, long cashBoxId) {
-        Intent intentAlarm = new Intent(context, ReminderReceiver.class);
-        intentAlarm.setAction(String.format(Locale.US, ACTION_REMINDER, cashBoxId));
-        alarmManager.cancel(PendingIntent.getBroadcast(context, CashBoxItemFragment.REMINDER_ID,
-                intentAlarm, 0));
+    public static void cancelAlarm(@NonNull AlarmManager alarmManager, @NonNull Context context,
+                                   long cashBoxId, @ReminderType String reminderType) {
+        // Delete reminder from Notifications SharedPreference
+        SharedPreferences sharedPref = getSharedPreferences(context);
+        String reminderExtra = String.format(reminderType, cashBoxId);
+        sharedPref.edit().remove(reminderExtra).apply();
+
+        alarmManager.cancel(createReminderIntent(context, reminderExtra));
+
+        //Disable boot receiver if there are no other alarms
+        if (sharedPref.getAll().isEmpty())
+            ReminderReceiver.setBootReceiverEnabled(context, false);
     }
 
-    public static void setBootReceiverEnabled(@NonNull Context context, boolean enable) {
+    private static void setBootReceiverEnabled(@NonNull Context context, boolean enable) {
         LogUtil.debug(TAG, "Enable receiver " + enable);
         ComponentName receiver = new ComponentName(context, ReminderReceiver.class);
         PackageManager pm = context.getPackageManager();
@@ -72,18 +141,27 @@ public class ReminderReceiver extends BroadcastReceiver {
                     PackageManager.DONT_KILL_APP);
     }
 
-    public static void showReminderNotification(Context context, long cashBoxId) {
+    private static void showReminderNotification(@NonNull Context context, String cashBoxExtra) {
         //Remove reminder from SharedPreferences
-        SharedPreferences sharedPref = context.getSharedPreferences(REMINDER_PREFERENCE,
-                Context.MODE_PRIVATE);
-        sharedPref.edit().remove(Long.toString(cashBoxId)).apply();
+        SharedPreferences sharedPref = getSharedPreferences(context);
+        sharedPref.edit().remove(cashBoxExtra).apply();
 
         if (sharedPref.getAll().isEmpty())
             setBootReceiverEnabled(context, false);
 
+        // Get cashbox type
+        String[] extraSplit = cashBoxExtra.split(SEPARATOR);
+        @CashBoxType.Type int cashBoxType = extraSplit.length == 1 ?
+                CashBoxType.LOCAL : CashBoxType.ONLINE;
+
         //Get info of the CashBox
-        Disposable disposable = UtilitiesDatabase.getInstance(context).cashBoxLocalDao()
-                .getCashBoxById(cashBoxId)
+        UtilitiesDatabase database = UtilitiesDatabase.getInstance(context);
+        CashBoxBaseDao dao = cashBoxType == CashBoxType.LOCAL
+                ? database.cashBoxLocalDao() : database.cashBoxOnlineDao();
+        long cashBoxId = Long.parseLong(extraSplit[0]);
+
+        Disposable disposable = dao
+                .getCashBoxById(cashBoxId, database.cashBoxEntryLocalDao())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(cashBox -> {
@@ -91,6 +169,7 @@ public class ReminderReceiver extends BroadcastReceiver {
                     Intent intentNotif = new Intent(context, CashBoxManagerActivity.class);
                     intentNotif.putExtra(CashBoxManagerActivity.EXTRA_ACTION, CashBoxManagerActivity.ACTION_DETAILS);
                     intentNotif.putExtra(CashBoxManagerActivity.EXTRA_CASHBOX_ID, cashBoxId);
+                    intentNotif.putExtra(CashBoxManagerActivity.EXTRA_CASHBOX_TYPE, cashBoxType);
 
                     Notification notification = new NotificationCompat.Builder(context,
                             App.CHANNEL_REMINDER_ID)
@@ -114,14 +193,16 @@ public class ReminderReceiver extends BroadcastReceiver {
     public void onReceive(@NonNull Context context, @NonNull Intent intent) {
         LogUtil.debug(TAG, "On Receive: " + intent.getAction());
         String action = intent.getAction();
+        if (action == null) {
+            LogUtil.debug(TAG, "Received null action in reminder");
+            return;
+        }
 
         //If reboot completed, reset the alarms
-        if (action != null && action.equals(Intent.ACTION_BOOT_COMPLETED)) {
-            SharedPreferences sharedPref = context.getSharedPreferences(REMINDER_PREFERENCE,
-                    Context.MODE_PRIVATE);
+        if (action.equals(Intent.ACTION_BOOT_COMPLETED)) {
+            SharedPreferences sharedPref = getSharedPreferences(context);
             LogUtil.debug(TAG, "Rescheduling alarms");
             AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-            //Intent intentAlarm;
             SharedPreferences.Editor editor = sharedPref.edit();
             for (Map.Entry<String, ?> entry : sharedPref.getAll().entrySet()) {
                 if (!(entry.getValue() instanceof Long)) {
@@ -129,14 +210,13 @@ public class ReminderReceiver extends BroadcastReceiver {
                     editor.remove(entry.getKey());
                     continue;
                 }
-                LogUtil.debug(TAG, "alarm set");
-                setAlarm(alarmManager, context, Long.parseLong(entry.getKey()), (Long) entry.getValue());
+                LogUtil.debug(TAG, "set alarm");
+                setAlarmManager(alarmManager, context, (Long) entry.getValue(), entry.getKey());
             }
             editor.apply();
         } else { //Show notification reminder
             LogUtil.debug(TAG, "Show notification");
-            showReminderNotification(context,
-                    intent.getLongExtra(EXTRA_CASHBOX_ID, CashBoxInfo.NO_ID));
+            showReminderNotification(context, getCashBoxExtraFromAction(action));
         }
     }
 }

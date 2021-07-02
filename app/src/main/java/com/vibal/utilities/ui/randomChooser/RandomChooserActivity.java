@@ -11,10 +11,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,6 +28,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.vibal.utilities.R;
+import com.vibal.utilities.databinding.RandomChooserActivityBinding;
+import com.vibal.utilities.databinding.RandomChooserItemBinding;
 import com.vibal.utilities.ui.settings.SettingsActivity;
 import com.vibal.utilities.ui.swipeController.CashBoxAdapterSwipable;
 import com.vibal.utilities.ui.swipeController.CashBoxSwipeController;
@@ -40,23 +41,11 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
-import butterknife.OnEditorAction;
-import butterknife.OnItemSelected;
-
 public class RandomChooserActivity extends AppCompatActivity {
     private static final int NO_LIST = 0;
 
-    @BindView(R.id.rvRandomChooser)
-    RecyclerView rvRandomChooser;
-    @BindView(R.id.inputText)
-    EditText inputText;
-    @BindView(R.id.spinnerList)
-    Spinner spinnerCurrentList;
-
     private RandomChooserRecyclerAdapter adapter;
+    private RandomChooserActivityBinding binding;
     private ArrayAdapter<String> spinnerAdapter;
     private SharedPreferences preferences;
     private String currentListName = null;
@@ -64,19 +53,38 @@ public class RandomChooserActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.random_chooser_activity);
-        ButterKnife.bind(this);
+        binding = RandomChooserActivityBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
+        //Set up listeners
+        binding.spinnerList.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                onListSelected(position);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
+        binding.buttonAddList.setOnClickListener(v -> showAddListDialog());
+        binding.buttonDeleteList.setOnClickListener(v -> deleteCurrentList());
+        binding.buttonShuffle.setOnClickListener(v -> shuffleContestants());
+        binding.inputText.setOnEditorActionListener((v, actionId, event) -> onEditorAction(actionId));
+        binding.buttonAdd.setOnClickListener(v -> addParticipant());
+        binding.buttonRoll.setOnClickListener(v -> getWinner());
+
+        // Set up toolbar
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         //Set-up RecyclerView
-        rvRandomChooser.setHasFixedSize(true);
-        rvRandomChooser.setLayoutManager(new LinearLayoutManager(rvRandomChooser.getContext()));
+        binding.rvRandomChooser.setHasFixedSize(true);
+        binding.rvRandomChooser.setLayoutManager(new LinearLayoutManager(binding.rvRandomChooser.getContext()));
         adapter = new RandomChooserRecyclerAdapter();
-        rvRandomChooser.setAdapter(adapter);
+        binding.rvRandomChooser.setAdapter(adapter);
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new CashBoxSwipeController(adapter,
                 PreferenceManager.getDefaultSharedPreferences(this)));
-        itemTouchHelper.attachToRecyclerView(rvRandomChooser);
+        itemTouchHelper.attachToRecyclerView(binding.rvRandomChooser);
 
         // Set up spinner
         preferences = getPreferences(Context.MODE_PRIVATE);
@@ -84,14 +92,14 @@ public class RandomChooserActivity extends AppCompatActivity {
         list.add("New List");
         list.addAll(preferences.getAll().keySet());
         spinnerAdapter = new ArrayAdapter<>(this, R.layout.spinner_contestants_list_item, list);
-        spinnerCurrentList.setAdapter(spinnerAdapter);
-        spinnerCurrentList.setSelection(NO_LIST); // select new list initially
+        binding.spinnerList.setAdapter(spinnerAdapter);
+        binding.spinnerList.setSelection(NO_LIST); // select new list initially
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        inputText.requestFocus();
+        binding.inputText.requestFocus();
     }
 
     @Override
@@ -124,7 +132,6 @@ public class RandomChooserActivity extends AppCompatActivity {
         }
     }
 
-    @OnItemSelected(R.id.spinnerList)
     public void onListSelected(int position) {
         currentListName = position == NO_LIST ? null : spinnerAdapter.getItem(position);
         // Clear contestants
@@ -139,8 +146,7 @@ public class RandomChooserActivity extends AppCompatActivity {
             preferences.edit().putStringSet(currentListName, new HashSet<>(adapter.contestants)).apply();
     }
 
-    @OnClick(R.id.buttonAddList)
-    void showAddListDialog() {
+    private void showAddListDialog() {
         new MyDialogBuilder(this)
                 .setTitle("New contestants list")
                 .setView(R.layout.random_chooser_input_name)
@@ -170,26 +176,23 @@ public class RandomChooserActivity extends AppCompatActivity {
         currentListName = name;
         saveContestantsToPreferences();
         spinnerAdapter.insert(currentListName, 1);
-        spinnerCurrentList.setSelection(1);
+        binding.spinnerList.setSelection(1);
     }
 
-    @OnClick(R.id.buttonDeleteList)
-    void deleteCurrentList() {
+    private void deleteCurrentList() {
         if (currentListName == null)
             return;
         spinnerAdapter.remove(currentListName);
         preferences.edit().remove(currentListName).apply();
-        spinnerCurrentList.setSelection(NO_LIST);
+        binding.spinnerList.setSelection(NO_LIST);
     }
 
-    @OnClick(R.id.buttonShuffle)
-    public void onViewClicked(View view) {
+    private void shuffleContestants() {
         Collections.shuffle(adapter.contestants);
         adapter.notifyDataSetChanged();
     }
 
-    @OnEditorAction(R.id.inputText)
-    public boolean onEditorAction(int actionId) {
+    private boolean onEditorAction(int actionId) {
         if (actionId == EditorInfo.IME_ACTION_GO) {
             addParticipant();
             return true;
@@ -200,16 +203,15 @@ public class RandomChooserActivity extends AppCompatActivity {
     /**
      * Adds the text in inputText to the participants ArrayList
      */
-    @OnClick(R.id.buttonAdd)
-    void addParticipant() {
-        String input = inputText.getText().toString();
+    private void addParticipant() {
+        String input = binding.inputText.getText().toString();
         if (input.isEmpty()) {
             Toast.makeText(this, "You have to enter a name", Toast.LENGTH_SHORT).show();
 //        } else if (input.contains(SEPARATOR)) {
 //            Toast.makeText(this, "The name cannot contain " + SEPARATOR, Toast.LENGTH_SHORT).show();
         } else {
             adapter.contestants.add(input);
-            inputText.setText("");
+            binding.inputText.setText("");
             adapter.notifyItemInserted(adapter.contestants.size() - 1);
             saveContestantsToPreferences();
         }
@@ -218,8 +220,7 @@ public class RandomChooserActivity extends AppCompatActivity {
     /**
      * Randomly chooses an element from the participants ArrayList and shows it in a AlertDialog
      */
-    @OnClick(R.id.buttonRoll)
-    void getWinner() {
+    private void getWinner() {
         if (!adapter.contestants.isEmpty()) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle("The dice have spoken!");
@@ -231,7 +232,7 @@ public class RandomChooserActivity extends AppCompatActivity {
 
     public class RandomChooserRecyclerAdapter extends RecyclerView.Adapter<RandomChooserRecyclerAdapter.ViewHolder>
             implements CashBoxAdapterSwipable {
-        private List<String> contestants = new ArrayList<>();
+        private final List<String> contestants = new ArrayList<>();
 
         @NonNull
         @Override
@@ -298,12 +299,11 @@ public class RandomChooserActivity extends AppCompatActivity {
         }
 
         public class ViewHolder extends RecyclerView.ViewHolder {
-            @BindView(R.id.rvRandomChooserContestant)
             TextView rvRandomChooserContestant;
 
             public ViewHolder(@NonNull View view) {
                 super(view);
-                ButterKnife.bind(this, view);
+                rvRandomChooserContestant = RandomChooserItemBinding.bind(view).rvRandomChooserContestant;
             }
         }
     }

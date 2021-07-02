@@ -15,5 +15,10 @@
 
     <!--Color of Numbers-->
     <color name="colorNegativeNumber">#E3332B</color>
-    <color name="colorPositiveNumber">#000000</color>
+    <color name="colorNeutralNumber">#000000</color>
+    <color name="colorPositiveNumber">#0277BD</color>
+
+    <!--Color for graph-->
+    <color name="colorChartPositive">#61B364</color>
+    <color name="colorChartNegative">#F4365C</color>
 </resources>

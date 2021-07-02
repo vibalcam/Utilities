@@ -15,8 +15,23 @@
         <item>CashBox Manager</item>
     </string-array>
 
+    <!--Tab Layout Titles-->
+    <!--    <string-array name="tabLayout_titles">-->
+    <!--        <item>@string/menuCBM_manager</item>-->
+    <!--        <item>@string/menuCBM_managerOnline</item>-->
+    <!--        <item>@string/menuCBM_recycleBin</item>-->
+    <!--        <item>@string/menuCBM_showPeriodic</item>-->
+    <!--    </string-array>-->
+
+    <integer-array name="tabLayout_icons">
+        <item>@drawable/ic_wallet_white_24dp</item>
+        <item>@drawable/ic_cloud_white_24dp</item>
+        <item>@drawable/recycle</item>
+        <item>@drawable/calendar_clock</item>
+    </integer-array>
+
     <!--CashBox Preferences-->
-        <!--Don't change order without changing Java code-->
+    <!--Don't change order without changing Java code-->
     <string-array name="groupAddBehaviour_entries">
         <item>Introduced amount to all</item>
         <item>amount / number of selected</item>

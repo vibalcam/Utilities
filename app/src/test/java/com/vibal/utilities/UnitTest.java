@@ -60,7 +60,7 @@ public class UnitTest {
         System.out.println("Disposed: " + disposable.isDisposed());
         Thread.sleep(2000);
 
-        // Test
+        // Check
 //        TestObserver disposable = completable.observeOn(Schedulers.trampoline())
 //                .doOnSubscribe(disposable1 -> System.out.println("Connect"))
 //                .test();
@@ -103,7 +103,7 @@ public class UnitTest {
 //        System.out.println("Disposed: " + disposable.isDisposed());
 //        Thread.sleep(2000);
 
-        // Test
+        // Check
         TestObserver disposable = observable.observeOn(Schedulers.trampoline())
                 .doOnSubscribe(disposable1 -> System.out.println("Connect"))
                 .test();

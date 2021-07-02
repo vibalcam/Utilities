@@ -4,8 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="horizontal"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    tools:showIn="@layout/cash_box_item_entry_input">
+    android:layout_height="wrap_content">
+
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/inputLayoutAmount"
         android:layout_width="0dp"
@@ -54,7 +54,8 @@
         app:helperTextEnabled="true"
         app:helperText="Can be blank"
         app:endIconMode="clear_text"
-        android:hint="@string/enterInfoDialog" >
+        android:hint="@string/enterInfoDialog">
+
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/inputTextInfo"
             android:layout_width="match_parent"

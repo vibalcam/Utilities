@@ -20,33 +20,92 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/rvItemAmount"
-        app:layout_constraintBottom_toTopOf="@id/rvItemInfo"
-        tools:text="Prueba fecha"/>
+        app:layout_constraintBottom_toTopOf="@id/rvItemFrom"
+        tools:text="Prueba fecha" />
+
+    <!--    <TextView-->
+    <!--        android:id="@+id/rvItemAmount"-->
+    <!--        android:layout_width="0dp"-->
+    <!--        android:layout_height="0dp"-->
+    <!--        android:textColor="@color/colorPositiveNumber"-->
+    <!--        android:textAppearance="?android:attr/textAppearanceMedium"-->
+    <!--        android:gravity="center_horizontal"-->
+    <!--        android:layout_marginEnd="@dimen/marginRV_date_amount"-->
+    <!--        app:layout_constraintTop_toTopOf="@id/rvItemDate"-->
+    <!--        app:layout_constraintBottom_toBottomOf="@id/rvItemDate"-->
+    <!--        app:layout_constraintStart_toEndOf="@id/rvItemDate"-->
+    <!--        app:layout_constraintEnd_toStartOf="@id/rvItemBalance"-->
+    <!--        tools:text="50,00 €" />-->
+
+    <!--    <TextView-->
+    <!--        android:id="@+id/rvItemBalance"-->
+    <!--        android:layout_width="0dp"-->
+    <!--        android:layout_height="0dp"-->
+    <!--        android:textColor="@color/colorPositiveBalance"-->
+    <!--        android:textAppearance="?android:attr/textAppearanceMedium"-->
+    <!--        android:gravity="center_horizontal"-->
+    <!--        android:visibility="gone"-->
+    <!--        app:layout_constraintTop_toTopOf="@id/rvItemAmount"-->
+    <!--        app:layout_constraintBottom_toBottomOf="@id/rvItemAmount"-->
+    <!--        app:layout_constraintStart_toEndOf="@id/rvItemAmount"-->
+    <!--        app:layout_constraintEnd_toEndOf="parent"-->
+    <!--        tools:visibility="visible"-->
+    <!--        tools:text="50,00 €" />-->
 
     <TextView
         android:id="@+id/rvItemAmount"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:textColor="@color/colorPositiveNumber"
+        android:textColor="@color/colorNeutralNumber"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:gravity="center_horizontal"
-        app:layout_constraintTop_toTopOf="@+id/rvItemDate"
+        app:layout_constraintTop_toTopOf="@id/rvItemDate"
         app:layout_constraintBottom_toBottomOf="@id/rvItemDate"
         app:layout_constraintStart_toEndOf="@id/rvItemDate"
         app:layout_constraintEnd_toEndOf="parent"
-        tools:text="50,00 €"/>
+        tools:text="50,00 €" />
+
+    <TextView
+        android:id="@+id/rvItemFrom"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textColor="@android:color/black"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textStyle="italic"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/rvItemDate"
+        app:layout_constraintBottom_toTopOf="@id/rvItemInfo"
+        app:layout_constraintStart_toStartOf="@id/rvItemDate"
+        app:layout_constraintEnd_toStartOf="@id/rvItemBalance"
+        android:maxLines="1"
+        tools:visibility="visible"
+        tools:text="paid by me" />
+
+    <TextView
+        android:id="@+id/rvItemBalance"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:textColor="@color/colorPositiveNumber"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:gravity="center_horizontal"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="@id/rvItemFrom"
+        app:layout_constraintBottom_toBottomOf="@id/rvItemFrom"
+        app:layout_constraintStart_toStartOf="@id/rvItemAmount"
+        app:layout_constraintEnd_toEndOf="@id/rvItemAmount"
+        tools:visibility="visible"
+        tools:text="50,00 €" />
 
     <TextView
         android:id="@+id/rvItemInfo"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_below="@id/rvItemDate"
         android:textColor="@android:color/black"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        app:layout_constraintTop_toBottomOf="@id/rvItemDate"
+        app:layout_constraintTop_toBottomOf="@id/rvItemFrom"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="@id/rvItemDate"
         app:layout_constraintEnd_toEndOf="@id/rvItemAmount"
-        tools:text="Esto es una prueba de la info"/>
+        tools:text="Esto es una prueba de la info" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

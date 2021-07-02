@@ -8,6 +8,8 @@
     <string name="titleCBM_online">Cloud</string>
     <string name="title_periodicEntry">Periodic Entries</string>
     <string name="title_deletedCashBox">Recycle Bin</string>
+    <string name="title_details">Details</string>
+    <string name="title_balance">Balance</string>
     <!--    <string name="title_activity_settings">Settings</string>-->
 
 
@@ -29,7 +31,10 @@
     <string name="modifyEntry">Modify Entry</string>
     <string name="addEntryDialog">Add Entry</string>
     <string name="item_totalCash">Total Cash</string>
+    <string name="myBalance">My Balance</string>
     <string name="errorMessageAmount">" "</string>
+    <string name="error">ERROR</string>
+    <string name="between_parenthesis">(%s)</string>
     <string name="noEntriesDelete">"No entries to delete"</string>
     <string name="menu_contextualToolbar">Edit Mode</string>
     <string name="helperEnterNameDialog">Max. 15 characters</string>
@@ -40,6 +45,19 @@
     <string name="required">*Required</string>
     <string name="outOfRange">Out of range</string>
     <string name="dialog_hint_name">Name</string>
+    <string name="accept">Accept</string>
+    <string name="reject">Reject</string>
+    <string name="invite">Invite</string>
+    <string name="duplicate">Duplicate</string>
+    <string name="add">Add</string>
+    <string name="cancelDialog">Cancel</string>
+    <string name="confirmDeleteDialogConfirm">Delete</string>
+    <string name="undo">Undo</string>
+    <string name="dialog_hint_username">Username</string>
+    <string name="owes">owes</string>
+    <string name="confirm">Confirm</string>
+    <string name="save">Save</string>
+    <string name="paid">paid</string>
 
     <!--Menu Actions-->
     <string name="action_help">Help</string>
@@ -49,19 +67,18 @@
     <!--Dialogs and SnackBars-->
     <string name="confirmDeleteDialog">Confirm Delete</string>
     <string name="confirmDeleteAllDialog">Confirm Delete All</string>
+    <string name="deleteEverywhere">Delete From CashBox</string>
+    <string name="deleteParticipantEverywhere">
+        Do you want to delete this participant from all entries in the CashBox?
+    </string>
     <string name="confirmRestoreAllDialog">Confirm Restore All</string>
     <string name="confirmRecycleAllDialog">Confirm Move All to Recycle Bin</string>
-    <string name="cancelDialog">Cancel</string>
-    <string name="confirmDeleteDialogConfirm">Delete</string>
-    <string name="undo">Undo</string>
     <string name="snackbarEntriesDeleted">%d deleted</string>
     <string name="snackbarEntriesMoveToRecycle">%d moved to recycle bin</string>
     <string name="snackbarEntriesRestored">%d restored</string>
-    <string name="accept">Accept</string>
-    <string name="reject">Reject</string>
-    <string name="invite">Invite</string>
-    <string name="duplicate">Duplicate</string>
-    <string name="add">Add</string>
+    <string name="reload_title">Hard Reload From Server</string>
+    <string name="reload_message">Are you sure you want to reload from server?
+        This will delete the CashBox\'s local data.</string>
 
     <!--CashBox Manager Fragment-->
     <string name="no_cashbox_selected">No CashBox Selected</string>
@@ -87,6 +104,7 @@
     <string name="enterDateDialog">%d/%d/%d</string>
     <string name="enterInfoDialog">Info</string>
     <string name="enterAmountDialog">Amount</string>
+    <string name="paidBy">paid by %s</string>
 
     <!--CashBox Online Fragments-->
     <string name="dialog_inviteTitle">Invite user</string>
@@ -95,10 +113,14 @@
         Input the username which others will use to find you
         \n(Do not use your real name)
     </string>
-    <string name="dialog_hint_username">Username</string>
     <string name="dialog_acceptInvitation_title">New CashBox Invitation</string>
     <string name="dialog_acceptInvitation_message">%s has invited yo to a shared online cashBox</string>
     <string name="dialog_view_changes">Non viewed changes</string>
+    <string name="dialog_nonExistentModify">Modifying deleted entry</string>
+    <string name="dialog_nonExistentModify_message">
+        You are trying to modify an entry which has already been deleted. Would you like to add a new entry
+        or cancel?
+    </string>
 
     <!--CashBox Item Menu-->
     <string name="action_reset">Delete All</string>
@@ -108,6 +130,7 @@
     <string name="menu_item_currency">Currency</string>
     <string name="menu_item_invite">Invite</string>
     <string name="menu_refresh">Refresh</string>
+    <string name="menu_reload">Hard Reload</string>
 
     <!--CashBox Deleted Menu-->
     <string name="action_restoreAll">Restore All</string>
@@ -130,7 +153,7 @@
     <string name="repetitions">Repetitions</string>
     <string name="periodic_repetitionsLeft">%d times left</string>
 
-    <!--CashBox Periodic Entry-->
+    <!--CashBox Periodic EntryBase-->
     <string name="periodic_dialog_periodHint">Period (days)</string>
     <string name="periodic_dialog_newPeriodic">New Periodic Entry</string>
     <string name="periodic_menu_title">Add Periodic</string>
@@ -157,6 +180,9 @@
         \nTo delete all entries, click the trashcan symbol at the top of the app.
     </string>
     <string name="changesVersions">
+        <b>3.1</b>
+        \n-\tAdded the option to include participants in entries
+        \n-\tAdded balance view and suggested payments to balance the account
         <b>3.0</b>
         \n-\tAdded online cashBoxes. Now you will be able to have a shared cashBoxes with your
         friends.
@@ -180,7 +206,6 @@
         \n-\tLandscape mode is now more useful.
     </string>
 
-
     <!--Preference Titles-->
     <string name="pref_general_header">General</string>
     <string name="pref_CBM_header">CashBox Manager</string>
@@ -199,6 +224,7 @@
     <string name="pref_notifyPeriodic">Notification Periodic</string>
     <string name="pref_summaryOn_notifyPeriodic">Notify when a periodic entry has been added</string>
     <string name="pref_summaryOff_notifyPeriodic">Do not notify when a periodic entry has been added</string>
+    <string name="pref_self_participant">Set my participant name</string>
 
     <!--CashBox Online Preferences-->
     <string name="pref_online">Allow online mode</string>
@@ -221,5 +247,8 @@
 
     <!--CashBox Manager Widget-->
     <string name="emptyCashBoxManager">No CashBoxes added</string>
-    <string name="confirm">Confirm</string>
+
+    <!--CashBox Manager Item Details-->
+    <string name="paidToParticipants">To the following:</string>
+    <string name="paidByParticipants">Paid by the following:</string>
 </resources>

@@ -4,8 +4,8 @@ import android.app.Application;
 
 import androidx.lifecycle.LiveData;
 
-import com.vibal.utilities.models.CashBox;
 import com.vibal.utilities.models.CashBoxInfo;
+import com.vibal.utilities.models.InfoWithCash;
 import com.vibal.utilities.persistence.db.CashBoxEntryLocalDao;
 import com.vibal.utilities.persistence.db.CashBoxLocalDao;
 import com.vibal.utilities.persistence.db.UtilitiesDatabase;
@@ -18,8 +18,8 @@ import io.reactivex.Single;
 public class CashBoxLocalRepository extends CashBoxRepository {
     private static CashBoxLocalRepository INSTANCE = null;
 
-    private CashBoxLocalDao cashBoxLocalDao;
-    private CashBoxEntryLocalDao cashBoxEntryLocalDao;
+    private final CashBoxLocalDao cashBoxLocalDao;
+    private final CashBoxEntryLocalDao cashBoxEntryLocalDao;
 
     private CashBoxLocalRepository(Application application) {
         super(application);
@@ -54,8 +54,8 @@ public class CashBoxLocalRepository extends CashBoxRepository {
 //            return insertCashBoxInfo(cashBox.getInfoWithCash())
 //                    .flatMapCompletable(id -> {
 //                        LogUtil.debug("Prueba", "Id: " + id);
-//                        ArrayList<Entry> entryArrayList = new ArrayList<>();
-//                        for (Entry entry : cashBox.getEntries())
+//                        ArrayList<EntryBase> entryArrayList = new ArrayList<>();
+//                        for (EntryBase entry : cashBox.getEntries())
 //                            entryArrayList.add(entry.getEntryWithCashBoxId(id));
 //                        return insertEntries(entryArrayList);
 //                    });
@@ -64,7 +64,7 @@ public class CashBoxLocalRepository extends CashBoxRepository {
 
     // Deleted CashBoxes
 
-    public LiveData<List<CashBox.InfoWithCash>> getAllDeletedCashBoxesInfo() {
+    public LiveData<List<InfoWithCash>> getAllDeletedCashBoxesInfo() {
         return getCashBoxDao().getAllCashBoxesInfo(true);
     }
 

@@ -1,12 +1,11 @@
 package com.vibal.utilities.models;
 
-import android.os.Bundle;
-import android.os.Parcel;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.room.ColumnInfo;
+import androidx.room.DatabaseView;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
 import androidx.room.Ignore;
@@ -25,52 +24,46 @@ import java.util.Objects;
 
 import static androidx.room.ForeignKey.CASCADE;
 
-// Immutable object in orderPos for cloneContents to be easier
-// When modifying directly, watch out, since an entry can be in cloned cashBoxes (no set methods)
+/**
+ * Immutable object in orderPos for cloneContents to be easier.
+ * When modifying directly, watch out, since an entry can be in cloned cashBoxes (no set methods)
+ */
+@DatabaseView(viewName = "entriesOnlineAsEntries_view",
+        value = "SELECT id,cashBoxId,amount,date,info,groupId " +
+                "FROM entriesOnline_table")
 @Entity(tableName = "entries_table",
         foreignKeys = @ForeignKey(entity = CashBoxInfoLocal.class, parentColumns = "id",
                 childColumns = "cashBoxId", onDelete = CASCADE, onUpdate = CASCADE),
         indices = {@Index(value = "cashBoxId")})
-//public class Entry implements Parcelable, Cloneable, DiffDbUsable<Entry> {
-public class Entry implements Cloneable, DiffDbUsable<Entry> {
+public class EntryInfo implements Cloneable, DiffDbUsable<EntryInfo> {
     @Ignore
     public static final long NO_GROUP = 0;
     @Ignore
     public static final String NO_INFO = "(No info)";
-    //    @Ignore
-//    public static final Parcelable.Creator<Entry> CREATOR = new Parcelable.Creator<Entry>() {
-//        @NonNull
-//        @Override
-//        public Entry createFromParcel(@NonNull Parcel source) {
-//            return new Entry(source);
-//        }
-//
-//        @NonNull
-//        @Override
-//        public Entry[] newArray(int size) {
-//            return new Entry[size];
-//        }
-//    };
+
     @Ignore
     public static final String DIFF_AMOUNT = "amount";
     @Ignore
     public static final String DIFF_DATE = "date";
     @Ignore
     public static final String DIFF_INFO = "info";
+    @Ignore
+    public static final String DIFF_FROM_NAMES = "fromNames";
 
     @PrimaryKey(autoGenerate = true)
     protected long id;
     private long cashBoxId;
     private double amount;
-    private Calendar date;
+    private final Calendar date;
     private String info;
     @ColumnInfo(defaultValue = "0")
-    private long groupId;
+    private final long groupId;
 
     /**
      * Constructor for Room
      */
-    public Entry(long id, long cashBoxId, double amount, @Nullable String info, Calendar date, long groupId) {
+    public EntryInfo(long id, long cashBoxId, double amount, @Nullable String info, Calendar date,
+                     long groupId) {
         this.id = id;
         setInfo(info);
         this.groupId = groupId;
@@ -83,7 +76,7 @@ public class Entry implements Cloneable, DiffDbUsable<Entry> {
      * Constructor for JSON
      */
     @Ignore
-    public Entry(long id, long cashBoxId, double amount, long date, String info) {
+    public EntryInfo(long id, long cashBoxId, double amount, long date, String info) {
         this(id, cashBoxId, amount, info, Converters.calendarFromTimestamp(date), NO_GROUP);
     }
 
@@ -93,38 +86,28 @@ public class Entry implements Cloneable, DiffDbUsable<Entry> {
      * @param id entry id
      */
     @Ignore
-    public Entry(long id) {
+    public EntryInfo(long id) {
         this(id, CashBoxInfo.NO_ID, 0, "", Calendar.getInstance(), NO_GROUP);
     }
 
     @Ignore
-    public Entry(long id, long cashBoxId, double amount, @Nullable String info, Calendar date) {
+    public EntryInfo(long id, long cashBoxId, double amount, @Nullable String info, Calendar date) {
         this(id, cashBoxId, amount, info, date, NO_GROUP);
     }
 
     @Ignore
-    public Entry(long cashBoxId, double amount, @Nullable String info, Calendar date) {
+    public EntryInfo(long cashBoxId, double amount, @Nullable String info, Calendar date) {
         this(CashBoxInfo.NO_ID, cashBoxId, amount, info, date, NO_GROUP);
     }
 
     @Ignore
-    public Entry(double amount, @NonNull String info, Calendar date, long groupId) {
+    public EntryInfo(double amount, @NonNull String info, Calendar date, long groupId) {
         this(CashBoxInfo.NO_ID, CashBoxInfo.NO_ID, amount, info, date, groupId);
     }
 
     @Ignore
-    public Entry(double amount, @NonNull String info, Calendar date) {
+    public EntryInfo(double amount, @NonNull String info, Calendar date) {
         this(CashBoxInfo.NO_ID, amount, info, date);
-    }
-
-    @Ignore
-    private Entry(@NonNull Parcel parcel) {
-        this.id = parcel.readLong();
-        cashBoxId = parcel.readLong();
-        setInfo(parcel.readString());
-        date = Converters.calendarFromTimestamp(parcel.readLong());
-        setAmount(parcel.readDouble());
-        this.groupId = parcel.readLong();
     }
 
     public long getId() {
@@ -175,11 +158,11 @@ public class Entry implements Cloneable, DiffDbUsable<Entry> {
     }
 
     @NonNull
-    public Entry getEntryWithCashBoxId(long cashBoxId) {
+    public EntryInfo getEntryWithCashBoxId(long cashBoxId) {
         if (this.cashBoxId == cashBoxId)
             return this;
 
-        Entry entry = this.cashBoxId != CashBoxInfo.NO_ID ? this.cloneContents() : this;
+        EntryInfo entry = this.cashBoxId != CashBoxInfo.NO_ID ? this.cloneContents() : this;
         entry.cashBoxId = cashBoxId;
         return entry;
     }
@@ -200,8 +183,8 @@ public class Entry implements Cloneable, DiffDbUsable<Entry> {
     }
 
     @NonNull
-    public Entry cloneContents(long id, long cashBoxId) {
-        Entry entry = clone();
+    public EntryInfo cloneContents(long id, long cashBoxId) {
+        EntryInfo entry = clone();
         entry.id = id;
         entry.cashBoxId = cashBoxId;
 //        entry.groupId = NO_GROUP;
@@ -214,7 +197,7 @@ public class Entry implements Cloneable, DiffDbUsable<Entry> {
      * @return the new object, product of the cloning
      */
     @NonNull
-    public Entry cloneContents() {
+    public EntryInfo cloneContents() {
         return cloneContents(CashBoxInfo.NO_ID, CashBoxInfo.NO_ID);
     }
 
@@ -225,37 +208,20 @@ public class Entry implements Cloneable, DiffDbUsable<Entry> {
      */
     @NonNull
     @Override
-    public Entry clone() {
+    public EntryInfo clone() {
         try {
-            return (Entry) super.clone();
+            return (EntryInfo) super.clone();
         } catch (CloneNotSupportedException e) { // won't happen
             LogUtil.error("PruebaCashBoxInfo", "Cloning error", e);
             return null;
         }
     }
 
-    // Parcelable implementation
-//    @Override
-//    public int describeContents() {
-//        return 0;
-//    }
-//
-//    @Override
-//    public void writeToParcel(@NonNull Parcel dest, int flags) {
-//        dest.writeLong(id);
-//        dest.writeLong(cashBoxId);
-//        dest.writeString(info);
-//        dest.writeLong(Converters.calendarToTimestamp(date));
-//        dest.writeDouble(amount);
-//        dest.writeLong(groupId);
-//    }
-
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Entry entry = (Entry) o;
+        EntryInfo entry = (EntryInfo) o;
         return id == entry.id &&
                 cashBoxId == entry.cashBoxId &&
                 Double.compare(entry.amount, amount) == 0 &&
@@ -270,26 +236,65 @@ public class Entry implements Cloneable, DiffDbUsable<Entry> {
 
     //Implements DiffDbUsable
     @Override
-    public boolean areItemsTheSame(@NonNull Entry newItem) {
+    public boolean areItemsTheSame(@NonNull EntryInfo newItem) {
         return this.id == newItem.id;
     }
 
     @Override
-    public boolean areContentsTheSame(@NonNull Entry newItem) {
-        return this.amount == newItem.amount && this.date.equals(newItem.date)
-                && this.info.equals(newItem.info);
+    public boolean areContentsTheSame(@NonNull EntryInfo newItem) {
+        return this.amount == newItem.amount &&
+                this.date.equals(newItem.date) &&
+                this.info.equals(newItem.info);
     }
 
-    @Override
-    public Bundle getChangePayload(@NonNull Entry newItem) {
-        Bundle diff = new Bundle();
-        if (this.amount != newItem.amount)
-            diff.putDouble(DIFF_AMOUNT, newItem.amount);
-        if (!this.date.equals(newItem.date))
-            diff.putLong(DIFF_DATE, Converters.calendarToTimestamp(newItem.date));
-        if (!this.info.equals(newItem.info))
-            diff.putString(DIFF_INFO, newItem.info);
+//    @Override
+//    public Bundle getChangePayload(@NonNull EntryInfo newItem) {
+//        Bundle diff = new Bundle();
+//        if (this.amount != newItem.amount)
+//            diff.putDouble(DIFF_AMOUNT, newItem.amount);
+//        if (!this.date.equals(newItem.date))
+//            diff.putLong(DIFF_DATE, Converters.calendarToTimestamp(newItem.date));
+//        if (!this.info.equals(newItem.info))
+//            diff.putString(DIFF_INFO, newItem.info);
+//        if (!Objects.equals(fromNames, newItem.fromNames))
+//            diff.putString(DIFF_FROM_NAMES, newItem.fromNames);
+//
+//        return diff;
+//    }
 
-        return diff;
+    public int compareTo(@NonNull EntryInfo entry) {
+        if (equals(entry))
+            return 0;
+
+        int result = Long.compare(getId(), entry.getId());
+        if (result == 0) {
+            result = Long.compare(getCashBoxId(), entry.getCashBoxId());
+            if (result == 0) {
+                result = getDate().compareTo(entry.getDate());
+                if (result == 0) {
+                    result = Double.compare(getAmount(), entry.getAmount());
+                    if (result == 0)
+                        result = getInfo().compareTo(entry.getInfo());
+                }
+            }
+        }
+
+        return result;
+    }
+
+    @DatabaseView(viewName = "fromEntriesParticipants_view",
+            value = "SELECT * FROM entriesParticipants_table WHERE isFrom==1")
+    public abstract static class ParticipantFromView extends Participant {
+        public ParticipantFromView(@NonNull String name, long entryId, boolean isFrom, double amount) {
+            super(name, entryId, isFrom, amount);
+        }
+    }
+
+    @DatabaseView(viewName = "toEntriesParticipants_view",
+            value = "SELECT * FROM entriesParticipants_table WHERE isFrom==0")
+    public abstract static class ParticipantToView extends Participant {
+        public ParticipantToView(@NonNull String name, long entryId, boolean isFrom, double amount) {
+            super(name, entryId, isFrom, amount);
+        }
     }
 }

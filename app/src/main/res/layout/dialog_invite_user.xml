@@ -1,8 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:orientation="vertical"
     android:paddingVertical="@dimen/inputTextMargin"
     android:paddingHorizontal="@dimen/paddingDialog">
-    <include layout="@layout/input_username" />
-</FrameLayout>
+
+    <ListView
+        android:id="@+id/listViewInvite"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/rvMarginItemCB" />
+
+    <include
+        android:id="@+id/inputUsername"
+        layout="@layout/input_username" />
+</LinearLayout>

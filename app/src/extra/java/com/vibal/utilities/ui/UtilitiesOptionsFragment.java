@@ -10,14 +10,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.vibal.utilities.R;
+import com.vibal.utilities.databinding.MainUtilityOptionsBinding;
 import com.vibal.utilities.ui.cashBoxManager.CashBoxManagerActivity;
 import com.vibal.utilities.ui.randomChooser.RandomChooserActivity;
 
-import butterknife.ButterKnife;
-import butterknife.OnClick;
-
 public class UtilitiesOptionsFragment extends Fragment {
+    private MainUtilityOptionsBinding binding;
 
     @NonNull
     static UtilitiesOptionsFragment newInstance() {
@@ -28,18 +26,22 @@ public class UtilitiesOptionsFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.main_utility_options,container,false);
-        ButterKnife.bind(this,view);
-        return view;
+        binding = MainUtilityOptionsBinding.inflate(inflater, container, false);
+        return binding.getRoot();
     }
 
-    @OnClick(R.id.randomChooser)
-    void startRandomChooser() {
-        startActivity(new Intent(getContext(), RandomChooserActivity.class));
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
     }
 
-    @OnClick(R.id.cashBoxManager)
-    void startCashBoxManager() {
-        startActivity(new Intent(getContext(), CashBoxManagerActivity.class));
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        binding.randomChooser.setOnClickListener(v ->
+                startActivity(new Intent(getContext(), RandomChooserActivity.class)));
+        binding.cashBoxManager.setOnClickListener(v ->
+                startActivity(new Intent(getContext(), CashBoxManagerActivity.class)));
     }
 }

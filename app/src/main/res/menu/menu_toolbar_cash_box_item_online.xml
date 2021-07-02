@@ -21,6 +21,10 @@
         app:showAsAction="never"
         android:title="@string/menu_refresh" />
     <item
+        android:id="@+id/action_item_reload"
+        app:showAsAction="never"
+        android:title="@string/menu_reload" />
+    <item
         android:id="@+id/action_item_currency"
         app:showAsAction="never"
         android:title="@string/menu_item_currency" />

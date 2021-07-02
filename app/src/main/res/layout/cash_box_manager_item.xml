@@ -31,7 +31,7 @@
         android:gravity="center_vertical"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:textSize="20sp"
-        android:textColor="@color/colorPositiveNumber"
+        android:textColor="@color/colorNeutralNumber"
         tools:text="50,00 €"/>
 
     <ImageView
@@ -40,7 +40,7 @@
         android:layout_height="match_parent"
         android:layout_gravity="center_vertical|end"
         android:scaleType="center"
-        android:tint="#A5A5A5"
+        app:tint="#A5A5A5"
         app:srcCompat="@drawable/ic_add"
         tools:ignore="ContentDescription" />
 </LinearLayout>

@@ -50,13 +50,74 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/reminder_inputLayoutPeriod"
         app:layout_constraintBottom_toBottomOf="@id/reminder_inputLayoutPeriod"
-        android:layout_marginStart="@dimen/inputTextMargin" >
+        android:layout_marginStart="@dimen/inputTextMargin">
+
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/reminder_inputTextRepetitions"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:textColor="@android:color/black"
             android:inputType="number"
-            android:digits="0123456789"/>
+            android:digits="0123456789" />
     </com.google.android.material.textfield.TextInputLayout>
+
+    <!--    <include layout="@layout/cash_box_entry_input"-->
+    <!--        android:id="@+id/entryInput"-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        app:layout_constraintStart_toStartOf="parent"-->
+    <!--        app:layout_constraintEnd_toEndOf="parent"-->
+    <!--        app:layout_constraintTop_toTopOf="parent"-->
+    <!--        app:layout_constraintBottom_toTopOf="@id/participantInput"/>-->
+
+    <!--    <include layout="@layout/participant_paid_input"-->
+    <!--        android:id="@+id/participantInput"-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        app:layout_constraintStart_toStartOf="@id/entryInput"-->
+    <!--        app:layout_constraintEnd_toEndOf="@id/entryInput"-->
+    <!--        app:layout_constraintTop_toBottomOf="@id/entryInput"-->
+    <!--        app:layout_constraintBottom_toTopOf="@id/reminder_inputLayoutPeriod"/>-->
+
+    <!--    <com.google.android.material.textfield.TextInputLayout-->
+    <!--        android:id="@+id/reminder_inputLayoutPeriod"-->
+    <!--        android:layout_width="0dp"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        style="@style/AppTheme.TextInputLayout"-->
+    <!--        android:hint="@string/periodic_dialog_periodHint"-->
+    <!--        app:errorEnabled="true"-->
+    <!--        app:layout_constraintStart_toStartOf="@id/entryInput"-->
+    <!--        app:layout_constraintEnd_toStartOf="@id/reminder_inputLayoutRepetitions"-->
+    <!--        app:layout_constraintTop_toBottomOf="@id/participantInput"-->
+    <!--        app:layout_constraintBottom_toBottomOf="parent"-->
+    <!--        android:layout_marginEnd="@dimen/inputTextMargin">-->
+    <!--        <com.google.android.material.textfield.TextInputEditText-->
+    <!--            android:id="@+id/reminder_inputTextPeriod"-->
+    <!--            android:layout_width="match_parent"-->
+    <!--            android:layout_height="match_parent"-->
+    <!--            android:textColor="@android:color/black"-->
+    <!--            android:inputType="number"-->
+    <!--            android:digits="0123456789" />-->
+    <!--    </com.google.android.material.textfield.TextInputLayout>-->
+
+    <!--    <com.google.android.material.textfield.TextInputLayout-->
+    <!--        android:id="@+id/reminder_inputLayoutRepetitions"-->
+    <!--        android:layout_width="0dp"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        style="@style/AppTheme.TextInputLayout"-->
+    <!--        app:errorEnabled="true"-->
+    <!--        android:hint="@string/repetitions"-->
+    <!--        app:layout_constraintStart_toEndOf="@id/reminder_inputLayoutPeriod"-->
+    <!--        app:layout_constraintEnd_toEndOf="@id/entryInput"-->
+    <!--        app:layout_constraintTop_toTopOf="@id/reminder_inputLayoutPeriod"-->
+    <!--        app:layout_constraintBottom_toBottomOf="@id/reminder_inputLayoutPeriod"-->
+    <!--        android:layout_marginStart="@dimen/inputTextMargin" >-->
+    <!--        <com.google.android.material.textfield.TextInputEditText-->
+    <!--            android:id="@+id/reminder_inputTextRepetitions"-->
+    <!--            android:layout_width="match_parent"-->
+    <!--            android:layout_height="match_parent"-->
+    <!--            android:textColor="@android:color/black"-->
+    <!--            android:inputType="number"-->
+    <!--            android:digits="0123456789"/>-->
+    <!--    </com.google.android.material.textfield.TextInputLayout>-->
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -7,5 +7,8 @@
     android:paddingBottom="@dimen/inputTextMargin"
     android:paddingStart="@dimen/paddingDialog"
     android:paddingEnd="@dimen/paddingDialog">
+
     <include layout="@layout/cash_box_entry_input" />
-</FrameLayout>
+
+    <include layout="@layout/participant_paid_input" />
+</LinearLayout>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <com.vibal.utilities.ui.NameSelectSpinner
+        android:id="@+id/spinnerFrom"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/textPaid"
+        android:layout_marginEnd="@dimen/inputTextMargin"
+        android:layout_marginTop="@dimen/inputTextMargin"
+        tools:text="Me" />
+
+    <TextView
+        android:id="@+id/textPaid"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:textColor="@android:color/black"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:gravity="center"
+        android:textStyle="italic"
+        app:layout_constraintTop_toTopOf="@id/spinnerFrom"
+        app:layout_constraintBottom_toBottomOf="@id/spinnerFrom"
+        app:layout_constraintStart_toEndOf="@id/spinnerFrom"
+        app:layout_constraintEnd_toStartOf="@id/spinnerTo"
+        android:layout_marginHorizontal="@dimen/inputTextMargin"
+        android:text="@string/paid" />
+
+    <com.vibal.utilities.ui.NameSelectSpinner
+        android:id="@+id/spinnerTo"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="visible"
+        android:textAlignment="center"
+        app:layout_constraintTop_toTopOf="@id/spinnerFrom"
+        app:layout_constraintBottom_toBottomOf="@id/spinnerFrom"
+        app:layout_constraintStart_toEndOf="@id/textPaid"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginStart="@dimen/inputTextMargin"
+        tools:text="Me" />
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -8,7 +8,7 @@ import com.vibal.utilities.R;
 import com.vibal.utilities.viewModels.CashBoxLocalViewModel;
 import com.vibal.utilities.viewModels.CashBoxViewModel;
 
-public class CashBoxItemLocalFragment extends CashBoxItemFragment {
+public class CashBoxItemLocalFragment extends CashBoxItemFragment implements CashBoxType.LOCAL {
     private CashBoxLocalViewModel viewModel;
 
     @NonNull
@@ -21,13 +21,8 @@ public class CashBoxItemLocalFragment extends CashBoxItemFragment {
     @NonNull
     @Override
     protected CashBoxViewModel getViewModel() {
-        return viewModel;
-    }
-
-    @NonNull
-    @Override
-    protected CashBoxViewModel initializeViewModel() {
-        viewModel = new ViewModelProvider(requireParentFragment()).get(CashBoxLocalViewModel.class);
+        if (viewModel == null)
+            viewModel = new ViewModelProvider(requireParentFragment()).get(CashBoxLocalViewModel.class);
         return viewModel;
     }
 
@@ -36,4 +31,9 @@ public class CashBoxItemLocalFragment extends CashBoxItemFragment {
     protected int getMenuRes() {
         return R.menu.menu_toolbar_cash_box_item;
     }
+
+//    @Override
+//    protected String getReminderType() {
+//        return ReminderReceiver.LOCAL;
+//    }
 }

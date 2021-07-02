@@ -5,15 +5,13 @@ import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
-import androidx.room.Transaction;
 import androidx.room.Update;
 
-import com.vibal.utilities.models.CashBox;
 import com.vibal.utilities.models.CashBoxInfo;
 import com.vibal.utilities.models.CashBoxInfoLocal;
+import com.vibal.utilities.models.InfoWithCash;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Currency;
 import java.util.List;
 
@@ -23,7 +21,7 @@ import io.reactivex.Single;
 @Dao
 public abstract class CashBoxLocalDao extends CashBoxBaseDao {
     @Override
-    public LiveData<List<CashBox.InfoWithCash>> getAllCashBoxesInfo() {
+    public LiveData<List<InfoWithCash>> getAllCashBoxesInfo() {
         return getAllCashBoxesInfo(false);
     }
 
@@ -52,32 +50,53 @@ public abstract class CashBoxLocalDao extends CashBoxBaseDao {
             "WHERE deleted=:deleted " +
             "GROUP BY C.id,C.name,C.orderId, C.deleted, changes, C.currency " +
             "ORDER BY C.orderId ASC")
-    public abstract LiveData<List<CashBox.InfoWithCash>> getAllCashBoxesInfo(boolean deleted);
+    public abstract LiveData<List<InfoWithCash>> getAllCashBoxesInfo(boolean deleted);
 
     @Query("SELECT C.id,C.name,C.orderId,SUM(amount) AS cash,0 AS changes,C.currency " +
             "FROM cashBoxesInfo_table AS C LEFT JOIN entries_table AS E ON C.id=E.cashBoxId " +
             "WHERE C.id=:id " +
             "GROUP BY C.id,C.name,C.orderId,changes, C.currency")
-    public abstract LiveData<CashBox.InfoWithCash> getCashBoxInfoWithCashById(long id);
+    public abstract LiveData<InfoWithCash> getCashBoxInfoWithCashById(long id);
 
-    @Transaction
+//    @Transaction
+//    @Query("SELECT C.id,C.name,C.orderId,SUM(amount) AS cash,0 AS changes,C.currency " +
+//            "FROM cashBoxesInfo_table AS C LEFT JOIN entries_table AS E ON C.id=E.cashBoxId " +
+//            "WHERE C.id=:id " +
+//            "GROUP BY C.id,C.name,C.orderId,changes,C.currency")
+//    abstract Single<CashBox.Simple> getCashBoxLocalById(long id);
+
     @Query("SELECT C.id,C.name,C.orderId,SUM(amount) AS cash,0 AS changes,C.currency " +
             "FROM cashBoxesInfo_table AS C LEFT JOIN entries_table AS E ON C.id=E.cashBoxId " +
             "WHERE C.id=:id " +
-            "GROUP BY C.id,C.name,C.orderId,changes,C.currency")
-    abstract Single<CashBox.Local> getCashBoxLocalById(long id);
+            "GROUP BY C.id,C.name,C.orderId,changes, C.currency")
+    public abstract Single<InfoWithCash> getSingleCashBoxInfoWithCashById(long id);
 
-    @Override
-    public Single<CashBox> getCashBoxById(long id) {
-        return getCashBoxLocalById(id)
-                .map(local -> {
-                    Collections.sort(local.getEntries(),
-                            (o1, o2) -> o1.getDate().compareTo(o2.getDate()));
-                    return local;
-                });
-    }
+    @Query("SELECT DISTINCT lower(P.name) " +
+            "FROM entriesParticipants_table AS P LEFT JOIN entries_table AS E ON P.entryId=E.id " +
+            "WHERE E.cashBoxId=:cashBoxId " +
+            "ORDER BY P.name DESC")
+    public abstract LiveData<List<String>> getNamesByCashBox(long cashBoxId);
 
-    //todo mejorar coger from directamente
+    @Query("SELECT DISTINCT lower(P.name) " +
+            "FROM entriesParticipants_table AS P LEFT JOIN entries_table AS E ON P.entryId=E.id " +
+            "WHERE E.cashBoxId=:cashBoxId " +
+            "ORDER BY P.name DESC")
+    abstract Single<List<String>> getSingleNamesByCashBox(long cashBoxId);
+
+//    @Override
+//    public Single<CashBox> getCashBoxById(long id) {
+////        return getCashBoxLocalById(id)
+////                .map(local -> {
+////                    local.getEntries().sort((o1, o2) -> o1.getDate().compareTo(o2.getDate()));
+////                    return local;
+////                });
+//
+//        return getSingleCashBoxInfoWithCashById(id)
+//                .flatMap(infoWithCash -> getEntriesByCashBox(id).flatMap(
+//                        entries -> getNamesByCashBox(id).map(
+//                                names -> new CashBox.Local(infoWithCash, names, entries))));
+//    }
+
     @Query("UPDATE cashBoxesInfo_table " +
             "SET orderId=CASE " +
             "WHEN id=:cashBoxId THEN :toOrderPos " +
@@ -88,13 +107,15 @@ public abstract class CashBoxLocalDao extends CashBoxBaseDao {
             "OR orderId BETWEEN :toOrderPos AND :fromOrderPos")
     public abstract Completable moveCashBoxToOrderPos(long cashBoxId, long fromOrderPos, long toOrderPos);
 
-    // Get all CashBoxInfo to supply the widget
+    /**
+     * Get all CashBoxInfo to supply the widget
+     */
     @Query("SELECT C.id,C.name,C.orderId,SUM(amount) AS cash,0 AS changes,C.currency " +
             "FROM cashBoxesInfo_table AS C LEFT JOIN entries_table AS E ON C.id=E.cashBoxId " +
             "WHERE C.deleted=0 " +
             "GROUP BY C.id,C.name,C.orderId,C.deleted,changes,C.currency " +
             "ORDER BY C.orderId DESC")
-    public abstract List<CashBox.InfoWithCash> getAllCashBoxInfoForWidget();
+    public abstract List<InfoWithCash> getAllCashBoxInfoForWidget();
 
     @Query("UPDATE cashBoxesInfo_table " +
             "SET orderId=:cashBoxId " +
@@ -103,6 +124,9 @@ public abstract class CashBoxLocalDao extends CashBoxBaseDao {
 
     @Query("UPDATE cashBoxesInfo_table SET currency=:currency WHERE id=:cashBoxId")
     public abstract Completable setCashBoxCurrency(long cashBoxId, Currency currency);
+
+    @Query("SELECT currency FROM cashBoxesInfo_table WHERE id=:cashBoxId")
+    public abstract Single<Currency> getCashBoxCurrency(long cashBoxId);
 
     @Query("UPDATE cashBoxesInfo_table SET deleted=:deleted WHERE id=:cashBoxId")
     public abstract Completable setDeleted(long cashBoxId, boolean deleted);

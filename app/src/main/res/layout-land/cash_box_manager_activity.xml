@@ -47,39 +47,9 @@
 <!--        </com.google.android.material.tabs.TabLayout>-->
     </com.google.android.material.appbar.AppBarLayout>
 
-<!--    <LinearLayout-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="match_parent"-->
-<!--        android:baselineAligned="false"-->
-<!--        app:layout_behavior="@string/appbar_scrolling_view_behavior">-->
-<!--        <FrameLayout-->
-<!--            android:id="@+id/container"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="match_parent"-->
-<!--            android:layout_weight="1"/>-->
-
-<!--        <View-->
-<!--            android:layout_width="1dp"-->
-<!--            android:layout_height="match_parent"-->
-<!--            android:background="@color/colorDivider"/>-->
-
-<!--        <FrameLayout-->
-<!--            android:id="@+id/containerItem"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="match_parent"-->
-<!--            android:layout_weight="1">-->
-<!--            <TextView-->
-<!--                android:layout_width="wrap_content"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:layout_gravity="center"-->
-<!--                android:text="@string/no_cashbox_selected"-->
-<!--                android:textAppearance="?android:attr/textAppearanceMedium" />-->
-<!--        </FrameLayout>-->
-<!--    </LinearLayout>-->
-
-    <com.vibal.utilities.ui.viewPager.CashBoxViewPager
+    <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/CB_viewPager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

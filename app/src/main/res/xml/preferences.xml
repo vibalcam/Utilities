@@ -7,11 +7,11 @@
             app:entries="@array/defaultStart_entries"
             app:entryValues="@array/defaultStart_values"
             app:defaultValue="@string/defaultStart_defaultValue_main"
-            app:useSimpleSummaryProvider="true"/>
-        <SwitchPreference
-            app:key="playAboutSong"
-            app:title="Play song in about app"
-            app:defaultValue="true" />
+            app:useSimpleSummaryProvider="true" />
+        <!--        <SwitchPreference-->
+        <!--            app:key="playAboutSong"-->
+        <!--            app:title="Play song in about app"-->
+        <!--            app:defaultValue="true" />-->
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/pref_CBM_header">
@@ -27,6 +27,10 @@
             app:summaryOn="@string/pref_summaryOn_notifyPeriodic"
             app:summaryOff="@string/pref_summaryOff_notifyPeriodic"
             app:defaultValue="true" />
+        <EditTextPreference
+            app:key="selfParticipant"
+            app:title="@string/pref_self_participant"
+            app:defaultValue="me" />
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/pref_CBMOnline_header">

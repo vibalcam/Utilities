@@ -30,6 +30,6 @@
         android:gravity="center_vertical"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:textSize="20sp"
-        android:textColor="@color/colorPositiveNumber"
+        android:textColor="@color/colorNeutralNumber"
         tools:text="50,00 €"/>
 </LinearLayout>

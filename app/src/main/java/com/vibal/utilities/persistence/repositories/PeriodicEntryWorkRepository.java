@@ -23,8 +23,8 @@ public class PeriodicEntryWorkRepository {
     private static PeriodicEntryWorkRepository INSTANCE = null;
 
     // Work Manager
-    private WorkManager workManager;
-    private PeriodicEntryWorkDao periodicEntryWorkDao;
+    private final WorkManager workManager;
+    private final PeriodicEntryWorkDao periodicEntryWorkDao;
     private LiveData<List<PeriodicEntryPojo>> periodicEntries = null;
 
     private PeriodicEntryWorkRepository(Context context) {

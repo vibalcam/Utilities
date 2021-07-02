@@ -8,6 +8,8 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 public abstract class PagerFragment extends Fragment {
+    // imp Add date and currency format as general class
+
     private static final String PAGER_POSITION_ARG = "pager_position";
     private int pagerPosition = -1;
 

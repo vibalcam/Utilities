@@ -4,10 +4,10 @@ import android.app.Application;
 
 import androidx.annotation.NonNull;
 
+import com.vibal.utilities.exceptions.UtilAppException;
 import com.vibal.utilities.models.EntryOnline;
 import com.vibal.utilities.persistence.repositories.CashBoxOnlineRepository;
 import com.vibal.utilities.persistence.repositories.CashBoxRepository;
-import com.vibal.utilities.persistence.retrofit.UtilAppException;
 
 import java.io.IOException;
 import java.security.KeyManagementException;
@@ -48,12 +48,20 @@ public class CashBoxOnlineViewModel extends CashBoxViewModel {
         return repository.sendInvitationToCashBox(username, getCurrentCashBoxId());
     }
 
+    public Single<List<String>> getCashBoxParticipants(long cashBoxId) {
+        return repository.getCashBoxParticipants(cashBoxId);
+    }
+
     public Completable acceptInvitation(long cashBoxId) {
         return repository.acceptInvitationToCashBox(cashBoxId);
     }
 
     public Observable<Object> getChanges() {
         return repository.getChanges();
+    }
+
+    public Completable hardReload(long cashBoxId) {
+        return repository.reloadCashBox(cashBoxId);
     }
 
     public Single<List<EntryOnline.EntryChanges>> getNonViewedEntries(long cashBoxId) {

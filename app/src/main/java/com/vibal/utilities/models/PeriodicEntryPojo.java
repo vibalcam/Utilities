@@ -24,8 +24,8 @@ public class PeriodicEntryPojo implements DiffDbUsable<PeriodicEntryPojo> {
 
     @Embedded
     private final PeriodicEntryWorkInfo workInfo;
-    private String cashBoxName;
-    private double cashBoxAmount;
+    private final String cashBoxName;
+    private final double cashBoxAmount;
 
     public PeriodicEntryPojo(PeriodicEntryWorkInfo workInfo, String cashBoxName, double cashBoxAmount) {
         this.workInfo = workInfo;
@@ -60,7 +60,7 @@ public class PeriodicEntryPojo implements DiffDbUsable<PeriodicEntryPojo> {
     }
 
     /**
-     * Periodic Entry Work only for local purposes, not available for online
+     * Periodic EntryBase Work only for local purposes, not available for online
      */
     @Entity(tableName = "periodicWork_table",
             foreignKeys = @ForeignKey(entity = CashBoxInfoLocal.class, parentColumns = "id",
@@ -147,8 +147,8 @@ public class PeriodicEntryPojo implements DiffDbUsable<PeriodicEntryPojo> {
     }
 
     public static class PeriodicEntryWorkRequest {
-        private PeriodicEntryWorkInfo workInfo;
-        private OneTimeWorkRequest workRequest;
+        private final PeriodicEntryWorkInfo workInfo;
+        private final OneTimeWorkRequest workRequest;
 
         /**
          * Create PeriodicEntryWorkRequest

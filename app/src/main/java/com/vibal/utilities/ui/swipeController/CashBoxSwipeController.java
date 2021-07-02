@@ -27,12 +27,12 @@ public class CashBoxSwipeController extends ItemTouchHelper.Callback {
     private static final float SWIPE_THRESHOLD = 0.4f;
 
     private boolean swipeLeftDelete;
-    private CashBoxAdapterSwipable adapter;
+    private final CashBoxAdapterSwipable adapter;
     private SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener;
     private int fromIndex = -1;
     private int toIndex = -1;
     @DrawableRes
-    private int secondaryActionIcon;
+    private final int secondaryActionIcon;
 
     public CashBoxSwipeController(CashBoxAdapterSwipable adapter, boolean swipeLeftDelete,
                                   @DrawableRes int secondaryActionIcon) {
