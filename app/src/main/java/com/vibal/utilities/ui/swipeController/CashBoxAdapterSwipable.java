@@ -18,4 +18,7 @@ public interface CashBoxAdapterSwipable {
 
     default void onItemSecondaryAction(int position) {
     }
+
+    default void enableAllSwipe(boolean enable) {
+    }
 }

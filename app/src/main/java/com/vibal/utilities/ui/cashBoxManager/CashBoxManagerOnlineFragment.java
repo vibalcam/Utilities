@@ -156,7 +156,7 @@ public class CashBoxManagerOnlineFragment extends CashBoxManagerFragment impleme
                 Util.createHelpDialog(requireContext(), R.string.cashBoxManager_helpTitle,
                         R.string.cashBoxManager_help).show();
                 return true;
-            case R.id.action_manager_edit:
+            case R.id.action_manager_edit_online:
                 startActionMode(EDIT_MODE);
                 return true;
             case R.id.action_manager_settings_online:

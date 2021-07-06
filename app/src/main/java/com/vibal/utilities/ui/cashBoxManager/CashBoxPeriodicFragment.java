@@ -237,6 +237,11 @@ public class CashBoxPeriodicFragment extends PagerFragment {
         }
 
         @Override
+        public void enableAllSwipe(boolean enable) {
+            getPagerActivity().getViewPager2().setUserInputEnabled(enable);
+        }
+
+        @Override
         public void onItemDelete(int position) {
             PeriodicEntryPojo removed = currentList.get(position);
             List<PeriodicEntryPojo> list = new ArrayList<>(currentList);

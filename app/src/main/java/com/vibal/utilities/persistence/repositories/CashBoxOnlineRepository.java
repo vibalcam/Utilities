@@ -200,7 +200,7 @@ public class CashBoxOnlineRepository extends CashBoxRepository {
                     Request newRequest = originalRequest.newBuilder()
                             .header(UtilAppAPI.CLIENT_ID, String.valueOf(ONLINE_ID))
                             .header(UtilAppAPI.PASSWORD_HEADER, BuildConfig.ONLINE_PWD)
-                            .header(UtilAppAPI.VERSION_HEADER, UtilAppAPI.VERSION)
+                            .header(UtilAppAPI.VERSION_HEADER, BuildConfig.VERSION)
                             .build();
                     return chain.proceed(newRequest);
                 });

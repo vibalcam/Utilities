@@ -67,7 +67,6 @@ public interface UtilAppAPI {
     String CLIENT_ID = "ClientId";
     String PASSWORD_HEADER = "pwd";
     String VERSION_HEADER = "clientV";
-    String VERSION = "2";
 
     // Response codes
 //    int NON_EXISTENT_WARNING = -2;

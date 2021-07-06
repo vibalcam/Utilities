@@ -111,6 +111,13 @@ public class CashBoxManagerActivity extends PagerActivity {
                 binding.CBTabs.getTabAt(k).setIcon(iconsIds.getResourceId(k, 0));
             iconsIds.recycle();
         }
+        binding.CBViewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                invalidateOptionsMenu();
+                super.onPageScrolled(position, positionOffset, positionOffsetPixels);
+            }
+        });
     }
 
     @Override
@@ -163,12 +170,12 @@ public class CashBoxManagerActivity extends PagerActivity {
     // Implementing PagerActivity
 
     @NonNull
-    protected ViewPager2 getViewPager2() {
+    public ViewPager2 getViewPager2() {
         return binding.CBViewPager;
     }
 
     @Nullable
-    protected TabLayout getTabLayout() {
+    public TabLayout getTabLayout() {
         return binding.CBTabs;
     }
 
@@ -212,9 +219,9 @@ public class CashBoxManagerActivity extends PagerActivity {
         @NonNull
         @Override
         public Fragment createFragment(int position) {
-            LogUtil.debug("PruebaViewPager", "Position get Item: " + position);
             if (!BuildConfig.ONLINE && position >= CashBoxType.ONLINE)
                 position += 1;
+            LogUtil.debug("PruebaViewPager", "Position get Item: " + position);
             switch (position) {
                 case CashBoxType.LOCAL:
                     return CashBoxViewFragment.newInstance(position, false);

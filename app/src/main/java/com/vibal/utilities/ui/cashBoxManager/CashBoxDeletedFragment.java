@@ -234,6 +234,11 @@ public class CashBoxDeletedFragment extends PagerFragment {
         }
 
         @Override
+        public void enableAllSwipe(boolean enable) {
+            getPagerActivity().getViewPager2().setUserInputEnabled(enable);
+        }
+
+        @Override
         public void onItemSecondaryAction(int position) {
             compositeDisposable.add(viewModel.restore(getItem(position))
                     .subscribeOn(Schedulers.io())

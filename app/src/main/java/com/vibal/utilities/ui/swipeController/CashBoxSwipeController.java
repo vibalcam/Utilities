@@ -88,11 +88,11 @@ public class CashBoxSwipeController extends ItemTouchHelper.Callback {
     public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder source, @NonNull RecyclerView.ViewHolder target) {
         // Remember FIRST fromPosition
         if (fromIndex == -1)   // fromIndex hasn't been set -> beginning of the move
-            fromIndex = source.getAdapterPosition();
-        toIndex = target.getAdapterPosition();
+            fromIndex = source.getBindingAdapterPosition();
+        toIndex = target.getBindingAdapterPosition();
 
-        LogUtil.debug(TAG, "Move from " + source.getAdapterPosition() + " to " + toIndex);
-        adapter.onItemMove(source.getAdapterPosition(), toIndex);
+        LogUtil.debug(TAG, "Move from " + source.getBindingAdapterPosition() + " to " + toIndex);
+        adapter.onItemMove(source.getBindingAdapterPosition(), toIndex);
         return true;
     }
 
@@ -101,17 +101,23 @@ public class CashBoxSwipeController extends ItemTouchHelper.Callback {
         if (direction == LEFT || direction == RIGHT) {
             //^ is an exclusive OR: (left and true) or (right and false)
             if (direction == RIGHT ^ swipeLeftDelete)
-                adapter.onItemDelete(viewHolder.getAdapterPosition());
+                adapter.onItemDelete(viewHolder.getBindingAdapterPosition());
             else
-                adapter.onItemSecondaryAction(viewHolder.getAdapterPosition());
+                adapter.onItemSecondaryAction(viewHolder.getBindingAdapterPosition());
         }
     }
 
     @Override
     public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
         super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+        if (!isCurrentlyActive)
+            adapter.enableAllSwipe(true);
 
         if (actionState == ACTION_STATE_SWIPE) {
+            if (isCurrentlyActive)
+                adapter.enableAllSwipe(false);
+
+            // Paint background
             Paint paint = new Paint();
             Drawable drawable;
             Rect rectTotal = new Rect(viewHolder.itemView.getLeft(), viewHolder.itemView.getTop(), viewHolder.itemView.getRight(), viewHolder.itemView.getBottom());

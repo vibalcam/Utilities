@@ -13,10 +13,10 @@ import com.vibal.utilities.util.LogUtil;
  */
 public abstract class PagerActivity extends AppCompatActivity {
     @NonNull
-    abstract protected ViewPager2 getViewPager2();
+    abstract public ViewPager2 getViewPager2();
 
     @Nullable
-    abstract protected TabLayout getTabLayout();
+    abstract public TabLayout getTabLayout();
 
     public int getCurrentPagerPosition() {
         return getViewPager2().getCurrentItem();

@@ -210,6 +210,8 @@ public abstract class CashBoxManagerFragment extends PagerFragment implements Ca
             setTabLayoutVisibility(View.GONE);
             // Notify adapter to show images for dragging
             adapter.notifyItemRangeChanged(0, adapter.getItemCount());
+            // Not allow scroll
+            getPagerActivity().getViewPager2().setUserInputEnabled(false);
             return true;
         }
 
@@ -244,6 +246,8 @@ public abstract class CashBoxManagerFragment extends PagerFragment implements Ca
             // Notify adapter to hide images for dragging
             adapter.selectedItems.clear();
             adapter.notifyItemRangeChanged(0, adapter.getItemCount());
+            // Allow scroll once more
+            getPagerActivity().getViewPager2().setUserInputEnabled(true);
         }
     };
     private boolean isFabOpen = false;
@@ -343,8 +347,8 @@ public abstract class CashBoxManagerFragment extends PagerFragment implements Ca
         super.onCreateOptionsMenu(menu, inflater);
 
         //Set Toolbar title since in onCreateOptionsMenu doesn't work
-        if (getParentFragmentManager().getFragments().size() < 2)
-            ((AppCompatActivity) requireActivity()).getSupportActionBar().setTitle(getTitle());
+//        if (getParentFragmentManager().getFragments().size() < 2)
+        ((AppCompatActivity) requireActivity()).getSupportActionBar().setTitle(getTitle());
         menu.clear();
         inflater.inflate(getMenuRes(), menu);
     }
@@ -948,6 +952,11 @@ public abstract class CashBoxManagerFragment extends PagerFragment implements Ca
         }
 
         @Override
+        public void enableAllSwipe(boolean enable) {
+            getPagerActivity().getViewPager2().setUserInputEnabled(enable);
+        }
+
+        @Override
         public void onItemSecondaryAction(int position) {
             if (actionMode != null)
                 actionMode.finish();
@@ -1065,13 +1074,13 @@ public abstract class CashBoxManagerFragment extends PagerFragment implements Ca
                 boolean ret = false;
                 if (actionMode == null) { //Normal behavior
                     if (event.getActionMasked() == MotionEvent.ACTION_UP) {
-                        InfoWithCash infoWithCash = currentList.get(getAdapterPosition());
+                        InfoWithCash infoWithCash = currentList.get(getBindingAdapterPosition());
                         if (infoWithCash.isNew())
                             showInvitationDialog(infoWithCash);
                         else if (infoWithCash.hasChanges())
                             showChangesDialog(infoWithCash);
                         else
-                            CashBoxItemFragment.getAddEntryDialog(currentList.get(getAdapterPosition()).getId(),
+                            CashBoxItemFragment.getAddEntryDialog(currentList.get(getBindingAdapterPosition()).getId(),
                                     requireContext(), getViewModel(), compositeDisposable, null)
                                     .show();
                     }
@@ -1090,20 +1099,24 @@ public abstract class CashBoxManagerFragment extends PagerFragment implements Ca
             public void onClick(View v) {
                 if (actionMode != null) {
                     if (actionModeType == GROUP_ADD_MODE)
-                        toggleSelectedCashBox(getAdapterPosition(), true);
+                        toggleSelectedCashBox(getBindingAdapterPosition(), true);
                     else if (actionModeType == EDIT_MODE || actionModeType == PERIODIC_ADD_MODE)
-                        toggleSelectedCashBox(getAdapterPosition(), false);
+                        toggleSelectedCashBox(getBindingAdapterPosition(), false);
                 } else {
                     if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
-                        toggleSelectedCashBox(getAdapterPosition(), false);
-                    swapToItemFragment(currentList.get(getAdapterPosition()).getCashBoxInfo().getId());
+                        toggleSelectedCashBox(getBindingAdapterPosition(), false);
+                    swapToItemFragment(currentList.get(getBindingAdapterPosition()).getCashBoxInfo().getId());
                 }
             }
 
             @Override
             public boolean onLongClick(View v) {
-                toggleSelectedCashBox(getAdapterPosition(), false);
-                startActionMode(EDIT_MODE);
+                if (actionMode != null && actionModeType == EDIT_MODE) {
+                    onItemSecondaryAction(getBindingAdapterPosition());
+                } else {
+                    toggleSelectedCashBox(getBindingAdapterPosition(), false);
+                    startActionMode(EDIT_MODE);
+                }
                 return true;
             }
         }

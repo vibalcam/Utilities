@@ -23,8 +23,8 @@ android {
         applicationId "com.utilities.vibal.utilities"
         minSdkVersion 24
         targetSdkVersion 30
-        versionCode 27
-        versionName "3.1"
+        versionCode 29
+        versionName "3.1.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         resValue "string", "aboutApp", "Utilities v" + versionName +
                 "\\n\\nvibalcam " + (new Date().format("dd/MM/yyyy"))
@@ -59,13 +59,15 @@ android {
             buildConfigField "boolean", "DEBUG_MODE", "false"
             buildConfigField "String", "BASE_URL", properties['baseUrl']
             buildConfigField "String", "ONLINE_PWD", properties['onlinePwd']
+            buildConfigField "String", "VERSION", properties['version']
         }
         debug {
-            buildConfigField "boolean", "DEBUG_MODE", "true"
             resValue "string", "aboutApp", "Utilities debug " + getVersion()
             applicationIdSuffix ".debug"
+            buildConfigField "boolean", "DEBUG_MODE", "true"
             buildConfigField "String", "BASE_URL", properties['baseUrl_debug']
             buildConfigField "String", "ONLINE_PWD", properties['onlinePwd_debug']
+            buildConfigField "String", "VERSION", properties['version_debug']
         }
     }
     flavorDimensions "version", "online"
@@ -114,10 +116,6 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
     implementation 'androidx.appcompat:appcompat:1.3.0'
-
-//    // Butterknife
-//    implementation 'com.jakewharton:butterknife:10.2.1'
-//    annotationProcessor 'com.jakewharton:butterknife-compiler:10.2.1'
 
     // Lyfecycle
     implementation "androidx.lifecycle:lifecycle-extensions:$lifecycle_version"

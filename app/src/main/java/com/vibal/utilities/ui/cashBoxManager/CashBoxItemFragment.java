@@ -708,6 +708,11 @@ public abstract class CashBoxItemFragment extends PagerFragment implements CashB
         }
 
         @Override
+        public void enableAllSwipe(boolean enable) {
+            getPagerActivity().getViewPager2().setUserInputEnabled(enable);
+        }
+
+        @Override
         public void onItemSecondaryAction(int position) {
             LogUtil.debug(TAG, "onItemSecondaryAction: ID del entry: " +
                     currentList.get(position).getEntryInfo().getId()

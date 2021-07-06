@@ -30,12 +30,15 @@ public abstract class PagerFragment extends Fragment {
         return pagerPosition;
     }
 
+    @Nullable
+    protected PagerActivity getPagerActivity() {
+        return getActivity() instanceof PagerActivity ? ((PagerActivity) getActivity()) : null;
+    }
+
     protected boolean isOptionsMenuActive() {
         // If this fragment is not currently showing
-        if (getActivity() instanceof PagerActivity) {
-            return ((PagerActivity) getActivity()).getCurrentPagerPosition() == pagerPosition;
-        } else // if no pager position, return true
-            return true;
+        // if no pager position, return true
+        return getPagerActivity() == null || getPagerActivity().getCurrentPagerPosition() == pagerPosition;
     }
 
     @Override
@@ -46,8 +49,8 @@ public abstract class PagerFragment extends Fragment {
     }
 
     protected void setTabLayoutVisibility(int visibility) {
-        if ((getActivity() instanceof PagerActivity))
-            ((PagerActivity) getActivity()).setTabLayoutVisibility(visibility);
+        if (getPagerActivity() != null)
+            getPagerActivity().setTabLayoutVisibility(visibility);
     }
 
     public boolean onBackPressed() {
